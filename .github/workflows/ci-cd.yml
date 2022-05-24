@@ -21,7 +21,7 @@ jobs:
           args: --all-features -- -D warnings
 
   fmt_check:
-    name: Format (fmt)
+    name: Format
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +33,7 @@ jobs:
           components: rustfmt
           override: true
       - name: Rustfmt
-        run: cargo fmt --all-features -- --check
+        run: cargo fmt -- --check
 
   tests:
     name: Tests
