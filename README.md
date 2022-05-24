@@ -1,4 +1,4 @@
-PTAS auf Planaren und anderen Graphklassen
+# PTAS auf Planaren und anderen Graphklassen
 
 - Klingt kompliziert, Idee ist aber recht simpel.
 - Input: Planarer Graph
