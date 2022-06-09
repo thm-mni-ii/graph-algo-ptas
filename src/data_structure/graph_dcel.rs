@@ -1,18 +1,4 @@
-#[allow(dead_code)]
-pub type Vertex = u32;
-
-/*
-struct Dart {
-    from: Vertex,
-    to: Vertex
-}
-*/
-#[allow(dead_code)]
-pub type Dart = (Vertex, Vertex); // directed edge from first to second (or use struct?)
-#[allow(dead_code)]
-pub type Edge = (Dart, Dart); // combination of two directed edges (darts) struct with constraints?
-#[allow(dead_code)]
-pub type Face = u32; // Identifier for a face.
+use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
 
 trait GraphDCEL {
     fn get_vertices(&self) -> Vec<Vertex>;
