@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub type Vertex = u32;
 
 /*
@@ -6,11 +7,11 @@ struct Dart {
     to: Vertex
 }
 */
-
+#[allow(dead_code)]
 pub type Dart = (Vertex, Vertex); // directed edge from first to second (or use struct?)
-
+#[allow(dead_code)]
 pub type Edge = (Dart, Dart); // combination of two directed edges (darts) struct with constraints?
-
+#[allow(dead_code)]
 pub type Face = u32; // Identifier for a face.
 
 trait GraphDCEL {
