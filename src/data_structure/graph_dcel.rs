@@ -18,13 +18,13 @@ trait GraphDCEL {
     fn get_edges(&self) -> Vec<Edge>;
     fn get_faces(&self) -> Vec<u32>;
 
-    fn dart_vertex(&self, &vertex: Vertex) -> Dart;
-    fn dart_face(&self, &face: Face) -> Dart;
-    fn twin(&self, &dart: Dart) -> Dart;
-    fn target(&self, &dart: Dart) -> Vertex;
-    fn face(&self, &dart: Dart) -> Face;
-    fn next(&self, &current: Dart) -> Dart;
-    fn prev(&self, &current: Dart) -> Dart;
+    fn dart_vertex(&self, vertex: Vertex) -> Dart;
+    fn dart_face(&self, face: Face) -> Dart;
+    fn twin(&self, dart: Dart) -> Dart;
+    fn target(&self, dart: Dart) -> Vertex;
+    fn face(&self, dart: Dart) -> Face;
+    fn next(&self, current: Dart) -> Dart;
+    fn prev(&self, current: Dart) -> Dart;
 }
 
 trait Graph {
