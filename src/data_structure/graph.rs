@@ -1,4 +1,4 @@
-use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
+use crate::data_structure::graph_types::{Edge, Face, Vertex};
 
 #[allow(unused)]
 pub trait Graph {
