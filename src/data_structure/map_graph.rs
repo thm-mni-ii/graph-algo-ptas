@@ -1,6 +1,5 @@
-use crate::data_structure::dcel::graph_dcel::GraphDCEL;
-use crate::data_structure::graph::{Graph, GraphDCEL};
-use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
+use crate::data_structure::graph::Graph;
+use crate::data_structure::graph_types::{Edge, Face, Vertex};
 use std::collections::HashMap;
 
 #[allow(dead_code)]
