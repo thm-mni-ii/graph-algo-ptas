@@ -7,6 +7,7 @@ pub struct MapGraph {
     vertices: HashMap<Vertex, Vec<Vertex>>,
 }
 
+#[allow(unused)]
 impl Graph for MapGraph {
     fn new() -> Self {
         todo!()

@@ -2,6 +2,7 @@ use crate::data_structure::dcel::graph_dcel::GraphDCEL;
 use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
 use crate::data_structure::map_graph::MapGraph;
 
+#[allow(unused)]
 impl GraphDCEL for MapGraph {
     fn get_vertices(&self) -> &[Vertex] {
         todo!()
