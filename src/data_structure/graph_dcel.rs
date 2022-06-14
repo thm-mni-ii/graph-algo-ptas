@@ -8,7 +8,7 @@ use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
 
 // Kanten markieren.
 
-trait GraphDCEL {
+pub trait GraphDCEL {
     fn get_vertices(&self) -> &[Vertex];
     fn get_edges(&self) -> &[Edge];
     fn get_faces(&self) -> &[Face];
@@ -22,7 +22,7 @@ trait GraphDCEL {
     fn prev(&self, current: Dart) -> Dart;
 }
 
-trait Graph {
+pub trait Graph {
     fn new() -> Self;
     fn contains_vertex(&self, v: Vertex) -> bool;
     fn contains_edge(&self, e: Edge) -> bool;
