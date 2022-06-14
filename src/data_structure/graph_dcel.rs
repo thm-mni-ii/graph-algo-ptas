@@ -1,9 +1,17 @@
 use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
 
+// Subgraphen erstellen --> Label für Vertices bzw. Übersetzungstabelle
+// Subgraphen: Eingabe ist Menge von Knoten. Ausgabe sind
+// Menge von Knoten, Labels und verbindende Kanten
+
+// NetworkX Planarity
+
+// Kanten markieren.
+
 trait GraphDCEL {
-    fn get_vertices(&self) -> Vec<Vertex>;
-    fn get_edges(&self) -> Vec<Edge>;
-    fn get_faces(&self) -> Vec<u32>;
+    fn get_vertices(&self) -> &[Vertex];
+    fn get_edges(&self) -> &[Edge];
+    fn get_faces(&self) -> &[Face];
 
     fn dart_vertex(&self, vertex: Vertex) -> Dart;
     fn dart_face(&self, face: Face) -> Dart;
