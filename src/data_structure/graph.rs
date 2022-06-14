@@ -1,5 +1,6 @@
 use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
 
+#[allow(unused)]
 pub trait Graph {
     fn new() -> Self;
 
