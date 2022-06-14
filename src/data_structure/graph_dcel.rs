@@ -15,6 +15,8 @@ pub trait GraphDCEL {
 
     fn dart_vertex(&self, vertex: Vertex) -> Dart;
     fn dart_face(&self, face: Face) -> Dart;
+
+    fn source(&self, dart: Dart) -> Dart;
     fn twin(&self, dart: Dart) -> Dart;
     fn target(&self, dart: Dart) -> Vertex;
     fn face(&self, dart: Dart) -> Face;
@@ -24,6 +26,10 @@ pub trait GraphDCEL {
 
 pub trait Graph {
     fn new() -> Self;
+
+    fn get_vertices(&self) -> &[Vertex];
+    fn get_edges(&self) -> &[Edge];
+
     fn contains_vertex(&self, v: Vertex) -> bool;
     fn contains_edge(&self, e: Edge) -> bool;
     fn is_adjacent(&self, v: Vertex, u: Vertex) -> bool;
