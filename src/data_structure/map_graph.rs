@@ -1,10 +1,10 @@
-use std::collections::HashMap;
 use crate::data_structure::graph_dcel::{Graph, GraphDCEL};
 use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
+use std::collections::HashMap;
 
 #[allow(dead_code)]
 struct MapGraph {
-    vertices: HashMap<Vertex, Vec<Vertex>>
+    vertices: HashMap<Vertex, Vec<Vertex>>,
 }
 
 impl Graph for MapGraph {
