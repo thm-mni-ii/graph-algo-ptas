@@ -1,19 +1,20 @@
 pub type Vertex = u32;
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct Dart {
     from: Vertex,
     to: Vertex,
 }
 
 #[allow(dead_code)]
+
 impl Dart {
     pub fn new(from: Vertex, to: Vertex) -> Dart {
         Dart { from, to }
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct Edge {
     d1: Dart,
     d2: Dart,
@@ -27,6 +28,18 @@ impl Edge {
         } else {
             Some(Edge { d1, d2 })
         }
+    }
+
+    pub fn get_v1(&self) -> Vertex {
+        self.d1.from
+    }
+
+    pub fn get_v2(&self) -> Vertex {
+        self.d1.to
+    }
+
+    pub fn get_vertices(&self) -> (Vertex, Vertex) {
+        (self.get_v1(), self.get_v2())
     }
 }
 
