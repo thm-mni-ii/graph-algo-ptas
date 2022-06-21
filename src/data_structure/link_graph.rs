@@ -1,10 +1,10 @@
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 
-use super::graph_dcel::{GraphDCEL, Vertex, Dart, Face};
+use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 struct LinkVertexStruct {
-    dart: Option<LinkDart>
+    dart: Option<LinkDart>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -12,7 +12,7 @@ pub struct LinkVertex(Rc<RefCell<LinkVertexStruct>>);
 
 impl LinkVertex {
     pub fn new() -> LinkVertex {
-        return Default::default();
+        Default::default()
     }
 }
 
@@ -24,7 +24,7 @@ struct LinkDartStructure {
     twin: Option<LinkDart>,
     next: Option<LinkDart>,
     prev: Option<LinkDart>,
-    face: Option<LinkFace>
+    face: Option<LinkFace>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -34,7 +34,10 @@ impl Dart for LinkDart {}
 
 impl LinkDart {
     pub fn new(target: LinkVertex) -> LinkDart {
-        return LinkDart(Rc::new(RefCell::new(LinkDartStructure {target, ..Default::default()})));
+        LinkDart(Rc::new(RefCell::new(LinkDartStructure {
+            target,
+            ..Default::default()
+        })))
     }
 }
 
@@ -50,7 +53,7 @@ impl Face for LinkFace {}
 
 impl LinkFace {
     pub fn new(dart: LinkDart) -> LinkFace {
-        return LinkFace(Rc::new(RefCell::new(LinkFaceStructure {dart})));
+        LinkFace(Rc::new(RefCell::new(LinkFaceStructure { dart })))
     }
 }
 
@@ -88,9 +91,9 @@ impl GraphDCEL<LinkVertex, LinkDart, LinkFace> for LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structure::{link_graph::LinkGraph, graph_dcel::GraphDCEL};
+    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
-    use super::{LinkVertex, LinkDart, LinkFace};
+    use super::{LinkDart, LinkFace, LinkVertex};
 
     fn example_graph() -> LinkVertex {
         let lv1 = LinkVertex::new();
@@ -131,12 +134,12 @@ mod tests {
         lt1.0.borrow_mut().face = Some(lof.clone());
         lt2.0.borrow_mut().face = Some(lof.clone());
         lt3.0.borrow_mut().face = Some(lof.clone());
-        return lv1
+        return lv1;
     }
 
     #[test]
     fn test() {
-        let graph = LinkGraph{};
+        let graph = LinkGraph {};
         let vertex = example_graph();
         let dart = graph.dart_vertex(vertex.clone());
         let face = graph.face(dart.clone());
