@@ -4,9 +4,9 @@ use crate::data_structure::{
     graph_types::{Face, Vertex},
 };
 
-fn span(g: &impl GraphDCEL, v: Vertex) -> Vec<(Vertex, Vertex)> {
+fn span(g: &impl GraphDCEL, v: Vertex) -> HashSet<(Vertex, Vertex)> {
     let mut queue = VecDeque::new();
-    let mut result = vec![];
+    let mut result = HashSet::new();
     let mut visited = HashSet::new();
     queue.push_back(v);
 
@@ -15,11 +15,11 @@ fn span(g: &impl GraphDCEL, v: Vertex) -> Vec<(Vertex, Vertex)> {
         /*if visited.contains(&v) {
             continue;
         }*/
-        visited.insert(&v);
+        visited.insert(v);
         for n in neighbors(g, v) {
             if !visited.contains(&n) {
                 queue.push_back(n);
-                result.push((v, n));
+                result.insert((v, n));
             }
         }
     }
@@ -38,7 +38,7 @@ fn neighbors(g: &impl GraphDCEL, v: Vertex) -> Vec<Vertex> {
         if current_dart == first {
             break;
         }
-        current_neighbor = g.target(next_dart);
+        current_neighbor = g.target(g.next(current_dart));
     }
     result
 }
