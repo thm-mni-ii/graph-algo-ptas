@@ -57,7 +57,11 @@ impl LinkFace {
     }
 }
 
-pub struct LinkGraph {}
+pub struct LinkGraph {
+    vertexes: Vec<LinkVertex>,
+    darts: Vec<LinkDart>,
+    faces: Vec<LinkFace>,
+}
 
 impl GraphDCEL<LinkVertex, LinkDart, LinkFace> for LinkGraph {
     fn dart_vertex(&self, vertex: LinkVertex) -> LinkDart {
@@ -89,58 +93,125 @@ impl GraphDCEL<LinkVertex, LinkDart, LinkFace> for LinkGraph {
     }
 }
 
+impl LinkGraph {
+    pub fn new() -> LinkGraph {
+        return LinkGraph {
+            vertexes: Vec::new(),
+            darts: Vec::new(),
+            faces: Vec::new(),
+        };
+    }
+    pub fn new_vertex(&mut self) -> LinkVertex {
+        let lv = LinkVertex::new();
+        self.vertexes.push(lv.clone());
+        return lv;
+    }
+    pub fn new_dart(
+        &mut self,
+        from: LinkVertex,
+        to: LinkVertex,
+        prev: Option<LinkDart>,
+        next: Option<LinkDart>,
+        twin: Option<LinkDart>,
+        face: Option<LinkFace>,
+    ) -> LinkDart {
+        let ld = LinkDart::new(to);
+        match prev {
+            Some(prev_dart) => {
+                prev_dart.0.borrow_mut().next = Some(ld.clone());
+                ld.0.borrow_mut().prev = Some(prev_dart);
+            }
+            None => {}
+        };
+        match next {
+            Some(next_dart) => {
+                next_dart.0.borrow_mut().prev = Some(ld.clone());
+                ld.0.borrow_mut().next = Some(next_dart);
+            }
+            None => {}
+        };
+        match twin {
+            Some(twin_dart) => {
+                ld.0.borrow_mut().twin = Some(twin_dart);
+            }
+            None => {}
+        };
+        match face {
+            Some(link_face) => {
+                ld.0.borrow_mut().face = Some(link_face);
+            }
+            None => {}
+        }
+        self.darts.push(ld.clone());
+        from.0.borrow_mut().dart = Some(ld.clone());
+        return ld;
+    }
+    pub fn new_face(&mut self, dart: LinkDart) -> LinkFace {
+        let lv = LinkFace::new(dart.clone());
+        dart.0.borrow_mut().face = Some(lv.clone());
+        return lv;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
-    use super::{LinkDart, LinkFace, LinkVertex};
-
-    fn example_graph() -> LinkVertex {
-        let lv1 = LinkVertex::new();
-        let lv2 = LinkVertex::new();
-        let lv3 = LinkVertex::new();
-        let ld1 = LinkDart::new(lv1.clone());
-        let ld2 = LinkDart::new(lv2.clone());
-        let ld3 = LinkDart::new(lv3.clone());
-        lv1.0.borrow_mut().dart = Some(ld2.clone());
-        lv2.0.borrow_mut().dart = Some(ld3.clone());
-        lv3.0.borrow_mut().dart = Some(ld1.clone());
-        ld1.0.borrow_mut().next = Some(ld2.clone());
-        ld2.0.borrow_mut().next = Some(ld3.clone());
-        ld3.0.borrow_mut().next = Some(ld1.clone());
-        ld1.0.borrow_mut().prev = Some(ld3.clone());
-        ld2.0.borrow_mut().prev = Some(ld1.clone());
-        ld3.0.borrow_mut().prev = Some(ld2.clone());
-        let lt1 = LinkDart::new(lv2.clone());
-        let lt2 = LinkDart::new(lv3.clone());
-        let lt3 = LinkDart::new(lv1.clone());
-        lt1.0.borrow_mut().next = Some(lt2.clone());
-        lt2.0.borrow_mut().next = Some(lt3.clone());
-        lt3.0.borrow_mut().next = Some(lt1.clone());
-        lt1.0.borrow_mut().prev = Some(lt3.clone());
-        lt2.0.borrow_mut().prev = Some(lt1.clone());
-        lt3.0.borrow_mut().prev = Some(lt2.clone());
-        ld1.0.borrow_mut().twin = Some(lt1.clone());
-        ld2.0.borrow_mut().twin = Some(lt2.clone());
-        ld3.0.borrow_mut().twin = Some(lt3.clone());
-        lt1.0.borrow_mut().twin = Some(ld1.clone());
-        lt2.0.borrow_mut().twin = Some(ld2.clone());
-        lt3.0.borrow_mut().twin = Some(ld3.clone());
-        let lf = LinkFace::new(ld1.clone());
-        ld1.0.borrow_mut().face = Some(lf.clone());
-        ld2.0.borrow_mut().face = Some(lf.clone());
-        ld3.0.borrow_mut().face = Some(lf.clone());
-        let lof = LinkFace::new(ld1.clone());
-        lt1.0.borrow_mut().face = Some(lof.clone());
-        lt2.0.borrow_mut().face = Some(lof.clone());
-        lt3.0.borrow_mut().face = Some(lof.clone());
-        return lv1;
+    fn example_graph() -> LinkGraph {
+        let mut lg = LinkGraph::new();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+        let lv3 = lg.new_vertex();
+        let ld1 = lg.new_dart(lv3.clone(), lv1.clone(), None, None, None, None);
+        let lf = lg.new_face(ld1.clone());
+        let ld2 = lg.new_dart(
+            lv1.clone(),
+            lv2.clone(),
+            Some(ld1.clone()),
+            None,
+            None,
+            Some(lf.clone()),
+        );
+        let ld3 = lg.new_dart(
+            lv2.clone(),
+            lv3.clone(),
+            Some(ld2.clone()),
+            Some(ld1.clone()),
+            None,
+            Some(lf.clone()),
+        );
+        let lt1 = lg.new_dart(
+            lv3.clone(),
+            lv2.clone(),
+            None,
+            None,
+            Some(ld1.clone()),
+            None,
+        );
+        let lof = lg.new_face(ld1.clone());
+        let lt2 = lg.new_dart(
+            lv1.clone(),
+            lv3.clone(),
+            Some(lt1.clone()),
+            None,
+            Some(ld2.clone()),
+            Some(lof.clone()),
+        );
+        let _lt3 = lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2.clone()),
+            Some(lt1.clone()),
+            Some(ld3.clone()),
+            Some(lof.clone()),
+        );
+        return lg;
     }
 
     #[test]
     fn test() {
-        let graph = LinkGraph {};
-        let vertex = example_graph();
+        let graph = example_graph();
+        let vertex = graph.vertexes.first().unwrap().clone();
         let dart = graph.dart_vertex(vertex.clone());
         let face = graph.face(dart.clone());
         graph.dart_face(face.clone());
