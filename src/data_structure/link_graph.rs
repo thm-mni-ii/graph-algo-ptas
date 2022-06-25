@@ -95,16 +95,16 @@ impl GraphDCEL<LinkVertex, LinkDart, LinkFace> for LinkGraph {
 
 impl LinkGraph {
     pub fn new() -> LinkGraph {
-        return LinkGraph {
+        LinkGraph {
             vertexes: Vec::new(),
             darts: Vec::new(),
             faces: Vec::new(),
-        };
+        }
     }
     pub fn new_vertex(&mut self) -> LinkVertex {
         let lv = LinkVertex::new();
         self.vertexes.push(lv.clone());
-        return lv;
+        lv
     }
     pub fn new_dart(
         &mut self,
@@ -144,12 +144,12 @@ impl LinkGraph {
         }
         self.darts.push(ld.clone());
         from.0.borrow_mut().dart = Some(ld.clone());
-        return ld;
+        ld
     }
     pub fn new_face(&mut self, dart: LinkDart) -> LinkFace {
         let lv = LinkFace::new(dart.clone());
         dart.0.borrow_mut().face = Some(lv.clone());
-        return lv;
+        lv
     }
 }
 
