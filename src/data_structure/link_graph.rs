@@ -4,6 +4,7 @@ use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 struct LinkVertexStruct {
+    id: usize,
     dart: Option<LinkDart>,
 }
 
@@ -11,8 +12,8 @@ struct LinkVertexStruct {
 pub struct LinkVertex(Rc<RefCell<LinkVertexStruct>>);
 
 impl LinkVertex {
-    pub fn new() -> LinkVertex {
-        Default::default()
+    pub fn new(id: usize) -> LinkVertex {
+        LinkVertex(Rc::new(RefCell::new(LinkVertexStruct { id, dart: None })))
     }
 }
 
@@ -58,6 +59,7 @@ impl LinkFace {
 }
 
 pub struct LinkGraph {
+    id_counter: usize,
     vertexes: Vec<LinkVertex>,
     darts: Vec<LinkDart>,
     faces: Vec<LinkFace>,
@@ -96,13 +98,16 @@ impl GraphDCEL<LinkVertex, LinkDart, LinkFace> for LinkGraph {
 impl LinkGraph {
     pub fn new() -> LinkGraph {
         LinkGraph {
+            id_counter: 0,
             vertexes: Vec::new(),
             darts: Vec::new(),
             faces: Vec::new(),
         }
     }
     pub fn new_vertex(&mut self) -> LinkVertex {
-        let lv = LinkVertex::new();
+        let id = self.id_counter;
+        self.id_counter += 1;
+        let lv = LinkVertex::new(id);
         self.vertexes.push(lv.clone());
         lv
     }
@@ -150,6 +155,21 @@ impl LinkGraph {
         let lv = LinkFace::new(dart.clone());
         dart.0.borrow_mut().face = Some(lv.clone());
         lv
+    }
+}
+
+impl Drop for LinkGraph {
+    fn drop(&mut self) {
+        for vertex in &self.vertexes {
+            vertex.0.borrow_mut().dart.take();
+        }
+        for dart in &self.darts {
+            let mut dart_ref = dart.0.borrow_mut();
+            dart_ref.twin.take();
+            dart_ref.next.take();
+            dart_ref.prev.take();
+            dart_ref.face.take();
+        }
     }
 }
 
@@ -205,7 +225,7 @@ mod tests {
             Some(ld3.clone()),
             Some(lof.clone()),
         );
-        return lg;
+        lg
     }
 
     #[test]
