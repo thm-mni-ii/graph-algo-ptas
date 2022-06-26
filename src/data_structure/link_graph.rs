@@ -156,7 +156,7 @@ impl LinkGraph {
     fn next_id(&mut self) -> usize {
         let id = self.id_counter;
         self.id_counter += 1;
-        return id;
+        id
     }
     pub fn new_vertex(&mut self) -> LinkVertex {
         let lv = LinkVertex::new(self.next_id());
