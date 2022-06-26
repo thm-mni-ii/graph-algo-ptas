@@ -1,26 +1,65 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+macro_rules! impl_non_recursive_eq {
+    ($struct:ident) => {
+        impl PartialEq for $struct {
+            fn eq(&self, other: &Self) -> bool {
+                self.id == other.id
+            }
+        }
+        impl Eq for $struct {}
+    };
+}
+
+macro_rules! impl_non_recursive_debug {
+    ($struct:ident, $name:expr) => {
+        impl Debug for $struct {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.debug_struct($name).field("id", &self.id).finish()
+            }
+        }
+    };
+}
+
+macro_rules! impl_inner_debug {
+    ($struct:ident) => {
+        impl Debug for $struct {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                self.0.borrow().fmt(f)
+            }
+        }
+    };
+}
+
+#[derive(Default)]
 struct LinkVertexStruct {
     id: usize,
     dart: Option<LinkDart>,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+impl_non_recursive_eq!(LinkVertexStruct);
+impl_non_recursive_debug!(LinkVertexStruct, "LinkVertex");
+
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct LinkVertex(Rc<RefCell<LinkVertexStruct>>);
 
 impl LinkVertex {
     pub fn new(id: usize) -> LinkVertex {
-        LinkVertex(Rc::new(RefCell::new(LinkVertexStruct { id, dart: None })))
+        LinkVertex(Rc::new(RefCell::new(LinkVertexStruct {
+            id,
+            ..Default::default()
+        })))
     }
 }
 
+impl_inner_debug!(LinkVertex);
 impl Vertex for LinkVertex {}
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Default)]
 struct LinkDartStructure {
+    id: usize,
     target: LinkVertex,
     twin: Option<LinkDart>,
     next: Option<LinkDart>,
@@ -28,33 +67,43 @@ struct LinkDartStructure {
     face: Option<LinkFace>,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+impl_non_recursive_eq!(LinkDartStructure);
+impl_non_recursive_debug!(LinkDartStructure, "LinkDart");
+
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
+impl_inner_debug!(LinkDart);
 impl Dart for LinkDart {}
 
 impl LinkDart {
-    pub fn new(target: LinkVertex) -> LinkDart {
+    pub fn new(id: usize, target: LinkVertex) -> LinkDart {
         LinkDart(Rc::new(RefCell::new(LinkDartStructure {
+            id,
             target,
             ..Default::default()
         })))
     }
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Default)]
 struct LinkFaceStructure {
+    id: usize,
     dart: LinkDart,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+impl_non_recursive_eq!(LinkFaceStructure);
+impl_non_recursive_debug!(LinkFaceStructure, "LinkFace");
+
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct LinkFace(Rc<RefCell<LinkFaceStructure>>);
 
+impl_inner_debug!(LinkFace);
 impl Face for LinkFace {}
 
 impl LinkFace {
-    pub fn new(dart: LinkDart) -> LinkFace {
-        LinkFace(Rc::new(RefCell::new(LinkFaceStructure { dart })))
+    pub fn new(id: usize, dart: LinkDart) -> LinkFace {
+        LinkFace(Rc::new(RefCell::new(LinkFaceStructure { id, dart })))
     }
 }
 
@@ -104,10 +153,13 @@ impl LinkGraph {
             faces: Vec::new(),
         }
     }
-    pub fn new_vertex(&mut self) -> LinkVertex {
+    fn next_id(&mut self) -> usize {
         let id = self.id_counter;
         self.id_counter += 1;
-        let lv = LinkVertex::new(id);
+        return id;
+    }
+    pub fn new_vertex(&mut self) -> LinkVertex {
+        let lv = LinkVertex::new(self.next_id());
         self.vertexes.push(lv.clone());
         lv
     }
@@ -120,7 +172,7 @@ impl LinkGraph {
         twin: Option<LinkDart>,
         face: Option<LinkFace>,
     ) -> LinkDart {
-        let ld = LinkDart::new(to);
+        let ld = LinkDart::new(self.next_id(), to);
         match prev {
             Some(prev_dart) => {
                 prev_dart.0.borrow_mut().next = Some(ld.clone());
@@ -152,7 +204,7 @@ impl LinkGraph {
         ld
     }
     pub fn new_face(&mut self, dart: LinkDart) -> LinkFace {
-        let lv = LinkFace::new(dart.clone());
+        let lv = LinkFace::new(self.next_id(), dart.clone());
         dart.0.borrow_mut().face = Some(lv.clone());
         lv
     }
@@ -182,44 +234,44 @@ mod tests {
         let lv1 = lg.new_vertex();
         let lv2 = lg.new_vertex();
         let lv3 = lg.new_vertex();
-        let ld1 = lg.new_dart(lv3.clone(), lv1.clone(), None, None, None, None);
+        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
         let lf = lg.new_face(ld1.clone());
         let ld2 = lg.new_dart(
-            lv1.clone(),
             lv2.clone(),
+            lv3.clone(),
             Some(ld1.clone()),
             None,
             None,
             Some(lf.clone()),
         );
         let ld3 = lg.new_dart(
-            lv2.clone(),
             lv3.clone(),
+            lv1.clone(),
             Some(ld2.clone()),
             Some(ld1.clone()),
             None,
             Some(lf.clone()),
         );
         let lt1 = lg.new_dart(
-            lv3.clone(),
             lv2.clone(),
+            lv1.clone(),
             None,
             None,
             Some(ld1.clone()),
             None,
         );
-        let lof = lg.new_face(ld1.clone());
+        let lof = lg.new_face(lt1.clone());
         let lt2 = lg.new_dart(
-            lv1.clone(),
             lv3.clone(),
+            lv2.clone(),
             Some(lt1.clone()),
             None,
             Some(ld2.clone()),
             Some(lof.clone()),
         );
         let _lt3 = lg.new_dart(
-            lv2.clone(),
             lv1.clone(),
+            lv3.clone(),
             Some(lt2.clone()),
             Some(lt1.clone()),
             Some(ld3.clone()),
@@ -233,11 +285,19 @@ mod tests {
         let graph = example_graph();
         let vertex = graph.vertexes.first().unwrap().clone();
         let dart = graph.dart_vertex(vertex.clone());
+        let dart_2 = graph.next(dart.clone());
+        let dart_3 = graph.next(dart_2.clone());
+        let dart_4 = graph.next(dart_3.clone());
+        assert_eq!(dart, dart_4);
+        let twin_dart = graph.twin(dart.clone());
+        let twin_2_dart = graph.next(twin_dart.clone());
+        let twin_dart_3 = graph.twin(dart_3.clone());
+        assert_ne!(twin_2_dart, twin_dart_3);
         let face = graph.face(dart.clone());
         graph.dart_face(face.clone());
-        graph.next(dart.clone());
-        graph.prev(dart.clone());
-        graph.twin(dart.clone());
-        graph.target(dart.clone());
+        let prev_dart = graph.prev(dart.clone());
+        assert_eq!(prev_dart, dart_3);
+        let target_vertex = graph.target(twin_dart.clone());
+        assert_eq!(target_vertex, vertex);
     }
 }
