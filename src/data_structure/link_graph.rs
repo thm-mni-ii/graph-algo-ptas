@@ -155,31 +155,31 @@ impl
         LinkGraphIter::new(self.faces.clone())
     }
 
-    fn dart_vertex(&self, vertex: LinkVertex) -> LinkDart {
+    fn dart_vertex(&self, vertex: &LinkVertex) -> LinkDart {
         vertex.0.borrow().dart.clone().unwrap()
     }
 
-    fn dart_face(&self, face: LinkFace) -> LinkDart {
+    fn dart_face(&self, face: &LinkFace) -> LinkDart {
         face.0.borrow().dart.clone()
     }
 
-    fn twin(&self, dart: LinkDart) -> LinkDart {
+    fn twin(&self, dart: &LinkDart) -> LinkDart {
         dart.0.borrow().twin.clone().unwrap()
     }
 
-    fn target(&self, dart: LinkDart) -> LinkVertex {
+    fn target(&self, dart: &LinkDart) -> LinkVertex {
         dart.0.borrow().target.clone()
     }
 
-    fn face(&self, dart: LinkDart) -> LinkFace {
+    fn face(&self, dart: &LinkDart) -> LinkFace {
         dart.0.borrow().face.clone().unwrap()
     }
 
-    fn next(&self, current: LinkDart) -> LinkDart {
+    fn next(&self, current: &LinkDart) -> LinkDart {
         current.0.borrow().next.clone().unwrap()
     }
 
-    fn prev(&self, current: LinkDart) -> LinkDart {
+    fn prev(&self, current: &LinkDart) -> LinkDart {
         current.0.borrow().prev.clone().unwrap()
     }
 }
@@ -330,20 +330,20 @@ mod tests {
     fn test() {
         let graph = example_graph();
         let vertex = graph.vertexes.first().unwrap().clone();
-        let dart = graph.dart_vertex(vertex.clone());
-        let dart_2 = graph.next(dart.clone());
-        let dart_3 = graph.next(dart_2.clone());
-        let dart_4 = graph.next(dart_3.clone());
+        let dart = graph.dart_vertex(&vertex);
+        let dart_2 = graph.next(&dart);
+        let dart_3 = graph.next(&dart_2);
+        let dart_4 = graph.next(&dart_3);
         assert_eq!(dart, dart_4);
-        let twin_dart = graph.twin(dart.clone());
-        let twin_2_dart = graph.next(twin_dart.clone());
-        let twin_dart_3 = graph.twin(dart_3.clone());
+        let twin_dart = graph.twin(&dart);
+        let twin_2_dart = graph.next(&twin_dart);
+        let twin_dart_3 = graph.twin(&dart_3);
         assert_ne!(twin_2_dart, twin_dart_3);
-        let face = graph.face(dart.clone());
-        graph.dart_face(face.clone());
-        let prev_dart = graph.prev(dart.clone());
+        let face = graph.face(&dart);
+        graph.dart_face(&face);
+        let prev_dart = graph.prev(&dart);
         assert_eq!(prev_dart, dart_3);
-        let target_vertex = graph.target(twin_dart.clone());
+        let target_vertex = graph.target(&twin_dart);
         assert_eq!(target_vertex, vertex);
         format!("{:?}", vertex);
         format!("{:?}", dart);
