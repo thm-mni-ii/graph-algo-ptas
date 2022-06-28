@@ -55,7 +55,7 @@ pub fn generate_circle(n: usize) -> LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkDart};
+    use crate::data_structure::{graph_dcel::GraphDCEL};
 
     use super::generate_circle;
 
@@ -65,7 +65,6 @@ mod tests {
         let sv = cg.get_vertexes().next().unwrap();
         let sd = cg.dart_vertex(&sv);
         let mut cd = sd.clone();
-        println!("{:?}", cg.get_darts().collect::<Vec<LinkDart>>());
         for _i in 0..10 {
             cd = cg.next(&cd);
         }
@@ -73,7 +72,6 @@ mod tests {
         assert_eq!(sv, tv);
         cd = sd.clone();
         for _i in 0..12 {
-            println!("{:?}", cd);
             cd = cg.prev(&cd);
         }
         let tv = cg.target(&cd);
