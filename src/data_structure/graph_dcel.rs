@@ -1,35 +1,15 @@
-use crate::data_structure::graph_types::{Dart, Edge, Face, Vertex};
+pub trait Dart {}
 
-// Subgraphen erstellen --> Label für Vertices bzw. Übersetzungstabelle
-// Subgraphen: Eingabe ist Menge von Knoten. Ausgabe sind
-// Menge von Knoten, Labels und verbindende Kanten
+pub trait Face {}
 
-// NetworkX Planarity
+pub trait Vertex {}
 
-// Kanten markieren.
-
-pub trait GraphDCEL {
-    fn get_vertices(&self) -> &[Vertex];
-    fn get_edges(&self) -> &[Edge];
-    fn get_faces(&self) -> &[Face];
-
-    fn dart_vertex(&self, vertex: Vertex) -> Dart;
-    fn dart_face(&self, face: Face) -> Dart;
-    fn twin(&self, dart: Dart) -> Dart;
-    fn target(&self, dart: Dart) -> Vertex;
-    fn face(&self, dart: Dart) -> Face;
-    fn next(&self, current: Dart) -> Dart;
-    fn prev(&self, current: Dart) -> Dart;
-}
-
-pub trait Graph {
-    fn new() -> Self;
-    fn contains_vertex(&self, v: Vertex) -> bool;
-    fn contains_edge(&self, e: Edge) -> bool;
-    fn is_adjacent(&self, v: Vertex, u: Vertex) -> bool;
-    fn add_vertex(&mut self, v: Vertex);
-    fn rem_vertex(&mut self, v: Vertex);
-    fn add_edge(&mut self, e: Edge);
-    fn rem_edge(&mut self, e: Edge);
-    fn get_neighbours(&self, v: Vertex) -> Vec<Vertex>;
+pub trait GraphDCEL<V: Vertex, D: Dart, F: Face> {
+    fn dart_vertex(&self, vertex: V) -> D;
+    fn dart_face(&self, face: F) -> D;
+    fn twin(&self, dart: D) -> D;
+    fn target(&self, dart: D) -> V;
+    fn face(&self, dart: D) -> F;
+    fn next(&self, current: D) -> D;
+    fn prev(&self, current: D) -> D;
 }
