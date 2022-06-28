@@ -119,26 +119,32 @@ pub struct LinkGraphIter<T: Clone> {
     inner: Vec<T>,
 }
 
-impl <T: Clone> LinkGraphIter<T> {
+impl<T: Clone> LinkGraphIter<T> {
     fn new(inner: Vec<T>) -> LinkGraphIter<T> {
-        LinkGraphIter {
-            counter: 0,
-            inner,
-        }
+        LinkGraphIter { counter: 0, inner }
     }
 }
 
-impl <T: Clone> Iterator for LinkGraphIter<T> {
+impl<T: Clone> Iterator for LinkGraphIter<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
         let i = self.counter;
         self.counter += 1;
-        self.inner.get(i).map(|el| el.clone())
+        self.inner.get(i).cloned()
     }
 }
 
-impl GraphDCEL<LinkVertex, LinkDart, LinkFace, LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>> for LinkGraph {
+impl
+    GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    > for LinkGraph
+{
     fn get_vertexes(&self) -> LinkGraphIter<LinkVertex> {
         LinkGraphIter::new(self.vertexes.clone())
     }
@@ -262,9 +268,12 @@ impl Drop for LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::{LinkGraph, LinkDart}};
+    use crate::data_structure::{
+        graph_dcel::GraphDCEL,
+        link_graph::{LinkDart, LinkGraph},
+    };
 
-    use super::{LinkVertex, LinkFace};
+    use super::{LinkFace, LinkVertex};
 
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
