@@ -114,7 +114,47 @@ pub struct LinkGraph {
     faces: Vec<LinkFace>,
 }
 
-impl GraphDCEL<LinkVertex, LinkDart, LinkFace> for LinkGraph {
+pub struct LinkGraphIter<T: Clone> {
+    counter: usize,
+    inner: Vec<T>,
+}
+
+impl<T: Clone> LinkGraphIter<T> {
+    fn new(inner: Vec<T>) -> LinkGraphIter<T> {
+        LinkGraphIter { counter: 0, inner }
+    }
+}
+
+impl<T: Clone> Iterator for LinkGraphIter<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let i = self.counter;
+        self.counter += 1;
+        self.inner.get(i).cloned()
+    }
+}
+
+impl
+    GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    > for LinkGraph
+{
+    fn get_vertexes(&self) -> LinkGraphIter<LinkVertex> {
+        LinkGraphIter::new(self.vertexes.clone())
+    }
+    fn get_darts(&self) -> LinkGraphIter<LinkDart> {
+        LinkGraphIter::new(self.darts.clone())
+    }
+    fn get_faces(&self) -> LinkGraphIter<LinkFace> {
+        LinkGraphIter::new(self.faces.clone())
+    }
+
     fn dart_vertex(&self, vertex: LinkVertex) -> LinkDart {
         vertex.0.borrow().dart.clone().unwrap()
     }
@@ -205,6 +245,7 @@ impl LinkGraph {
     }
     pub fn new_face(&mut self, dart: LinkDart) -> LinkFace {
         let lv = LinkFace::new(self.next_id(), dart.clone());
+        self.faces.push(lv.clone());
         dart.0.borrow_mut().face = Some(lv.clone());
         lv
     }
@@ -227,7 +268,12 @@ impl Drop for LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
+    use crate::data_structure::{
+        graph_dcel::GraphDCEL,
+        link_graph::{LinkDart, LinkGraph},
+    };
+
+    use super::{LinkFace, LinkVertex};
 
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
@@ -299,5 +345,19 @@ mod tests {
         assert_eq!(prev_dart, dart_3);
         let target_vertex = graph.target(twin_dart.clone());
         assert_eq!(target_vertex, vertex);
+        format!("{:?}", vertex);
+        format!("{:?}", dart);
+        format!("{:?}", face);
+    }
+
+    #[test]
+    fn iter_test() {
+        let graph = example_graph();
+        let vertexes: Vec<LinkVertex> = graph.get_vertexes().collect();
+        let darts: Vec<LinkDart> = graph.get_darts().collect();
+        let faces: Vec<LinkFace> = graph.get_faces().collect();
+        assert_eq!(vertexes.len(), 3);
+        assert_eq!(darts.len(), 6);
+        assert_eq!(faces.len(), 2);
     }
 }
