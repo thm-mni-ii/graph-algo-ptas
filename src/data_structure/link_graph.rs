@@ -229,6 +229,7 @@ impl LinkGraph {
         };
         match twin {
             Some(twin_dart) => {
+                twin_dart.0.borrow_mut().twin = Some(ld.clone());
                 ld.0.borrow_mut().twin = Some(twin_dart);
             }
             None => {}
@@ -336,6 +337,8 @@ mod tests {
         let dart_4 = graph.next(&dart_3);
         assert_eq!(dart, dart_4);
         let twin_dart = graph.twin(&dart);
+        let twin_back_dart = graph.twin(&twin_dart);
+        assert_eq!(twin_back_dart, dart);
         let twin_2_dart = graph.next(&twin_dart);
         let twin_dart_3 = graph.twin(&dart_3);
         assert_ne!(twin_2_dart, twin_dart_3);
