@@ -68,7 +68,25 @@ struct LinkDartStructure {
 }
 
 impl_non_recursive_eq!(LinkDartStructure);
-impl_non_recursive_debug!(LinkDartStructure, "LinkDart");
+impl Debug for LinkDartStructure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LinkDart")
+            .field("id", &self.id)
+            .field(
+                "next_id",
+                &self.next.as_ref().map(|next| next.0.borrow().id),
+            )
+            .field(
+                "prev_id",
+                &self.prev.as_ref().map(|prev| prev.0.borrow().id),
+            )
+            .field(
+                "twin_id",
+                &self.twin.as_ref().map(|twin| twin.0.borrow().id),
+            )
+            .finish()
+    }
+}
 
 #[derive(Clone, Default, Eq, PartialEq)]
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
