@@ -55,7 +55,7 @@ pub fn generate_circle(n: usize) -> LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structure::{graph_dcel::GraphDCEL};
+    use crate::data_structure::graph_dcel::GraphDCEL;
 
     use super::generate_circle;
 
