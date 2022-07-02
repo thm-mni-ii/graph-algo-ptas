@@ -1,4 +1,9 @@
-use std::{cell::RefCell, fmt::Debug, rc::Rc};
+use std::{
+    cell::RefCell,
+    fmt::Debug,
+    hash::{Hash, Hasher},
+    rc::Rc,
+};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
@@ -51,6 +56,16 @@ impl LinkVertex {
             id,
             ..Default::default()
         })))
+    }
+
+    pub fn get_id(self: &Self) -> usize {
+        self.0.borrow().id
+    }
+}
+
+impl Hash for LinkVertex {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.borrow().id.hash(state);
     }
 }
 
