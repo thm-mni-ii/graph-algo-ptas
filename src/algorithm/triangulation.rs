@@ -1,6 +1,5 @@
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
-    graph_types::{Dart, Face, Vertex},
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
 
@@ -62,66 +61,8 @@ fn triangulate_face(
 #[cfg(test)]
 mod tests {
     use crate::algorithm::triangulation::triangulate;
-    use crate::data_structure::{
-        graph_dcel::GraphDCEL,
-        graph_types::{Face, Vertex},
-        link_graph::LinkGraph,
-    };
-
-    #[test]
-    fn triangle() {
-        let mut lg = LinkGraph::new();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
-        let lv3 = lg.new_vertex();
-        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
-        let lf = lg.new_face(ld1.clone());
-        let ld2 = lg.new_dart(
-            lv2.clone(),
-            lv3.clone(),
-            Some(ld1.clone()),
-            None,
-            None,
-            Some(lf.clone()),
-        );
-        let ld3 = lg.new_dart(
-            lv3.clone(),
-            lv1.clone(),
-            Some(ld2.clone()),
-            Some(ld1.clone()),
-            None,
-            Some(lf.clone()),
-        );
-        let lt1 = lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
-            None,
-            None,
-            Some(ld1.clone()),
-            None,
-        );
-        let lof = lg.new_face(lt1.clone());
-        let lt2 = lg.new_dart(
-            lv3.clone(),
-            lv2.clone(),
-            Some(lt1.clone()),
-            None,
-            Some(ld2.clone()),
-            Some(lof.clone()),
-        );
-        let _lt3 = lg.new_dart(
-            lv1.clone(),
-            lv3.clone(),
-            Some(lt2.clone()),
-            Some(lt1.clone()),
-            Some(ld3.clone()),
-            Some(lof.clone()),
-        );
-
-        let edges = triangulate(&lg);
-
-        assert_eq!(edges, vec![])
-    }
+    use crate::data_structure::link_graph::LinkGraph;
+    use crate::utils::circle::generate_circle;
 
     #[test]
     fn single_edge() {
@@ -145,74 +86,18 @@ mod tests {
     }
 
     #[test]
-    fn rectangle() {
-        let mut lg = LinkGraph::new();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
-        let lv3 = lg.new_vertex();
-        let lv4 = lg.new_vertex();
-        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
-        let lf = lg.new_face(ld1.clone());
-        let ld2 = lg.new_dart(
-            lv2.clone(),
-            lv3.clone(),
-            Some(ld1.clone()),
-            None,
-            None,
-            Some(lf.clone()),
-        );
-        let ld3 = lg.new_dart(
-            lv3.clone(),
-            lv4.clone(),
-            Some(ld2.clone()),
-            None,
-            None,
-            Some(lf.clone()),
-        );
-        let ld4 = lg.new_dart(
-            lv4.clone(),
-            lv1.clone(),
-            Some(ld3.clone()),
-            Some(ld1.clone()),
-            None,
-            Some(lf.clone()),
-        );
-        let lt1 = lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
-            None,
-            None,
-            Some(ld1.clone()),
-            None,
-        );
-        let lof = lg.new_face(lt1.clone());
-        let lt2 = lg.new_dart(
-            lv1.clone(),
-            lv4.clone(),
-            Some(lt1.clone()),
-            None,
-            Some(ld4.clone()),
-            Some(lof.clone()),
-        );
-        let lt3 = lg.new_dart(
-            lv4.clone(),
-            lv3.clone(),
-            Some(lt2.clone()),
-            None,
-            Some(ld3.clone()),
-            Some(lof.clone()),
-        );
-        let _lt4 = lg.new_dart(
-            lv3.clone(),
-            lv2.clone(),
-            Some(lt3.clone()),
-            Some(lt1.clone()),
-            Some(ld2.clone()),
-            Some(lof.clone()),
-        );
+    fn single_face() {
+        for x in 3..100 {
+            let graph = generate_circle(x);
 
-        let edges = triangulate(&lg);
-        println!("{:?}", edges);
-        assert_eq!(edges.len(), 2)
+            let edges = triangulate(&graph);
+
+            assert_eq!(edges.len(), (x - 3) * 2)
+        }
+    }
+
+    #[test]
+    fn two_face() {
+        //TODO
     }
 }
