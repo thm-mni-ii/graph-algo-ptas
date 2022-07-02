@@ -3,7 +3,7 @@ use crate::data_structure::{
     link_graph::{LinkGraph, LinkVertex},
 };
 
-pub fn generate_circle(n: usize) -> LinkGraph {
+pub fn generate_single_face(n: usize) -> LinkGraph {
     assert!(n >= 3);
 
     let mut lg = LinkGraph::new();
@@ -60,13 +60,13 @@ pub fn generate_circle(n: usize) -> LinkGraph {
 mod tests {
     use crate::data_structure::graph_dcel::GraphDCEL;
 
-    use super::generate_circle;
+    use super::generate_single_face;
 
     use crate::data_structure::link_graph::LinkDart;
 
     #[test]
     fn test() {
-        let cg = generate_circle(10);
+        let cg = generate_single_face(10);
         let sv = cg.get_vertexes().next().unwrap();
         let sd = cg.dart_vertex(&sv);
         let mut cd = sd.clone();
@@ -98,7 +98,7 @@ mod tests {
     #[test]
     fn darts() {
         for x in 3..100 {
-            let cg = generate_circle(x);
+            let cg = generate_single_face(x);
             assert_eq!(cg.get_darts().count(), x * 2);
         }
     }

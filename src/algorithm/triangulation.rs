@@ -62,7 +62,7 @@ fn triangulate_face(
 mod tests {
     use crate::algorithm::triangulation::triangulate;
     use crate::data_structure::link_graph::LinkGraph;
-    use crate::utils::circle::generate_circle;
+    use crate::utils::single_face::generate_single_face;
 
     #[test]
     fn single_edge() {
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn single_face() {
         for x in 3..100 {
-            let graph = generate_circle(x);
+            let graph = generate_single_face(x);
 
             let edges = triangulate(&graph);
 
