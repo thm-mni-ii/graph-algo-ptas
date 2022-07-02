@@ -4,6 +4,8 @@ use crate::data_structure::{
 };
 
 pub fn generate_circle(n: usize) -> LinkGraph {
+    assert!(n >= 3);
+
     let mut lg = LinkGraph::new();
     let nodes: Vec<LinkVertex> = (0..n).map(|_| lg.new_vertex()).collect();
 
@@ -12,13 +14,14 @@ pub fn generate_circle(n: usize) -> LinkGraph {
     let mut inner_face = None;
     let mut outter_face = None;
 
-    for i in 0..n + 1 {
+    for i in 0..n {
         let node = nodes.get(i % n).unwrap();
         let next = nodes.get((i + 1) % n).unwrap();
         let mut next_dart = None;
         let mut next_dart_twin = None;
-        if i == n {
+        if i == n - 1 {
             let mut dart_iter = lg.get_darts();
+
             next_dart = dart_iter.next();
             next_dart_twin = dart_iter.next();
         }
@@ -59,6 +62,8 @@ mod tests {
 
     use super::generate_circle;
 
+    use crate::data_structure::link_graph::LinkDart;
+
     #[test]
     fn test() {
         let cg = generate_circle(10);
@@ -88,5 +93,13 @@ mod tests {
         }
         let tv = cg.target(&cd);
         assert_eq!(sv, tv);
+    }
+
+    #[test]
+    fn darts() {
+        for x in 3..100 {
+            let cg = generate_circle(x);
+            assert_eq!(cg.get_darts().count(), x * 2);
+        }
     }
 }
