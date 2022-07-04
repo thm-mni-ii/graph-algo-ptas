@@ -1,7 +1,4 @@
-pub trait Dart {
-    fn get_source(&self) -> Vertex;
-    fn get_target(&self) -> Vertex;
-}
+pub trait Dart {}
 
 pub trait Face {}
 
@@ -23,7 +20,7 @@ pub trait GraphDCEL<
     fn dart_vertex(&self, vertex: &V) -> D;
     fn dart_face(&self, face: &F) -> D;
     fn twin(&self, dart: &D) -> D;
-    fn target(&self, dart: &D) -> V;
+    fn dart_target(&self, dart: &D) -> V;
     fn face(&self, dart: &D) -> F;
     fn next(&self, current: &D) -> D;
     fn prev(&self, current: &D) -> D;

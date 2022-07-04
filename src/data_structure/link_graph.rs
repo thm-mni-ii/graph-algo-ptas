@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
@@ -53,6 +52,10 @@ impl LinkVertex {
             ..Default::default()
         })))
     }
+
+    pub fn get_id(&self) -> usize {
+        return self.0.clone().borrow().id
+    }
 }
 
 impl_inner_debug!(LinkVertex);
@@ -93,15 +96,7 @@ impl Debug for LinkDartStructure {
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
 impl_inner_debug!(LinkDart);
-impl Dart for LinkDart {
-    fn get_source(&self) -> Dart impl {
-        todo!()
-    }
-
-    fn get_target(&self) -> LinkVertex {
-        todo!()
-    }
-}
+impl Dart for LinkDart {}
 
 impl LinkDart {
     pub fn new(id: usize, target: LinkVertex) -> LinkDart {
@@ -111,6 +106,8 @@ impl LinkDart {
             ..Default::default()
         })))
     }
+
+
 }
 
 #[derive(Default)]
@@ -194,7 +191,7 @@ impl
         dart.0.borrow().twin.clone().unwrap()
     }
 
-    fn target(&self, dart: &LinkDart) -> LinkVertex {
+    fn dart_target(&self, dart: &LinkDart) -> LinkVertex {
         dart.0.borrow().target.clone()
     }
 
@@ -276,14 +273,6 @@ impl LinkGraph {
         self.faces.push(lv.clone());
         dart.0.borrow_mut().face = Some(lv.clone());
         lv
-    }
-
-    pub fn get_vertices(&self) -> &[LinkVertex] {
-        return self.vertexes.borrow();
-    }
-
-    pub fn get_darts(&self) -> &[LinkDart] {
-        return self.darts.borrow();
     }
 }
 
@@ -381,7 +370,7 @@ mod tests {
         graph.dart_face(&face);
         let prev_dart = graph.prev(&dart);
         assert_eq!(prev_dart, dart_3);
-        let target_vertex = graph.target(&twin_dart);
+        let target_vertex = graph.dart_target(&twin_dart);
         assert_eq!(target_vertex, vertex);
         format!("{:?}", vertex);
         format!("{:?}", dart);
