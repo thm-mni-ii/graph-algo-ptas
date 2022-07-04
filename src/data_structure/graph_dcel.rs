@@ -1,4 +1,7 @@
-pub trait Dart {}
+pub trait Dart {
+    fn get_source(&self) -> Vertex;
+    fn get_target(&self) -> Vertex;
+}
 
 pub trait Face {}
 

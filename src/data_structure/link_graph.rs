@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
@@ -92,7 +93,15 @@ impl Debug for LinkDartStructure {
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
 impl_inner_debug!(LinkDart);
-impl Dart for LinkDart {}
+impl Dart for LinkDart {
+    fn get_source(&self) -> Dart impl {
+        todo!()
+    }
+
+    fn get_target(&self) -> LinkVertex {
+        todo!()
+    }
+}
 
 impl LinkDart {
     pub fn new(id: usize, target: LinkVertex) -> LinkDart {
@@ -267,6 +276,14 @@ impl LinkGraph {
         self.faces.push(lv.clone());
         dart.0.borrow_mut().face = Some(lv.clone());
         lv
+    }
+
+    pub fn get_vertices(&self) -> &[LinkVertex] {
+        return self.vertexes.borrow();
+    }
+
+    pub fn get_darts(&self) -> &[LinkDart] {
+        return self.darts.borrow();
     }
 }
 
