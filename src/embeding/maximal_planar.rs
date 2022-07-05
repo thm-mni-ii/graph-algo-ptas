@@ -141,28 +141,28 @@ impl MaximalPlanar {
             if graph.edges(*x).count() < 18
             /* TODO: check if x was small before reduction */
             {
-                // TODO: Move to function
-                let is_reducible = MaximalPlanar::is_reducible(graph, *x);
-
-                if is_reducible {
-                    reduciable.insert(*x);
-                } else {
-                    reduciable.remove(x);
-                }
+                MaximalPlanar::update_reducible(graph, reduciable, *x);
             }
 
             graph.neighbors(*x).for_each(|n| {
                 if graph.edges(n).into_iter().count() <= 5 {
-                    // TODO: Move to function
-                    let is_reducible = MaximalPlanar::is_reducible(graph, n);
-
-                    if is_reducible {
-                        reduciable.insert(n);
-                    } else {
-                        reduciable.remove(&n);
-                    }
+                    MaximalPlanar::update_reducible(graph, reduciable, n);
                 }
             })
         })
+    }
+
+    fn update_reducible(
+        graph: &Graph<VertexType, ()>,
+        reduciable: &mut HashSet<NodeIndex>,
+        node_idx: NodeIndex,
+    ) {
+        let is_reducible = MaximalPlanar::is_reducible(graph, node_idx);
+
+        if is_reducible {
+            reduciable.insert(node_idx);
+        } else {
+            reduciable.remove(&node_idx);
+        }
     }
 }
