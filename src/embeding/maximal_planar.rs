@@ -29,7 +29,7 @@ impl MaximalPlanar {
     fn phase_1(graph: &mut Graph<VertexType, ()>, stack: &mut Vec<StackItem>) {
         let mut reducible = graph
             .node_indices()
-            .filter(|n| MaximalPlanar::is_reducible(&graph, *n))
+            .filter(|n| MaximalPlanar::is_reducible(graph, *n))
             .collect::<HashSet<_>>();
 
         while graph.node_count() > 4 {
