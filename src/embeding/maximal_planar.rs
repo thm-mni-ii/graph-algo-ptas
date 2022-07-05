@@ -7,7 +7,7 @@ use petgraph::Graph;
 use crate::data_structure::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 use crate::data_structure::graph_types::Vertex as VertexType;
 
-use super::embeding::Embeding;
+use super::index::Embeding;
 
 enum StackItem {
     Node(NodeIndex),
