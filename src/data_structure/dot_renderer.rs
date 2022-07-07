@@ -1,10 +1,6 @@
+use crate::data_structure::graph_dcel::GraphDCEL;
 use crate::data_structure::link_graph::{LinkDart, LinkGraph, LinkVertex};
 use dot::{Edges, GraphWalk, Id, Labeller, Nodes};
-use crate::data_structure::graph_dcel::{GraphDCEL};
-
-trait Named {
-    fn get_name() -> String;
-}
 
 impl<'a> GraphWalk<'a, LinkVertex, LinkDart> for LinkGraph {
     fn nodes(&'a self) -> Nodes<'a, LinkVertex> {
@@ -39,13 +35,10 @@ impl<'a> Labeller<'a, LinkVertex, LinkDart> for LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Borrow;
-    use crate::data_structure::{
-        link_graph::{LinkGraph},
-    };
-    use std::fs::File;
+    use crate::data_structure::link_graph::LinkGraph;
     use crate::utils::circle::generate_circle;
-
+    use std::borrow::Borrow;
+    use std::fs::File;
 
     #[test]
     fn test_two_vertices() {

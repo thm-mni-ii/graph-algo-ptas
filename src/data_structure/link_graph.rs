@@ -54,7 +54,7 @@ impl LinkVertex {
     }
 
     pub fn get_id(&self) -> usize {
-        return self.0.clone().borrow().id
+        return self.0.clone().borrow().id;
     }
 }
 
@@ -106,8 +106,6 @@ impl LinkDart {
             ..Default::default()
         })))
     }
-
-
 }
 
 #[derive(Default)]
