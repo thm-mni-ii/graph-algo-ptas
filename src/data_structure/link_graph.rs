@@ -52,6 +52,10 @@ impl LinkVertex {
             ..Default::default()
         })))
     }
+
+    pub fn get_id(&self) -> usize {
+        return self.0.clone().borrow().id;
+    }
 }
 
 impl_inner_debug!(LinkVertex);
@@ -185,7 +189,7 @@ impl
         dart.0.borrow().twin.clone().unwrap()
     }
 
-    fn target(&self, dart: &LinkDart) -> LinkVertex {
+    fn dart_target(&self, dart: &LinkDart) -> LinkVertex {
         dart.0.borrow().target.clone()
     }
 
@@ -364,7 +368,7 @@ mod tests {
         graph.dart_face(&face);
         let prev_dart = graph.prev(&dart);
         assert_eq!(prev_dart, dart_3);
-        let target_vertex = graph.target(&twin_dart);
+        let target_vertex = graph.dart_target(&twin_dart);
         assert_eq!(target_vertex, vertex);
         format!("{:?}", vertex);
         format!("{:?}", dart);
