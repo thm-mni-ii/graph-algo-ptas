@@ -2,10 +2,10 @@ use std::collections::HashSet;
 
 use petgraph::graph::{EdgeIndex, NodeIndex};
 use petgraph::visit::EdgeRef;
-use petgraph::Graph;
+use petgraph::{Graph, Undirected};
 
-use crate::data_structure::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 use crate::data_structure::graph_types::Vertex as VertexType;
+use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkVertex};
 
 use super::index::Embeding;
 
@@ -17,8 +17,8 @@ enum StackItem {
 
 pub struct MaximalPlanar {}
 
-impl<V: Vertex, D: Dart, F: Face, T: GraphDCEL<V, D, F>> Embeding<V, D, F, T> for MaximalPlanar {
-    fn embed(mut graph: Graph<VertexType, ()>) -> T {
+impl Embeding<LinkVertex, LinkDart, LinkFace, LinkGraph> for MaximalPlanar {
+    fn embed(mut graph: Graph<VertexType, (), Undirected>) -> LinkGraph {
         let mut stack = Vec::new();
         MaximalPlanar::phase_1(&mut graph, &mut stack);
         todo!()
@@ -26,7 +26,7 @@ impl<V: Vertex, D: Dart, F: Face, T: GraphDCEL<V, D, F>> Embeding<V, D, F, T> fo
 }
 
 impl MaximalPlanar {
-    fn phase_1(graph: &mut Graph<VertexType, ()>, stack: &mut Vec<StackItem>) {
+    fn phase_1(graph: &mut Graph<VertexType, (), Undirected>, stack: &mut Vec<StackItem>) {
         let mut reducible = graph
             .node_indices()
             .filter(|n| MaximalPlanar::is_reducible(graph, *n))
@@ -98,7 +98,7 @@ impl MaximalPlanar {
         }
     }
 
-    fn is_reducible(graph: &Graph<VertexType, ()>, node_idx: NodeIndex) -> bool {
+    fn is_reducible(graph: &Graph<VertexType, (), Undirected>, node_idx: NodeIndex) -> bool {
         let count = graph.edges(node_idx).count();
         let small_neighbore_count = MaximalPlanar::get_small_meighbor_count(graph, node_idx);
 
@@ -107,7 +107,10 @@ impl MaximalPlanar {
             || count == 5 && small_neighbore_count >= 4
     }
 
-    fn get_small_meighbor_count(graph: &Graph<VertexType, ()>, node_idx: NodeIndex) -> usize {
+    fn get_small_meighbor_count(
+        graph: &Graph<VertexType, (), Undirected>,
+        node_idx: NodeIndex,
+    ) -> usize {
         graph
             .neighbors(node_idx)
             .into_iter()
@@ -116,7 +119,7 @@ impl MaximalPlanar {
     }
 
     fn find_neighbors(
-        graph: &Graph<VertexType, ()>,
+        graph: &Graph<VertexType, (), Undirected>,
         h: &HashSet<NodeIndex>,
         node_idx: NodeIndex,
     ) -> bool {
@@ -133,7 +136,7 @@ impl MaximalPlanar {
     }
 
     fn update_local(
-        graph: &Graph<VertexType, ()>,
+        graph: &Graph<VertexType, (), Undirected>,
         h: &HashSet<NodeIndex>,
         reduciable: &mut HashSet<NodeIndex>,
     ) {
@@ -153,7 +156,7 @@ impl MaximalPlanar {
     }
 
     fn update_reducible(
-        graph: &Graph<VertexType, ()>,
+        graph: &Graph<VertexType, (), Undirected>,
         reduciable: &mut HashSet<NodeIndex>,
         node_idx: NodeIndex,
     ) {
