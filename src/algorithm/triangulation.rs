@@ -36,20 +36,20 @@ fn triangulate_face(
     let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];
 
     let mut current = graph.dart_face(face);
-    let start_vertex = &graph.target(&graph.twin(&current));
+    let start_vertex = &graph.dart_target(&graph.twin(&current));
 
-    if graph.target(&graph.next(&current)) == *start_vertex {
+    if graph.dart_target(&graph.next(&current)) == *start_vertex {
         return edges;
     }
 
     loop {
         let next = graph.next(&current);
 
-        if graph.target(&graph.next(&next)) == *start_vertex {
+        if graph.dart_target(&graph.next(&next)) == *start_vertex {
             break;
         }
 
-        let from = graph.target(&next);
+        let from = graph.dart_target(&next);
 
         edges.push((from, start_vertex.clone()));
         current = next;
