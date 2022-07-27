@@ -73,25 +73,25 @@ mod tests {
         for _i in 0..10 {
             cd = cg.next(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = sd.clone();
         for _i in 0..12 {
             cd = cg.prev(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = cg.twin(&sd);
         for _i in 0..10 {
             cd = cg.next(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = cg.twin(&sd);
         for _i in 0..12 {
             cd = cg.prev(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
     }
 
