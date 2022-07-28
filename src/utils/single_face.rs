@@ -3,7 +3,9 @@ use crate::data_structure::{
     link_graph::{LinkGraph, LinkVertex},
 };
 
-pub fn generate_circle(n: usize) -> LinkGraph {
+pub fn generate_single_face(n: usize) -> LinkGraph {
+    assert!(n >= 3);
+
     let mut lg = LinkGraph::new();
     let nodes: Vec<LinkVertex> = (0..n).map(|_| lg.new_vertex()).collect();
 
@@ -12,13 +14,14 @@ pub fn generate_circle(n: usize) -> LinkGraph {
     let mut inner_face = None;
     let mut outter_face = None;
 
-    for i in 0..n + 1 {
+    for i in 0..n {
         let node = nodes.get(i % n).unwrap();
         let next = nodes.get((i + 1) % n).unwrap();
         let mut next_dart = None;
         let mut next_dart_twin = None;
-        if i == n {
+        if i == n - 1 {
             let mut dart_iter = lg.get_darts();
+
             next_dart = dart_iter.next();
             next_dart_twin = dart_iter.next();
         }
@@ -57,36 +60,46 @@ pub fn generate_circle(n: usize) -> LinkGraph {
 mod tests {
     use crate::data_structure::graph_dcel::GraphDCEL;
 
-    use super::generate_circle;
+    use super::generate_single_face;
+
+    use crate::data_structure::link_graph::LinkDart;
 
     #[test]
     fn test() {
-        let cg = generate_circle(10);
+        let cg = generate_single_face(10);
         let sv = cg.get_vertexes().next().unwrap();
         let sd = cg.dart_vertex(&sv);
         let mut cd = sd.clone();
         for _i in 0..10 {
             cd = cg.next(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = sd.clone();
         for _i in 0..12 {
             cd = cg.prev(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = cg.twin(&sd);
         for _i in 0..10 {
             cd = cg.next(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = cg.twin(&sd);
         for _i in 0..12 {
             cd = cg.prev(&cd);
         }
-        let tv = cg.target(&cd);
+        let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
+    }
+
+    #[test]
+    fn darts() {
+        for x in 3..100 {
+            let cg = generate_single_face(x);
+            assert_eq!(cg.get_darts().count(), x * 2);
+        }
     }
 }
