@@ -4,14 +4,8 @@ use crate::data_structure::{
 };
 
 pub fn triangulate(
-    graph: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
+    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
+        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>
 ) -> Vec<(LinkVertex, LinkVertex)> {
     let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];
 
@@ -23,14 +17,8 @@ pub fn triangulate(
 }
 
 fn triangulate_face(
-    graph: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
+    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
+        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
     face: &LinkFace,
 ) -> Vec<(LinkVertex, LinkVertex)> {
     let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];

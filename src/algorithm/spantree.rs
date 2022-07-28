@@ -5,18 +5,12 @@ use crate::data_structure::{
 use std::collections::{HashSet, VecDeque};
 
 fn span(
-    g: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
+    g: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
+        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
     v: LinkVertex,
 ) -> HashSet<(LinkVertex, LinkVertex)> {
     if g.get_vertexes().count() <= 1 {
-        return vec![];
+        return HashSet::new();
     }
     let mut queue = VecDeque::new();
     let mut result = HashSet::new();
@@ -52,7 +46,7 @@ fn neighbors(
 ) -> Vec<LinkVertex> {
     let mut current_dart = g.dart_vertex(v);
     let first_dart = current_dart.clone();
-    let mut current_neighbor = g.target(&current_dart);
+    let mut current_neighbor = g.dart_target(&current_dart);
     let mut result = vec![];
     loop {
         result.push(current_neighbor);
@@ -61,13 +55,14 @@ fn neighbors(
         if current_dart == first_dart {
             break;
         }
-        current_neighbor = g.target(g.next(current_dart));
+        current_neighbor = g.dart_target(&g.next(&current_dart));
     }
     result
 }
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
     use crate::algorithm::spantree::span;
     use crate::data_structure::link_graph::LinkGraph;
 
@@ -78,7 +73,8 @@ mod tests {
 
         let edges = span(&lg, lv1);
 
-        assert_eq!(edges, vec![]);
+        println!("[RESULT]: {:?}", edges);
+        assert_eq!(edges, HashSet::new());
     }
 
     #[test]
@@ -88,19 +84,21 @@ mod tests {
         let lv2 = lg.new_vertex();
 
         let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
-        lg.new_face(ld1.clone());
+        let lf = lg.new_face(ld1.clone());
         lg.new_dart(
             lv2.clone(),
             lv1.clone(),
             Some(ld1.clone()),
             Some(ld1.clone()),
             Some(ld1.clone()),
-            None,
+            Some(lf),
         );
 
-        let edges = span(&lg, lv1);
-        assert_eq!(edges[0].0.get_id(), 0);
-        assert_eq!(edges[0].1.get_id(), 1);
+        let edges = span(&lg, lv1.clone());
+
+        println!("[RESULT]: {:?}", edges);
+        assert_eq!(edges.len(), 1);
+        assert!(edges.contains(&(lv1, lv2)));
     }
 
     #[test]

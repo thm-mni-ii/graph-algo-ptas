@@ -1,6 +1,5 @@
 use arboretum_td::tree_decomposition::TreeDecomposition;
-
-use crate::data_structure::graph_types::Vertex;
+use fxhash::FxHashSet;
 
 use std::collections::{HashMap, HashSet};
 
@@ -10,70 +9,59 @@ use crate::data_structure::{
 };
 
 fn tree_decomposition(
-    graph: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
-    dual_graph: HashMap<Vertex, HashSet<Vertex>>,
-    spantree: HashMap<Vertex, Vertex>,
-    root_vertex: Vertex,
+    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
+        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
+    dual_graph: HashMap<LinkFace, HashSet<LinkFace>>,
+    spantree: HashMap<LinkVertex, LinkVertex>,
+    root_vertex: LinkFace,
 ) -> TreeDecomposition {
-    let mut tree: TreeDecomposition;
+    let mut tree: TreeDecomposition = Default::default();
 
-    add_bags(root_vertex, 0, tree, spantree, dual_graph, graph);
+    add_bags(root_vertex, 0, &mut tree, &spantree, &dual_graph, graph);
 
     tree
 }
 
 fn add_bags(
-    vertex: Vertex,
+    vertex: LinkFace,
     parent: usize,
-    tree: TreeDecomposition,
-    spantree: HashMap<Vertex, Vertex>,
-    dual_graph: HashMap<Vertex, HashSet<Vertex>>,
-    graph: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
+    mut tree: &mut arboretum_td::tree_decomposition::TreeDecomposition,
+    spantree: &HashMap<LinkVertex, LinkVertex>,
+    dual_graph: &HashMap<LinkFace, HashSet<LinkFace>>,
+    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
+        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
 ) {
-    let face_dart = graph.dart_face(vertex);
+    let face_dart = graph.dart_face(&vertex);
 
     let face_vertices = get_face_vertices(graph, face_dart);
 
-    let bag = create_bag(face_vertices, spantree);
+    let bag = create_bag(face_vertices, &spantree);
 
     if parent == 0 {
         tree.add_bag(bag);
     } else {
-        tree.add_child_bags(parent, bag);
+        tree.add_child_bags(parent, vec![bag]);
     }
 
-    for c in dual_graph.get(&vertex) {
-        add_bags(c, vertex, tree, spantree, dual_graph, graph);
+    for c in dual_graph.get(&vertex).unwrap() {
+        add_bags(c.clone(), vertex.get_id(), tree, spantree, dual_graph, graph);
     }
 }
 
-fn create_bag(face_vertices: HashSet<u32>, spantree: HashMap<Vertex, Vertex>) -> HashSet<usize> {
-    let mut vertices: HashSet<usize> = HashSet::new();
+fn create_bag(face_vertices: HashSet<LinkVertex>, spantree: &&HashMap<LinkVertex, LinkVertex>) -> FxHashSet<usize> {
+    let mut vertices: FxHashSet<usize> = FxHashSet::default();
 
     for v in face_vertices {
         let mut node = v;
 
-        vertices.insert(node);
+        vertices.insert(node.get_id());
 
         while spantree.get(&node).is_some() {
-            node = Some(spantree.get(&node));
-            vertices.insert(node);
+            node = spantree.get(&node).unwrap().clone();
+            vertices.insert(node.get_id());
         }
     }
+    vertices
 }
 
 fn get_face_vertices(
@@ -86,10 +74,11 @@ fn get_face_vertices(
         LinkGraphIter<LinkFace>,
     >,
     mut dart: LinkDart,
-) -> HashSet<Vertex> {
-    let mut result: HashSet<Vertex> = HashSet::new();
+) -> HashSet<LinkVertex> {
+    let mut result: HashSet<LinkVertex> = HashSet::new();
 
-    while result.insert(graph.target(&dart)) {
+    while result.insert(graph.dart_target(&dart)) {
         dart = graph.next(&dart);
     }
+    result
 }

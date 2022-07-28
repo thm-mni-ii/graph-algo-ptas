@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 arboretum-td = "0.1.0"
 dot = "0.1.4"
+fxhash = "0.2.1"
