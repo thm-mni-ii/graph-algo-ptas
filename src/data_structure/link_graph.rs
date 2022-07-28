@@ -123,6 +123,10 @@ impl LinkDart {
             ..Default::default()
         })))
     }
+
+    pub fn get_id(&self) -> usize {
+        return self.0.clone().borrow().id;
+    }
 }
 
 #[derive(Default)]
@@ -144,6 +148,10 @@ impl Face for LinkFace {}
 impl LinkFace {
     pub fn new(id: usize, dart: LinkDart) -> LinkFace {
         LinkFace(Rc::new(RefCell::new(LinkFaceStructure { id, dart })))
+    }
+
+    pub fn get_id(&self) -> usize {
+        return self.0.clone().borrow().id;
     }
 }
 
@@ -321,10 +329,15 @@ mod tests {
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
         let lv1 = lg.new_vertex();
+        assert_eq!(lv1.get_id(), 0);
         let lv2 = lg.new_vertex();
+        assert_eq!(lv2.get_id(), 1);
         let lv3 = lg.new_vertex();
+        assert_eq!(lv3.get_id(), 2);
         let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
+        assert_eq!(ld1.get_id(), 3);
         let lf = lg.new_face(ld1.clone());
+        assert_eq!(lf.get_id(), 4);
         let ld2 = lg.new_dart(
             lv2.clone(),
             lv3.clone(),
