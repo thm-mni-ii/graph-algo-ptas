@@ -9,8 +9,14 @@ use crate::data_structure::{
 };
 
 fn tree_decomposition(
-    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
-        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
+    graph: &impl GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    >,
     dual_graph: HashMap<LinkFace, HashSet<LinkFace>>,
     spantree: HashMap<LinkVertex, LinkVertex>,
     root_vertex: LinkFace,
@@ -28,8 +34,14 @@ fn add_bags(
     mut tree: &mut arboretum_td::tree_decomposition::TreeDecomposition,
     spantree: &HashMap<LinkVertex, LinkVertex>,
     dual_graph: &HashMap<LinkFace, HashSet<LinkFace>>,
-    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
-        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
+    graph: &impl GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    >,
 ) {
     let face_dart = graph.dart_face(&vertex);
 
@@ -44,11 +56,21 @@ fn add_bags(
     }
 
     for c in dual_graph.get(&vertex).unwrap() {
-        add_bags(c.clone(), vertex.get_id(), tree, spantree, dual_graph, graph);
+        add_bags(
+            c.clone(),
+            vertex.get_id(),
+            tree,
+            spantree,
+            dual_graph,
+            graph,
+        );
     }
 }
 
-fn create_bag(face_vertices: HashSet<LinkVertex>, spantree: &&HashMap<LinkVertex, LinkVertex>) -> FxHashSet<usize> {
+fn create_bag(
+    face_vertices: HashSet<LinkVertex>,
+    spantree: &&HashMap<LinkVertex, LinkVertex>,
+) -> FxHashSet<usize> {
     let mut vertices: FxHashSet<usize> = FxHashSet::default();
 
     for v in face_vertices {

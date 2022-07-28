@@ -5,10 +5,17 @@ use crate::data_structure::{
 use std::collections::{HashSet, VecDeque};
 
 pub fn span(
-    g: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
-        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
+    g: &impl GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    >,
     v: LinkVertex,
-) -> HashSet<(LinkVertex, LinkVertex)> { // TODO: change return type for tree decomposition
+) -> HashSet<(LinkVertex, LinkVertex)> {
+    // TODO: change return type for tree decomposition
     if g.get_vertexes().count() <= 1 {
         return HashSet::new();
     }
@@ -62,9 +69,9 @@ fn neighbors(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use crate::algorithm::spantree::{neighbors, span};
     use crate::data_structure::link_graph::LinkGraph;
+    use std::collections::HashSet;
 
     #[test]
     fn single_vertex() {
@@ -108,26 +115,43 @@ mod tests {
         let lv1 = lg.new_vertex();
         let lv2 = lg.new_vertex();
 
-        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(),
-                              None, None, None, None);
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
         let lf = lg.new_face(ld0.clone());
-        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(),
-                              Some(ld0.clone()), None,
-                              None, Some(lf.clone()));
-        let ld2 = lg.new_dart(lv2.clone(), lv0.clone(),
-                              Some(ld1.clone()), Some(ld0.clone()),
-                              None, Some(lf));
+        let ld1 = lg.new_dart(
+            lv1.clone(),
+            lv2.clone(),
+            Some(ld0.clone()),
+            None,
+            None,
+            Some(lf.clone()),
+        );
+        let ld2 = lg.new_dart(
+            lv2.clone(),
+            lv0.clone(),
+            Some(ld1.clone()),
+            Some(ld0.clone()),
+            None,
+            Some(lf),
+        );
 
-        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(),
-                              None, None,
-                              Some(ld0), None);
+        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);
         let lof = lg.new_face(lt0.clone());
-        let lt2 = lg.new_dart(lv0.clone(), lv2.clone(),
-                              Some(lt0.clone()), None,
-                              Some(ld2), Some(lof.clone()));
-        lg.new_dart(lv2.clone(), lv1.clone(),
-                    Some(lt2), Some(lt0),
-                    Some(ld1), Some(lof));
+        let lt2 = lg.new_dart(
+            lv0.clone(),
+            lv2.clone(),
+            Some(lt0.clone()),
+            None,
+            Some(ld2),
+            Some(lof.clone()),
+        );
+        lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2),
+            Some(lt0),
+            Some(ld1),
+            Some(lof),
+        );
 
         let edges = span(&lg, lv1.clone());
 
@@ -165,26 +189,43 @@ mod tests {
         let lv1 = lg.new_vertex();
         let lv2 = lg.new_vertex();
 
-        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(),
-                              None, None, None, None);
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
         let lf = lg.new_face(ld0.clone());
-        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(),
-                              Some(ld0.clone()), None,
-                              None, Some(lf.clone()));
-        let ld2 = lg.new_dart(lv2.clone(), lv0.clone(),
-                              Some(ld1.clone()), Some(ld0.clone()),
-                              None, Some(lf));
+        let ld1 = lg.new_dart(
+            lv1.clone(),
+            lv2.clone(),
+            Some(ld0.clone()),
+            None,
+            None,
+            Some(lf.clone()),
+        );
+        let ld2 = lg.new_dart(
+            lv2.clone(),
+            lv0.clone(),
+            Some(ld1.clone()),
+            Some(ld0.clone()),
+            None,
+            Some(lf),
+        );
 
-        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(),
-                              None, None,
-                              Some(ld0), None);
+        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);
         let lof = lg.new_face(lt0.clone());
-        let lt2 = lg.new_dart(lv0.clone(), lv2.clone(),
-                              Some(lt0.clone()), None,
-                              Some(ld2), Some(lof.clone()));
-        lg.new_dart(lv2.clone(), lv1.clone(),
-                    Some(lt2), Some(lt0),
-                    Some(ld1), Some(lof));
+        let lt2 = lg.new_dart(
+            lv0.clone(),
+            lv2.clone(),
+            Some(lt0.clone()),
+            None,
+            Some(ld2),
+            Some(lof.clone()),
+        );
+        lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2),
+            Some(lt0),
+            Some(ld1),
+            Some(lof),
+        );
 
         assert_eq!(neighbors(&lg, &lv0), vec![lv2.clone(), lv1.clone()]);
         assert_eq!(neighbors(&lg, &lv1), vec![lv0.clone(), lv2.clone()]);

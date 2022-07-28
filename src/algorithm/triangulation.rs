@@ -4,8 +4,14 @@ use crate::data_structure::{
 };
 
 pub fn triangulate(
-    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
-        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>
+    graph: &impl GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    >,
 ) -> Vec<(LinkVertex, LinkVertex)> {
     let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];
 
@@ -17,18 +23,25 @@ pub fn triangulate(
 }
 
 fn triangulate_face(
-    graph: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
-        LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
+    graph: &impl GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    >,
     face: &LinkFace,
 ) -> Vec<(LinkVertex, LinkVertex)> {
     let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];
 
     let mut current = graph.dart_face(face);
 
-
-    if graph.next(&graph.next(&current)) == current { // single edge (|v| < 3)
+    if graph.next(&graph.next(&current)) == current {
+        // single edge (|v| < 3)
         return edges;
-    } else if graph.dart_target(&graph.next(&current)) == graph.dart_target(&graph.twin(&current)) { // outgoing edge
+    } else if graph.dart_target(&graph.next(&current)) == graph.dart_target(&graph.twin(&current)) {
+        // outgoing edge
         current = graph.next(&current);
     }
 
@@ -103,16 +116,57 @@ mod tests {
 
         let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
         let lf = lg.new_face(ld1.clone());
-        let ld2 = lg.new_dart(lv2.clone(), lv3.clone(), Some(ld1.clone()), None, None, Some(lf.clone()));
-        let ld3 = lg.new_dart(lv3.clone(), lv1.clone(), Some(ld2.clone()), Some(ld1.clone()), None, Some(lf.clone()));
+        let ld2 = lg.new_dart(
+            lv2.clone(),
+            lv3.clone(),
+            Some(ld1.clone()),
+            None,
+            None,
+            Some(lf.clone()),
+        );
+        let ld3 = lg.new_dart(
+            lv3.clone(),
+            lv1.clone(),
+            Some(ld2.clone()),
+            Some(ld1.clone()),
+            None,
+            Some(lf.clone()),
+        );
 
         let ld4 = lg.new_dart(lv3.clone(), lv4.clone(), None, None, None, None);
         let lof = lg.new_face(ld4.clone());
-        let lt4 = lg.new_dart(lv4.clone(), lv3.clone(), Some(ld4.clone()), None, Some(ld4.clone()), Some(lof.clone()));
-        let lt2 = lg.new_dart(lv3.clone(), lv2.clone(), Some(lt4.clone()), None, Some(ld2.clone()), Some(lof.clone()));
-        let lt1 = lg.new_dart(lv2.clone(), lv1.clone(), Some(lt2.clone()), None, Some(ld1.clone()), Some(lof.clone()));
-        let lt3 = lg.new_dart(lv1.clone(), lv3.clone(), Some(lt1.clone()), Some(ld4.clone()), Some(ld3.clone()), Some(lof.clone()));
-
+        let lt4 = lg.new_dart(
+            lv4.clone(),
+            lv3.clone(),
+            Some(ld4.clone()),
+            None,
+            Some(ld4.clone()),
+            Some(lof.clone()),
+        );
+        let lt2 = lg.new_dart(
+            lv3.clone(),
+            lv2.clone(),
+            Some(lt4.clone()),
+            None,
+            Some(ld2.clone()),
+            Some(lof.clone()),
+        );
+        let lt1 = lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2.clone()),
+            None,
+            Some(ld1.clone()),
+            Some(lof.clone()),
+        );
+        let lt3 = lg.new_dart(
+            lv1.clone(),
+            lv3.clone(),
+            Some(lt1.clone()),
+            Some(ld4.clone()),
+            Some(ld3.clone()),
+            Some(lof.clone()),
+        );
 
         let edges = triangulate(&lg);
         println!("\n[RESULT]: {:?}", edges);
