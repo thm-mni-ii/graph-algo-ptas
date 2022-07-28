@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt::Debug, rc::Rc};
+use std::{cell::RefCell, fmt::Debug, rc::Rc, hash::Hash};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
@@ -33,6 +33,16 @@ macro_rules! impl_inner_debug {
     };
 }
 
+macro_rules! impl_hash {
+    ($struct:ident) => {
+        impl Hash for $struct {
+            fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                self.0.clone().borrow().id.hash(state)
+            }
+        }
+    };
+}
+
 #[derive(Default)]
 struct LinkVertexStruct {
     id: usize,
@@ -59,6 +69,7 @@ impl LinkVertex {
 }
 
 impl_inner_debug!(LinkVertex);
+impl_hash!(LinkVertex);
 impl Vertex for LinkVertex {}
 
 #[derive(Default)]
@@ -96,6 +107,7 @@ impl Debug for LinkDartStructure {
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
 impl_inner_debug!(LinkDart);
+impl_hash!(LinkDart);
 impl Dart for LinkDart {}
 
 impl LinkDart {
@@ -117,10 +129,11 @@ struct LinkFaceStructure {
 impl_non_recursive_eq!(LinkFaceStructure);
 impl_non_recursive_debug!(LinkFaceStructure, "LinkFace");
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, PartialEq,)]
 pub struct LinkFace(Rc<RefCell<LinkFaceStructure>>);
 
 impl_inner_debug!(LinkFace);
+impl_hash!(LinkFace);
 impl Face for LinkFace {}
 
 impl LinkFace {
@@ -291,6 +304,8 @@ impl Drop for LinkGraph {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
     use crate::data_structure::{
         graph_dcel::GraphDCEL,
         link_graph::{LinkDart, LinkGraph},
@@ -384,5 +399,26 @@ mod tests {
         assert_eq!(vertexes.len(), 3);
         assert_eq!(darts.len(), 6);
         assert_eq!(faces.len(), 2);
+    }
+
+    #[test]
+    fn hash_test() {
+        let graph = example_graph();
+        let mut vs = HashSet::new();
+        let mut vi = graph.get_vertexes();
+        vs.insert(vi.next().unwrap());
+        vs.insert(vi.next().unwrap());
+        assert_eq!(vs.len(), 2);
+        let mut ds = HashSet::new();
+        let mut di = graph.get_vertexes();
+        ds.insert(di.next().unwrap());
+        ds.insert(di.next().unwrap());
+        assert_eq!(ds.len(), 2);
+        let mut fs = HashSet::new();
+        let mut fi = graph.get_vertexes();
+        fs.insert(fi.next().unwrap());
+        fs.insert(fi.next().unwrap());
+        assert_eq!(fs.len(), 2);
+        
     }
 }
