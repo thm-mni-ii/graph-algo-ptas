@@ -24,7 +24,7 @@ fn span(
         }*/
         visited.insert(v.clone());
         for n in neighbors(g, &v) {
-            if !visited.contains(&n) {
+            if visited.insert(n.clone()) {
                 queue.push_back(n.clone());
                 result.insert((v.clone(), n));
             }
@@ -55,7 +55,7 @@ fn neighbors(
         if current_dart == first_dart {
             break;
         }
-        current_neighbor = g.dart_target(&g.next(&current_dart));
+        current_neighbor = g.dart_target(&current_dart);
     }
     result
 }
@@ -63,7 +63,7 @@ fn neighbors(
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-    use crate::algorithm::spantree::span;
+    use crate::algorithm::spantree::{neighbors, span};
     use crate::data_structure::link_graph::LinkGraph;
 
     #[test]
@@ -102,5 +102,92 @@ mod tests {
     }
 
     #[test]
-    fn triangle() {}
+    fn triangle() {
+        let mut lg = LinkGraph::new();
+        let lv0 = lg.new_vertex();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(),
+                              None, None, None, None);
+        let lf = lg.new_face(ld0.clone());
+        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(),
+                              Some(ld0.clone()), None,
+                              None, Some(lf.clone()));
+        let ld2 = lg.new_dart(lv2.clone(), lv0.clone(),
+                              Some(ld1.clone()), Some(ld0.clone()),
+                              None, Some(lf));
+
+        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(),
+                              None, None,
+                              Some(ld0), None);
+        let lof = lg.new_face(lt0.clone());
+        let lt2 = lg.new_dart(lv0.clone(), lv2.clone(),
+                              Some(lt0.clone()), None,
+                              Some(ld2), Some(lof.clone()));
+        lg.new_dart(lv2.clone(), lv1.clone(),
+                    Some(lt2), Some(lt0),
+                    Some(ld1), Some(lof));
+
+        let edges = span(&lg, lv1.clone());
+
+        println!("[RESULT]: {:?}", edges);
+        assert_eq!(edges.len(), 2);
+        assert!(edges.contains(&(lv1.clone(), lv2)));
+        assert!(edges.contains(&(lv1, lv0)));
+    }
+
+    #[test]
+    fn neighbors_single_edge() {
+        let mut lg = LinkGraph::new();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+
+        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
+        let lf = lg.new_face(ld1.clone());
+        lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(ld1.clone()),
+            Some(ld1.clone()),
+            Some(ld1.clone()),
+            Some(lf),
+        );
+
+        assert_eq!(neighbors(&lg, &lv1), vec![lv2.clone()]);
+        assert_eq!(neighbors(&lg, &lv2), vec![lv1]);
+    }
+
+    #[test]
+    fn neighbors_triangle() {
+        let mut lg = LinkGraph::new();
+        let lv0 = lg.new_vertex();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(),
+                              None, None, None, None);
+        let lf = lg.new_face(ld0.clone());
+        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(),
+                              Some(ld0.clone()), None,
+                              None, Some(lf.clone()));
+        let ld2 = lg.new_dart(lv2.clone(), lv0.clone(),
+                              Some(ld1.clone()), Some(ld0.clone()),
+                              None, Some(lf));
+
+        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(),
+                              None, None,
+                              Some(ld0), None);
+        let lof = lg.new_face(lt0.clone());
+        let lt2 = lg.new_dart(lv0.clone(), lv2.clone(),
+                              Some(lt0.clone()), None,
+                              Some(ld2), Some(lof.clone()));
+        lg.new_dart(lv2.clone(), lv1.clone(),
+                    Some(lt2), Some(lt0),
+                    Some(ld1), Some(lof));
+
+        assert_eq!(neighbors(&lg, &lv0), vec![lv2.clone(), lv1.clone()]);
+        assert_eq!(neighbors(&lg, &lv1), vec![lv0.clone(), lv2.clone()]);
+        assert_eq!(neighbors(&lg, &lv2), vec![lv1, lv0]);
+    }
 }
