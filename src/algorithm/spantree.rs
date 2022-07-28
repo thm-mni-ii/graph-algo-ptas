@@ -4,11 +4,11 @@ use crate::data_structure::{
 };
 use std::collections::{HashSet, VecDeque};
 
-fn span(
+pub fn span(
     g: &impl GraphDCEL<LinkVertex, LinkDart, LinkFace,
         LinkGraphIter<LinkVertex>, LinkGraphIter<LinkDart>, LinkGraphIter<LinkFace>>,
     v: LinkVertex,
-) -> HashSet<(LinkVertex, LinkVertex)> {
+) -> HashSet<(LinkVertex, LinkVertex)> { // TODO: change return type for tree decomposition
     if g.get_vertexes().count() <= 1 {
         return HashSet::new();
     }
