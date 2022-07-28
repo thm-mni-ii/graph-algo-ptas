@@ -11,6 +11,13 @@ fn dual_graph(
 ) -> Vec<(LinkFace, LinkFace)> { // TODO: change return type for tree decomposition
     let mut result = vec![];
     let mut visited = HashSet::new();
+    if g.get_vertexes().count() <= 2 {
+        let outer_face = g.get_faces().next();
+        if let Some(face) = outer_face {
+            result.push((face.clone(), face))
+        }
+        return result;
+    }
     for face in g.get_faces() {
         visited.insert(face.clone());
         let first = g.dart_face(&face);
@@ -69,7 +76,7 @@ mod tests {
 
         println!("[RESULT]: {:?}", dual);
         assert_eq!(dual.len(), 1);
-        assert_eq!(dual, vec![(lf.clone(), lf)]); // FIXME: dual graph should contain at least the root (outer face)
+        assert_eq!(dual, vec![(lf.clone(), lf)]);
     }
 
     #[test]
