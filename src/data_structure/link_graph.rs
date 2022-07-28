@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt::Debug, rc::Rc, hash::Hash};
+use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
@@ -33,11 +33,16 @@ macro_rules! impl_inner_debug {
     };
 }
 
-macro_rules! impl_hash {
+macro_rules! impl_hash_and_eq {
     ($struct:ident) => {
         impl Hash for $struct {
             fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-                self.0.clone().borrow().id.hash(state)
+                self.0.borrow().id.hash(state)
+            }
+        }
+        impl PartialEq for $struct {
+            fn eq(&self, other: &Self) -> bool {
+                self.0.borrow().id == other.0.borrow().id
             }
         }
     };
@@ -52,7 +57,7 @@ struct LinkVertexStruct {
 impl_non_recursive_eq!(LinkVertexStruct);
 impl_non_recursive_debug!(LinkVertexStruct, "LinkVertex");
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq)]
 pub struct LinkVertex(Rc<RefCell<LinkVertexStruct>>);
 
 impl LinkVertex {
@@ -69,7 +74,7 @@ impl LinkVertex {
 }
 
 impl_inner_debug!(LinkVertex);
-impl_hash!(LinkVertex);
+impl_hash_and_eq!(LinkVertex);
 impl Vertex for LinkVertex {}
 
 #[derive(Default)]
@@ -103,11 +108,11 @@ impl Debug for LinkDartStructure {
     }
 }
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq)]
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
 impl_inner_debug!(LinkDart);
-impl_hash!(LinkDart);
+impl_hash_and_eq!(LinkDart);
 impl Dart for LinkDart {}
 
 impl LinkDart {
@@ -129,11 +134,11 @@ struct LinkFaceStructure {
 impl_non_recursive_eq!(LinkFaceStructure);
 impl_non_recursive_debug!(LinkFaceStructure, "LinkFace");
 
-#[derive(Clone, Default, Eq, PartialEq,)]
+#[derive(Clone, Default, Eq)]
 pub struct LinkFace(Rc<RefCell<LinkFaceStructure>>);
 
 impl_inner_debug!(LinkFace);
-impl_hash!(LinkFace);
+impl_hash_and_eq!(LinkFace);
 impl Face for LinkFace {}
 
 impl LinkFace {
@@ -419,6 +424,25 @@ mod tests {
         fs.insert(fi.next().unwrap());
         fs.insert(fi.next().unwrap());
         assert_eq!(fs.len(), 2);
-        
+    }
+
+    #[test]
+    fn eq_test() {
+        let graph = example_graph();
+        let mut vi = graph.get_vertexes();
+        let v1 = vi.next().unwrap();
+        let v2 = vi.next().unwrap();
+        assert_eq!(v1, v1);
+        assert_ne!(v1, v2);
+        let mut di = graph.get_vertexes();
+        let d1 = di.next().unwrap();
+        let d2 = di.next().unwrap();
+        assert_eq!(d1, d1);
+        assert_ne!(d1, d2);
+        let mut fi = graph.get_vertexes();
+        let f1 = fi.next().unwrap();
+        let f2 = fi.next().unwrap();
+        assert_eq!(f1, f1);
+        assert_ne!(f1, f2);
     }
 }
