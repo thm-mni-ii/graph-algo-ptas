@@ -48,6 +48,22 @@ macro_rules! impl_hash_and_eq {
     };
 }
 
+macro_rules! impl_ord {
+    ($struct:ident) => {
+        impl PartialOrd for $struct {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                self.0.borrow().id.partial_cmp(&other.0.borrow().id)
+            }
+        }
+
+        impl Ord for $struct {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.0.borrow().id.cmp(&other.0.borrow().id)
+            }
+        }
+    };
+}
+
 #[derive(Default)]
 struct LinkVertexStruct {
     id: usize,
@@ -75,6 +91,7 @@ impl LinkVertex {
 
 impl_inner_debug!(LinkVertex);
 impl_hash_and_eq!(LinkVertex);
+impl_ord!(LinkVertex);
 impl Vertex for LinkVertex {}
 
 #[derive(Default)]
@@ -113,6 +130,7 @@ pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
 impl_inner_debug!(LinkDart);
 impl_hash_and_eq!(LinkDart);
+impl_ord!(LinkDart);
 impl Dart for LinkDart {}
 
 impl LinkDart {
@@ -143,6 +161,7 @@ pub struct LinkFace(Rc<RefCell<LinkFaceStructure>>);
 
 impl_inner_debug!(LinkFace);
 impl_hash_and_eq!(LinkFace);
+impl_ord!(LinkFace);
 impl Face for LinkFace {}
 
 impl LinkFace {
@@ -317,7 +336,7 @@ impl Drop for LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
+    use std::{cmp::Ordering, collections::HashSet};
 
     use crate::data_structure::{
         graph_dcel::GraphDCEL,
@@ -457,5 +476,31 @@ mod tests {
         let f2 = fi.next().unwrap();
         assert_eq!(f1, f1);
         assert_ne!(f1, f2);
+    }
+
+    #[test]
+    fn cmp_test() {
+        let graph = example_graph();
+        let mut vi = graph.get_vertexes();
+        let v1 = vi.next().unwrap();
+        let v2 = vi.next().unwrap();
+        assert_eq!(v1.partial_cmp(&v2), Some(Ordering::Less));
+        assert_eq!(v2.partial_cmp(&v1), Some(Ordering::Greater));
+        assert_eq!(v1.cmp(&v2), Ordering::Less);
+        assert_eq!(v2.cmp(&v1), Ordering::Greater);
+        let mut di = graph.get_vertexes();
+        let d1 = di.next().unwrap();
+        let d2 = di.next().unwrap();
+        assert_eq!(d1.partial_cmp(&d2), Some(Ordering::Less));
+        assert_eq!(d2.partial_cmp(&d1), Some(Ordering::Greater));
+        assert_eq!(d1.cmp(&d2), Ordering::Less);
+        assert_eq!(d2.cmp(&d1), Ordering::Greater);
+        let mut fi = graph.get_vertexes();
+        let f1 = fi.next().unwrap();
+        let f2 = fi.next().unwrap();
+        assert_eq!(f1.partial_cmp(&f2), Some(Ordering::Less));
+        assert_eq!(f2.partial_cmp(&f1), Some(Ordering::Greater));
+        assert_eq!(f1.cmp(&f2), Ordering::Less);
+        assert_eq!(f2.cmp(&f1), Ordering::Greater);
     }
 }
