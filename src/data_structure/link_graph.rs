@@ -356,12 +356,7 @@ impl Drop for LinkGraph {
 mod tests {
     use std::collections::HashSet;
 
-    use crate::data_structure::{
-        graph_dcel::GraphDCEL,
-        link_graph::{LinkDart, LinkGraph},
-    };
-
-    use super::{LinkFace, LinkVertex};
+    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
@@ -389,33 +384,19 @@ mod tests {
             Some(ld2.clone()),
             Some(ld1.clone()),
             None,
-            Some(lf.clone()),
+            Some(lf),
         );
-        let lt1 = lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
-            None,
-            None,
-            Some(ld1.clone()),
-            None,
-        );
+        let lt1 = lg.new_dart(lv2.clone(), lv1.clone(), None, None, Some(ld1), None);
         let lof = lg.new_face(lt1.clone());
         let lt2 = lg.new_dart(
             lv3.clone(),
-            lv2.clone(),
+            lv2,
             Some(lt1.clone()),
             None,
-            Some(ld2.clone()),
+            Some(ld2),
             Some(lof.clone()),
         );
-        let _lt3 = lg.new_dart(
-            lv1.clone(),
-            lv3.clone(),
-            Some(lt2.clone()),
-            Some(lt1.clone()),
-            Some(ld3.clone()),
-            Some(lof.clone()),
-        );
+        let _lt3 = lg.new_dart(lv1, lv3, Some(lt2), Some(lt1), Some(ld3), Some(lof));
         lg
     }
 
@@ -448,12 +429,10 @@ mod tests {
     #[test]
     fn iter_test() {
         let graph = example_graph();
-        let vertexes: Vec<LinkVertex> = graph.get_vertexes().collect();
-        let darts: Vec<LinkDart> = graph.get_darts().collect();
-        let faces: Vec<LinkFace> = graph.get_faces().collect();
-        assert_eq!(vertexes.len(), 3);
-        assert_eq!(darts.len(), 6);
-        assert_eq!(faces.len(), 2);
+
+        assert_eq!(graph.get_vertexes().count(), 3);
+        assert_eq!(graph.get_darts().count(), 6);
+        assert_eq!(graph.get_faces().count(), 2);
     }
 
     #[test]
