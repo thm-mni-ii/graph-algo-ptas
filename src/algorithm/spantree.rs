@@ -25,9 +25,6 @@ pub fn span(
 
     while !queue.is_empty() {
         let v = queue.pop_front().unwrap();
-        /*if visited.contains(&v) {
-            continue;
-        }*/
         visited.insert(v.clone());
         for n in neighbors(g, &v) {
             if visited.insert(n.clone()) {
