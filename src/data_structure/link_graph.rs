@@ -203,6 +203,26 @@ impl
         LinkGraphIter::new(self.faces.clone())
     }
 
+    fn vertex_count(&self) -> usize {
+        self.vertexes.len()
+    }
+
+    fn dart_count(&self) -> usize {
+        self.darts.len()
+    }
+
+    fn edge_count(&self) -> usize {
+        self.dart_count() / 2
+    }
+
+    fn face_count(&self) -> usize {
+        self.faces.len()
+    }
+
+    fn neighbors_count(&self, vertex: &LinkVertex) -> usize {
+        self.neighbors(vertex).len()
+    }
+
     fn neighbors(&self, vertex: &LinkVertex) -> Vec<LinkVertex> {
         let mut current_dart = self.dart_vertex(vertex);
         let first_dart = current_dart.clone();

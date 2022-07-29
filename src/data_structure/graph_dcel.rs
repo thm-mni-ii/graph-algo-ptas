@@ -16,6 +16,11 @@ pub trait GraphDCEL<
     fn get_vertexes(&self) -> VI;
     fn get_darts(&self) -> DI;
     fn get_faces(&self) -> FI;
+    fn vertex_count(&self) -> usize;
+    fn dart_count(&self) -> usize;
+    fn edge_count(&self) -> usize;
+    fn face_count(&self) -> usize;
+    fn neighbors_count(&self, vertex: &V) -> usize;
     fn neighbors(&self, vertex: &V) -> Vec<V>;
 
     fn dart_vertex(&self, vertex: &V) -> D;
