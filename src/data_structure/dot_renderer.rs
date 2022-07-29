@@ -36,7 +36,7 @@ impl<'a> Labeller<'a, LinkVertex, LinkDart> for LinkGraph {
 #[cfg(test)]
 mod tests {
     use crate::data_structure::link_graph::LinkGraph;
-    use crate::utils::circle::generate_circle;
+    use crate::utils::single_face::generate_single_face;
     use std::borrow::Borrow;
     use std::fs::File;
 
@@ -55,7 +55,7 @@ mod tests {
     fn circle() {
         let mut f = File::create("circle.dot").unwrap();
 
-        let cg = generate_circle(3);
+        let cg = generate_single_face(3);
 
         dot::render(cg.borrow(), &mut f).unwrap()
     }
