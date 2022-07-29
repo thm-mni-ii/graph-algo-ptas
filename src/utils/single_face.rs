@@ -71,13 +71,13 @@ mod tests {
         let sv = cg.get_vertexes().next().unwrap();
         let sd = cg.dart_vertex(&sv);
         let mut cd = sd.clone();
-        for _i in 0..n-1 {
+        for _i in 0..n - 1 {
             cd = cg.next(&cd);
         }
         let tv = cg.dart_target(&cd);
         assert_eq!(sv, tv);
         cd = sd.clone();
-        for _i in 0..n+1 {
+        for _i in 0..n + 1 {
             cd = cg.prev(&cd);
         }
         let tv = cg.dart_target(&cd);
