@@ -2,7 +2,7 @@ use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 pub fn span(
     g: &impl GraphDCEL<
@@ -14,13 +14,12 @@ pub fn span(
         LinkGraphIter<LinkFace>,
     >,
     v: LinkVertex,
-) -> HashSet<(LinkVertex, LinkVertex)> {
-    // TODO: change return type for tree decomposition
+) -> HashMap<LinkVertex, LinkVertex> {
     if g.get_vertexes().count() <= 1 {
-        return HashSet::new();
+        return HashMap::new();
     }
     let mut queue = VecDeque::new();
-    let mut result = HashSet::new();
+    let mut result = HashMap::new();
     let mut visited = HashSet::new();
     queue.push_back(v);
 
@@ -33,7 +32,7 @@ pub fn span(
         for n in neighbors(g, &v) {
             if visited.insert(n.clone()) {
                 queue.push_back(n.clone());
-                result.insert((v.clone(), n));
+                result.insert(n, v.clone());
             }
         }
     }
@@ -71,7 +70,7 @@ fn neighbors(
 mod tests {
     use crate::algorithm::spantree::{neighbors, span};
     use crate::data_structure::link_graph::LinkGraph;
-    use std::collections::HashSet;
+    use std::collections::{HashMap};
 
     #[test]
     fn single_vertex() {
@@ -81,7 +80,7 @@ mod tests {
         let edges = span(&lg, lv1);
 
         println!("[RESULT]: {:?}", edges);
-        assert_eq!(edges, HashSet::new());
+        assert_eq!(edges, HashMap::new());
     }
 
     #[test]
@@ -105,7 +104,7 @@ mod tests {
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges.len(), 1);
-        assert!(edges.contains(&(lv1, lv2)));
+        assert_eq!(edges.get(&lv2), Some(&lv1))
     }
 
     #[test]
@@ -157,8 +156,8 @@ mod tests {
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges.len(), 2);
-        assert!(edges.contains(&(lv1.clone(), lv2)));
-        assert!(edges.contains(&(lv1, lv0)));
+        assert_eq!(edges.get(&lv2), Some(&lv1));
+        assert_eq!(edges.get(&lv0), Some(&lv1));
     }
 
     #[test]
@@ -174,7 +173,7 @@ mod tests {
             lv1.clone(),
             Some(ld1.clone()),
             Some(ld1.clone()),
-            Some(ld1.clone()),
+            Some(ld1),
             Some(lf),
         );
 

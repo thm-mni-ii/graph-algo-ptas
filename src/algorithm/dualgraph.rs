@@ -2,9 +2,9 @@ use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-fn dual_graph(
+pub fn dual_graph(
     g: &impl GraphDCEL<
         LinkVertex,
         LinkDart,
@@ -13,15 +13,14 @@ fn dual_graph(
         LinkGraphIter<LinkDart>,
         LinkGraphIter<LinkFace>,
     >,
-    span: HashSet<(LinkVertex, LinkVertex)>,
-) -> Vec<(LinkFace, LinkFace)> {
-    // TODO: change return type for tree decomposition
-    let mut result = vec![];
+    span: &HashMap<LinkVertex, LinkVertex>,
+) -> HashMap<LinkFace, HashSet<LinkFace>> {
+    let mut result = HashMap::new();
     let mut visited = HashSet::new();
     if g.get_vertexes().count() <= 2 {
         let outer_face = g.get_faces().next();
         if let Some(face) = outer_face {
-            result.push((face.clone(), face))
+            result.insert(face.clone(), Default::default());
         }
         return result;
     }
@@ -37,10 +36,21 @@ fn dual_graph(
             let next_face = g.face(&g.twin(&current_dart));
 
             if visited.insert(next_face.clone())
-                && (span.contains(&dart_as_tuple(g, &current_dart))
-                    || span.contains(&dart_as_tuple(g, &g.twin(&current_dart))))
+                && (span.get(&g.dart_target(&current_dart))
+                == Some(&g.dart_target(&g.twin(&current_dart)))
+                || span.get(&g.dart_target(&g.twin(&current_dart)))
+                == Some(&g.dart_target(&current_dart)))
             {
-                result.push((face.clone(), next_face.clone()));
+                match result.get_mut(&face) {
+                    None => {
+                        let mut set = HashSet::new();
+                        set.insert(next_face.clone());
+                        result.insert(face.clone(), set);
+                    }
+                    Some(set) => {
+                        set.insert(next_face.clone());
+                    }
+                }
             }
             current_dart = next_dart;
         }
@@ -48,6 +58,7 @@ fn dual_graph(
     result
 }
 
+#[allow(dead_code)]
 fn dart_as_tuple(
     g: &impl GraphDCEL<
         LinkVertex,
@@ -87,11 +98,11 @@ mod tests {
         );
 
         let span = span(&lg, lv1);
-        let dual = dual_graph(&lg, span);
+        let dual = dual_graph(&lg, &span);
 
         println!("[RESULT]: {:?}", dual);
         assert_eq!(dual.len(), 1);
-        assert_eq!(dual, vec![(lf.clone(), lf)]);
+        assert_eq!(dual.get(&lf), Some(&HashSet::new()));
     }
 
     #[test]
@@ -101,8 +112,12 @@ mod tests {
         let lv1 = lg.new_vertex();
         let lv2 = lg.new_vertex();
 
-        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
+        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, None, None);
+        let lof = lg.new_face(lt0.clone()); // Outer Face first
+
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, Some(lt0.clone()), None);
         let lf = lg.new_face(ld0.clone());
+
         let ld1 = lg.new_dart(
             lv1.clone(),
             lv2.clone(),
@@ -120,8 +135,7 @@ mod tests {
             Some(lf.clone()),
         );
 
-        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);
-        let lof = lg.new_face(lt0.clone());
+
         let lt2 = lg.new_dart(
             lv0,
             lv2.clone(),
@@ -140,10 +154,10 @@ mod tests {
         );
 
         let span = span(&lg, lv1);
-        let dual = dual_graph(&lg, span);
+        let dual = dual_graph(&lg, &span);
 
         println!("[RESULT]: {:?}", dual);
         assert_eq!(dual.len(), 1);
-        assert_eq!(dual, vec![(lf, lof)]);
+        assert!(dual.get(&lof).unwrap_or(&HashSet::new()).contains(&lf));
     }
 }
