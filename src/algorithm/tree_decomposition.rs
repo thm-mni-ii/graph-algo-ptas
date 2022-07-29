@@ -23,7 +23,7 @@ fn tree_decomposition(
 ) -> TreeDecomposition {
     let mut tree: TreeDecomposition = Default::default();
 
-    add_bags(root_vertex, 0, &mut tree, &spantree, &dual_graph, graph);
+    add_bags(root_vertex, 0, &mut tree, spantree, &dual_graph, graph);
 
     tree
 }
@@ -126,7 +126,7 @@ mod tests {
             lv1.clone(),
             Some(ld1.clone()),
             Some(ld1.clone()),
-            Some(ld1.clone()),
+            Some(ld1),
             Some(lf.clone()),
         );
         let span = span(&lg, lv1.clone());
@@ -166,7 +166,7 @@ mod tests {
             Some(ld1.clone()),
             Some(ld0.clone()),
             None,
-            Some(lf.clone()),
+            Some(lf),
         );
 
         let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);

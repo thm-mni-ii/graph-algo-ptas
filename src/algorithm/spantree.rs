@@ -70,7 +70,7 @@ fn neighbors(
 mod tests {
     use crate::algorithm::spantree::{neighbors, span};
     use crate::data_structure::link_graph::LinkGraph;
-    use std::collections::{HashMap};
+    use std::collections::HashMap;
 
     #[test]
     fn single_vertex() {
@@ -96,7 +96,7 @@ mod tests {
             lv1.clone(),
             Some(ld1.clone()),
             Some(ld1.clone()),
-            Some(ld1.clone()),
+            Some(ld1),
             Some(lf),
         );
 

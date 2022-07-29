@@ -78,11 +78,11 @@ mod tests {
         let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
         lg.new_face(ld1.clone());
         lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
+            lv2,
+            lv1,
             Some(ld1.clone()),
             Some(ld1.clone()),
-            Some(ld1.clone()),
+            Some(ld1),
             None,
         );
 
@@ -130,7 +130,7 @@ mod tests {
             Some(ld2.clone()),
             Some(ld1.clone()),
             None,
-            Some(lf.clone()),
+            Some(lf),
         );
 
         let ld4 = lg.new_dart(lv3.clone(), lv4.clone(), None, None, None, None);
@@ -146,26 +146,26 @@ mod tests {
         let lt2 = lg.new_dart(
             lv3.clone(),
             lv2.clone(),
-            Some(lt4.clone()),
+            Some(lt4),
             None,
-            Some(ld2.clone()),
+            Some(ld2),
             Some(lof.clone()),
         );
         let lt1 = lg.new_dart(
             lv2.clone(),
             lv1.clone(),
-            Some(lt2.clone()),
+            Some(lt2),
             None,
-            Some(ld1.clone()),
+            Some(ld1),
             Some(lof.clone()),
         );
         lg.new_dart(
             lv1.clone(),
             lv3.clone(),
-            Some(lt1.clone()),
-            Some(ld4.clone()),
-            Some(ld3.clone()),
-            Some(lof.clone()),
+            Some(lt1),
+            Some(ld4),
+            Some(ld3),
+            Some(lof),
         );
 
         let edges = triangulate(&lg);

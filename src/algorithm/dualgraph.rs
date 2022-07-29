@@ -20,7 +20,7 @@ pub fn dual_graph(
     if g.get_vertexes().count() <= 2 {
         let outer_face = g.get_faces().next();
         if let Some(face) = outer_face {
-            result.insert(face.clone(), Default::default());
+            result.insert(face, Default::default());
         }
         return result;
     }
@@ -37,9 +37,9 @@ pub fn dual_graph(
 
             if visited.insert(next_face.clone())
                 && (span.get(&g.dart_target(&current_dart))
-                == Some(&g.dart_target(&g.twin(&current_dart)))
-                || span.get(&g.dart_target(&g.twin(&current_dart)))
-                == Some(&g.dart_target(&current_dart)))
+                    == Some(&g.dart_target(&g.twin(&current_dart)))
+                    || span.get(&g.dart_target(&g.twin(&current_dart)))
+                        == Some(&g.dart_target(&current_dart)))
             {
                 match result.get_mut(&face) {
                     None => {
@@ -75,10 +75,10 @@ fn dart_as_tuple(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use crate::algorithm::dualgraph::dual_graph;
     use crate::algorithm::spantree::span;
     use crate::data_structure::link_graph::LinkGraph;
+    use std::collections::HashSet;
 
     #[test]
     fn single_edge() {
@@ -115,7 +115,14 @@ mod tests {
         let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, None, None);
         let lof = lg.new_face(lt0.clone()); // Outer Face first
 
-        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, Some(lt0.clone()), None);
+        let ld0 = lg.new_dart(
+            lv0.clone(),
+            lv1.clone(),
+            None,
+            None,
+            Some(lt0.clone()),
+            None,
+        );
         let lf = lg.new_face(ld0.clone());
 
         let ld1 = lg.new_dart(
@@ -130,11 +137,10 @@ mod tests {
             lv2.clone(),
             lv0.clone(),
             Some(ld1.clone()),
-            Some(ld0.clone()),
+            Some(ld0),
             None,
             Some(lf.clone()),
         );
-
 
         let lt2 = lg.new_dart(
             lv0,
