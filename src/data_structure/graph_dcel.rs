@@ -16,6 +16,7 @@ pub trait GraphDCEL<
     fn get_vertexes(&self) -> VI;
     fn get_darts(&self) -> DI;
     fn get_faces(&self) -> FI;
+    fn neighbors(&self, vertex: &V) -> Vec<V>;
 
     fn dart_vertex(&self, vertex: &V) -> D;
     fn dart_face(&self, face: &F) -> D;
