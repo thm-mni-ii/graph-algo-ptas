@@ -159,7 +159,7 @@ mod tests {
             Some(ld1.clone()),
             Some(lof.clone()),
         );
-        let lt3 = lg.new_dart(
+        lg.new_dart(
             lv1.clone(),
             lv3.clone(),
             Some(lt1.clone()),

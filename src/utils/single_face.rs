@@ -58,11 +58,8 @@ pub fn generate_single_face(n: usize) -> LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::data_structure::graph_dcel::GraphDCEL;
-
     use super::generate_single_face;
-
-    use crate::data_structure::link_graph::LinkDart;
+    use crate::data_structure::graph_dcel::GraphDCEL;
 
     #[test]
     fn test() {

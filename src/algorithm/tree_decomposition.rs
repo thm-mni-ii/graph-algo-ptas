@@ -31,7 +31,7 @@ fn tree_decomposition(
 fn add_bags(
     vertex: LinkFace,
     parent: usize,
-    mut tree: &mut arboretum_td::tree_decomposition::TreeDecomposition,
+    tree: &mut TreeDecomposition,
     spantree: &HashMap<LinkVertex, LinkVertex>,
     dual_graph: &HashMap<LinkFace, HashSet<LinkFace>>,
     graph: &impl GraphDCEL<

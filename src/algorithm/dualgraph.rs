@@ -64,6 +64,7 @@ fn dart_as_tuple(
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
     use crate::algorithm::dualgraph::dual_graph;
     use crate::algorithm::spantree::span;
     use crate::data_structure::link_graph::LinkGraph;
