@@ -208,6 +208,34 @@ impl LinkGraph {
         dart.0.borrow_mut().face = Some(lv.clone());
         lv
     }
+
+    pub fn new_edge(
+        &mut self,
+        from: LinkVertex,
+        to: LinkVertex,
+        prev: Option<LinkDart>,
+        next: Option<LinkDart>,
+        face: Option<LinkFace>,
+    ) -> (LinkDart, LinkDart) {
+        let dart = self.new_dart(
+            from.clone(),
+            to.clone(),
+            prev.clone(),
+            next.clone(),
+            None,
+            face.clone(),
+        );
+        let twin = self.new_dart(
+            to,
+            from,
+            next.and_then(|n| n.0.borrow().twin.clone()),
+            prev.and_then(|n| n.0.borrow().twin.clone()),
+            Some(dart.clone()),
+            face,
+        );
+
+        (dart, twin)
+    }
 }
 
 impl Drop for LinkGraph {
