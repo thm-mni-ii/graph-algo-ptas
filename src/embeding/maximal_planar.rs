@@ -98,6 +98,83 @@ impl MaximalPlanar {
         }
     }
 
+    fn pahase_2(graph: &mut Graph<VertexType, (), Undirected>) -> LinkGraph {
+        let mut dcel = LinkGraph::new();
+
+        let v0 = dcel.new_vertex();
+        let v1 = dcel.new_vertex();
+        let v2 = dcel.new_vertex();
+        let v3 = dcel.new_vertex();
+
+        // Face 1
+        let d0 = dcel.new_edge(v0.clone(), v1.clone(), None, None, None).0;
+        let f0 = dcel.new_face(d0.clone());
+        let d1 = dcel
+            .new_edge(
+                v1.clone(),
+                v3.clone(),
+                Some(d0.clone()),
+                None,
+                Some(f0.clone()),
+            )
+            .0;
+        let d2 = dcel
+            .new_edge(
+                v3.clone(),
+                v0.clone(),
+                Some(d1),
+                Some(d0.clone()),
+                Some(f0.clone()),
+            )
+            .0;
+
+        // Face 2
+        let d3 = dcel.new_edge(v1.clone(), v2.clone(), None, None, None).0;
+        let f1 = dcel.new_face(d3.clone());
+        let d4 = dcel
+            .new_edge(
+                v2.clone(),
+                v3.clone(),
+                Some(d3.clone()),
+                None,
+                Some(f1.clone()),
+            )
+            .0;
+        let d5 = dcel
+            .new_edge(
+                v3.clone(),
+                v1.clone(),
+                Some(d4.clone()),
+                Some(d3.clone()),
+                Some(f1.clone()),
+            )
+            .0;
+
+        // Face 3
+        let d6 = dcel.new_edge(v2.clone(), v0.clone(), None, None, None).0;
+        let f3 = dcel.new_face(d6.clone());
+        let d7 = dcel
+            .new_edge(
+                v0.clone(),
+                v3.clone(),
+                Some(d6.clone()),
+                None,
+                Some(f3.clone()),
+            )
+            .0;
+        let d8 = dcel
+            .new_edge(
+                v3.clone(),
+                v2.clone(),
+                Some(d7.clone()),
+                Some(d6.clone()),
+                Some(f3.clone()),
+            )
+            .0;
+
+        dcel
+    }
+
     fn is_reducible(graph: &Graph<VertexType, (), Undirected>, node_idx: NodeIndex) -> bool {
         let count = graph.edges(node_idx).count();
         let small_neighbore_count = MaximalPlanar::get_small_meighbor_count(graph, node_idx);
