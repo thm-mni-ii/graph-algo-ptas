@@ -219,6 +219,22 @@ impl
         self.faces.len()
     }
 
+    fn face_vertex_count(&self, face: &LinkFace) -> usize {
+        let mut count = 1;
+        let dart = self.dart_face(face);
+        let mut current_dart = dart.clone();
+
+        loop {
+            current_dart = self.next(&current_dart);
+
+            if current_dart == dart {
+                break count;
+            }
+
+            count += 1;
+        }
+    }
+
     fn neighbors_count(&self, vertex: &LinkVertex) -> usize {
         self.neighbors(vertex).len()
     }

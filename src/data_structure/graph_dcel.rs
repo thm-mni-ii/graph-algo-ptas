@@ -20,6 +20,7 @@ pub trait GraphDCEL<
     fn dart_count(&self) -> usize;
     fn edge_count(&self) -> usize;
     fn face_count(&self) -> usize;
+    fn face_vertex_count(&self, face: &F) -> usize;
     fn neighbors_count(&self, vertex: &V) -> usize;
     fn neighbors(&self, vertex: &V) -> Vec<V>;
 
