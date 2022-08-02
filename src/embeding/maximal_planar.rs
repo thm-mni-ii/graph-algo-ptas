@@ -15,6 +15,27 @@ enum StackItem {
     Degree(usize),
 }
 
+impl StackItem {
+    fn unwrap_node(self) -> NodeIndex {
+        match self {
+            StackItem::Node(node) => node,
+            _ => panic!("failed to unwrap node"),
+        }
+    }
+    fn unwrap_edge(self) -> EdgeIndex {
+        match self {
+            StackItem::Edge(edge) => edge,
+            _ => panic!("failed to unwrap edge"),
+        }
+    }
+    fn unwrap_degree(self) -> usize {
+        match self {
+            StackItem::Degree(degree) => degree,
+            _ => panic!("failed to unwrap degree"),
+        }
+    }
+}
+
 pub struct MaximalPlanar {}
 
 impl Embeding<LinkVertex, LinkDart, LinkFace, LinkGraph> for MaximalPlanar {
@@ -175,6 +196,50 @@ impl MaximalPlanar {
         dcel
     }
 
+    fn phase_3(
+        graph: Graph<VertexType, (), Undirected>,
+        mut stack: Vec<StackItem>,
+        mut dcel: LinkGraph,
+    ) -> LinkGraph {
+        let node_ids = graph
+            .raw_nodes()
+            .iter()
+            .map(|node| node.weight)
+            .collect::<Vec<_>>();
+
+        while let Some(entry) = stack.pop() {
+            let k = entry.unwrap_degree();
+
+            match k {
+                3 => {
+                    let v = stack.pop().unwrap().unwrap_node();
+                    let hs = (0..3)
+                        .map(|_| stack.pop().unwrap().unwrap_edge())
+                        .collect::<Vec<_>>();
+                }
+                4 => {
+                    let e = stack.pop().unwrap().unwrap_edge();
+                    let v = stack.pop().unwrap().unwrap_node();
+                    let hs = (0..4)
+                        .map(|_| stack.pop().unwrap().unwrap_edge())
+                        .collect::<Vec<_>>();
+                }
+                5 => {
+                    let e = (0..2)
+                        .map(|_| stack.pop().unwrap().unwrap_edge())
+                        .collect::<Vec<_>>();
+                    let v = stack.pop().unwrap().unwrap_node();
+                    let hs = (0..5)
+                        .map(|_| stack.pop().unwrap().unwrap_edge())
+                        .collect::<Vec<_>>();
+                }
+                _ => panic!("invalid degree count"),
+            }
+        }
+
+        dcel
+    }
+
     fn is_reducible(graph: &Graph<VertexType, (), Undirected>, node_idx: NodeIndex) -> bool {
         let count = graph.edges(node_idx).count();
         let small_neighbore_count = MaximalPlanar::get_small_meighbor_count(graph, node_idx);
@@ -244,5 +309,24 @@ impl MaximalPlanar {
         } else {
             reduciable.remove(&node_idx);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::data_structure::graph_types::Vertex as VertexType;
+    use petgraph::{Graph, Undirected};
+
+    use super::MaximalPlanar;
+
+    fn k4_graph() -> Graph<VertexType, (), Undirected> {
+        Graph::from_edges([(0, 1), (1, 2), (2, 0), (1, 3), (3, 1), (2, 3)])
+    }
+
+    #[test]
+    fn pahase_2() {
+        let mut graph = k4_graph();
+
+        let dcel = MaximalPlanar::pahase_2(&mut graph);
     }
 }
