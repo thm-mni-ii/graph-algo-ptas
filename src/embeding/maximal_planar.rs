@@ -196,7 +196,6 @@ impl MaximalPlanar {
             .collect::<HashMap<NodeIndex, LinkVertex>>();
 
         let mut last_dart: Option<LinkDart> = None;
-        let mut last_twin: Option<LinkDart> = None;
         while let Some(entry) = stack.pop() {
             let k = entry.unwrap_degree();
 
@@ -221,8 +220,8 @@ impl MaximalPlanar {
                 let (a_node, b_node) = graph_copy.edge_endpoints(e).unwrap();
                 let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
                 let b_vertex = node_id_mapper.get(&b_node).unwrap().clone();
-                let new_dart = dcel.new_dart(a_vertex, b_vertex, last_twin, None, None, None);
-                last_twin = Some(new_dart)
+                let (new_dart, _) = dcel.new_edge(a_vertex, b_vertex, None, None, None);
+                last_dart = Some(new_dart);
             }
             node_id_mapper.entry(v).or_insert_with(|| dcel.new_vertex());
             for h in hs {
@@ -232,24 +231,9 @@ impl MaximalPlanar {
                     .entry(b_node)
                     .or_insert_with(|| dcel.new_vertex())
                     .clone();
-                let new_dart = dcel.new_dart(
-                    a_vertex.clone(),
-                    b_vertex.clone(),
-                    last_dart,
-                    None,
-                    None,
-                    None,
-                );
-                let twin_dart = dcel.new_dart(
-                    b_vertex,
-                    a_vertex,
-                    None,
-                    last_twin,
-                    Some(new_dart.clone()),
-                    None,
-                );
+                let (new_dart, _) =
+                    dcel.new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
                 last_dart = Some(new_dart);
-                last_twin = Some(twin_dart);
             }
         }
 
