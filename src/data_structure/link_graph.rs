@@ -391,12 +391,12 @@ mod tests {
         let lt2 = lg.new_dart(
             lv3.clone(),
             lv2,
-            Some(lt1.clone()),
             None,
+            Some(lt1.clone()),
             Some(ld2),
             Some(lof.clone()),
         );
-        let _lt3 = lg.new_dart(lv1, lv3, Some(lt2), Some(lt1), Some(ld3), Some(lof));
+        let _lt3 = lg.new_dart(lv1, lv3, Some(lt1), Some(lt2), Some(ld3), Some(lof));
         lg
     }
 
