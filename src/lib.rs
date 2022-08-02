@@ -5,4 +5,5 @@
 
 mod algorithm;
 mod data_structure;
+mod embeding;
 mod utils;

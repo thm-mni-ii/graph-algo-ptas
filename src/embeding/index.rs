@@ -1,8 +1,15 @@
 use petgraph::{Graph, Undirected};
 
 use crate::data_structure::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
-use crate::data_structure::graph_types::Vertex as VertexType;
-
-pub trait Embeding<V: Vertex, D: Dart, F: Face, T: GraphDCEL<V, D, F>> {
-    fn embed(graph: Graph<VertexType, (), Undirected>) -> T;
+pub trait Embeding<
+    V: Vertex,
+    D: Dart,
+    F: Face,
+    VI: Iterator<Item = V>,
+    DI: Iterator<Item = D>,
+    FI: Iterator<Item = F>,
+    T: GraphDCEL<V, D, F, VI, DI, FI>,
+>
+{
+    fn embed(graph: Graph<u32, (), Undirected>) -> T;
 }
