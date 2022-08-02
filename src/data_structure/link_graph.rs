@@ -561,4 +561,40 @@ mod tests {
         assert_eq!(lg.neighbors(&lv1), vec![lv0.clone(), lv2.clone()]);
         assert_eq!(lg.neighbors(&lv2), vec![lv1, lv0]);
     }
+
+    #[test]
+    fn dart_count() {
+        let g = example_graph();
+
+        assert_eq!(g.dart_count(), 6)
+    }
+
+    #[test]
+    fn edge_count() {
+        let g = example_graph();
+
+        assert_eq!(g.edge_count(), 3);
+    }
+
+    #[test]
+    fn face_count() {
+        let g = example_graph();
+
+        assert_eq!(g.face_count(), 2);
+    }
+
+    #[test]
+    fn face_vertex_count() {
+        let g = example_graph();
+        let f = g.face(&g.get_darts().next().unwrap());
+
+        assert_eq!(g.face_vertex_count(&f), 3);
+    }
+
+    #[test]
+    fn neighbors_count() {
+        let g = example_graph();
+
+        assert_eq!(g.neighbors_count(&g.get_vertexes().next().unwrap()), 2);
+    }
 }
