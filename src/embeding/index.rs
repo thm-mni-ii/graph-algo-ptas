@@ -1,4 +1,4 @@
-use petgraph::{Graph, Undirected};
+use petgraph::{stable_graph::StableGraph, Graph, Undirected};
 
 use crate::data_structure::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 pub trait Embeding<
@@ -11,5 +11,5 @@ pub trait Embeding<
     T: GraphDCEL<V, D, F, VI, DI, FI>,
 >
 {
-    fn embed(graph: Graph<u32, (), Undirected>) -> T;
+    fn embed(graph: StableGraph<u32, (), Undirected>) -> T;
 }
