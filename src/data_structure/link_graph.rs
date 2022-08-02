@@ -449,7 +449,7 @@ mod tests {
         assert_eq!(twin_back_dart, dart);
         let twin_2_dart = graph.next(&twin_dart);
         let twin_dart_3 = graph.twin(&dart_3);
-        assert_ne!(twin_2_dart, twin_dart_3);
+        assert_eq!(twin_2_dart, twin_dart_3);
         let face = graph.face(&dart);
         graph.dart_face(&face);
         let prev_dart = graph.prev(&dart);
