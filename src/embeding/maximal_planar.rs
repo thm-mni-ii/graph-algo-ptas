@@ -1,4 +1,3 @@
-use std::borrow::BorrowMut;
 use std::collections::{BTreeSet, HashMap};
 
 use petgraph::graph::{EdgeIndex, NodeIndex};
@@ -74,6 +73,7 @@ impl MaximalPlanar {
                 Some(v) => *v,
                 None => panic!(), // TODO: improve
             };
+            reducible.remove(&v);
             let degree = graph.edges(v).count();
             let h = graph.neighbors(v).collect::<BTreeSet<_>>();
 
@@ -218,11 +218,9 @@ impl MaximalPlanar {
                 .collect::<Vec<_>>();
 
             for e in es {
-                let (a_node, b_node) = graph_copy.edge_endpoints(e).unwrap();
+                let (a_node, _) = graph_copy.edge_endpoints(e).unwrap();
                 let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
-                let b_vertex = node_id_mapper.get(&b_node).unwrap().clone();
-                let (new_dart, _) = dcel.new_edge(a_vertex, b_vertex, None, None, None);
-                last_dart = Some(new_dart);
+                dcel.remove_edge(&a_vertex, dcel.dart_vertex(&a_vertex));
             }
             node_id_mapper.entry(v).or_insert_with(|| dcel.new_vertex());
             let mut insert = false;
@@ -236,13 +234,13 @@ impl MaximalPlanar {
 
                 let (new_dart, _) =
                     dcel.new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
-                
+
                 if !insert {
                     insert = true;
                 } else {
                     dcel.new_face(new_dart.clone());
                 }
-    
+
                 last_dart = Some(new_dart);
             }
         }
@@ -355,6 +353,23 @@ mod tests {
         ])
     }
 
+    fn large_graph() -> StableGraph<u32, (), Undirected> {
+        StableGraph::from_edges([
+            (0, 1),
+            (1, 2),
+            (2, 0),
+            (1, 3),
+            (2, 3),
+            (0, 4),
+            (1, 4),
+            (2, 4),
+            (3, 4),
+            (3, 5),
+            (4, 5),
+            (5, 1),
+        ])
+    }
+
     #[test]
     fn phase_1() {
         let mut graph = other_graph();
@@ -368,7 +383,7 @@ mod tests {
 
     #[test]
     fn phase_2() {
-        let mut graph = other_graph();
+        let graph = other_graph();
         let mut f = File::create("phase_2.dot").unwrap();
 
         println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
@@ -381,7 +396,7 @@ mod tests {
 
     #[test]
     fn phase_3() {
-        let graph = other_graph();
+        let graph = large_graph();
         let mut f = File::create("circle.dot").unwrap();
 
         println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));

@@ -345,6 +345,16 @@ impl LinkGraph {
 
         (dart, twin)
     }
+
+    pub fn remove_dart(&mut self, from: &LinkVertex, dart: LinkDart) -> LinkDart {
+        dart.0.borrow_mut().face.take();
+        from.0.borrow_mut().dart.take();
+        dart
+    }
+
+    pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
+        (self.remove_dart(from, dart.clone()), self.remove_dart(from, self.twin(&dart)))
+    }
 }
 
 impl Drop for LinkGraph {

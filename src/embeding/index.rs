@@ -1,4 +1,4 @@
-use petgraph::{stable_graph::StableGraph, Graph, Undirected};
+use petgraph::{stable_graph::StableGraph, Undirected};
 
 use crate::data_structure::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 pub trait Embeding<
