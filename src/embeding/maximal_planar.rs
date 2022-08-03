@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use std::collections::{BTreeSet, HashMap};
 
 use petgraph::graph::{EdgeIndex, NodeIndex};
@@ -56,7 +57,7 @@ impl
         let mut stack = Vec::new();
 
         MaximalPlanar::phase_1(&mut graph, &mut stack);
-        let dcel = MaximalPlanar::pahase_2(&mut graph);
+        let dcel = MaximalPlanar::phase_2();
         MaximalPlanar::phase_3(graph, graph_copy, stack, dcel)
     }
 }
@@ -134,7 +135,7 @@ impl MaximalPlanar {
         }
     }
 
-    fn pahase_2(graph: &mut StableGraph<u32, (), Undirected>) -> LinkGraph {
+    fn phase_2() -> LinkGraph {
         let mut dcel = LinkGraph::new();
 
         let v0 = dcel.new_vertex();
@@ -145,7 +146,7 @@ impl MaximalPlanar {
         // Face 1
         let d0 = dcel.new_edge(v0.clone(), v1.clone(), None, None, None).0;
         let f0 = dcel.new_face(d0.clone());
-        let d1 = dcel
+        let _d1 = dcel
             .new_edge(
                 v1.clone(),
                 v3.clone(),
@@ -158,7 +159,7 @@ impl MaximalPlanar {
         // Face 2
         let d3 = dcel.new_edge(v1.clone(), v2.clone(), None, None, None).0;
         let f1 = dcel.new_face(d3.clone());
-        let d4 = dcel
+        let _d4 = dcel
             .new_edge(
                 v2.clone(),
                 v3.clone(),
@@ -171,7 +172,7 @@ impl MaximalPlanar {
         // Face 3
         let d6 = dcel.new_edge(v2.clone(), v0.clone(), None, None, None).0;
         let f3 = dcel.new_face(d6.clone());
-        let d7 = dcel
+        let _d7 = dcel
             .new_edge(
                 v0.clone(),
                 v3.clone(),
@@ -224,6 +225,7 @@ impl MaximalPlanar {
                 last_dart = Some(new_dart);
             }
             node_id_mapper.entry(v).or_insert_with(|| dcel.new_vertex());
+            let mut insert = false;
             for h in hs {
                 let (a_node, b_node) = graph_copy.edge_endpoints(h).unwrap();
                 let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
@@ -231,8 +233,16 @@ impl MaximalPlanar {
                     .entry(b_node)
                     .or_insert_with(|| dcel.new_vertex())
                     .clone();
+
                 let (new_dart, _) =
                     dcel.new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
+                
+                if !insert {
+                    insert = true;
+                } else {
+                    dcel.new_face(new_dart.clone());
+                }
+    
                 last_dart = Some(new_dart);
             }
         }
@@ -325,6 +335,7 @@ mod tests {
     use crate::embeding::index::Embeding;
 
     use super::MaximalPlanar;
+    use crate::data_structure::graph_dcel::GraphDCEL;
 
     fn k4_graph() -> StableGraph<u32, (), Undirected> {
         StableGraph::from_edges([(0, 1), (1, 2), (2, 0), (1, 3), (2, 3)])
@@ -356,20 +367,20 @@ mod tests {
     }
 
     #[test]
-    fn pahase_2() {
+    fn phase_2() {
         let mut graph = other_graph();
         let mut f = File::create("phase_2.dot").unwrap();
 
         println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
 
-        let dcel = MaximalPlanar::pahase_2(&mut graph);
+        let dcel = MaximalPlanar::phase_2();
 
         dot::render(&dcel, &mut f).unwrap()
         // TODO: test
     }
 
     #[test]
-    fn pahase_3() {
+    fn phase_3() {
         let graph = other_graph();
         let mut f = File::create("circle.dot").unwrap();
 
@@ -377,7 +388,7 @@ mod tests {
 
         let dcel = MaximalPlanar::embed(graph);
 
-        dot::render(&dcel, &mut f).unwrap()
-        // TODO: test
+        dot::render(&dcel, &mut f).unwrap();
+        println!("FACE COUNT: {:?}", dcel.get_faces().count());
     }
 }
