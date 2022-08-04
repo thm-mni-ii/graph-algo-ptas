@@ -184,15 +184,13 @@ impl MaximalPlanar {
                 dcel.remove_edge(&a_vertex, dcel.dart_vertex(&a_vertex));
             }
 
-            node_id_mapper.entry(v).or_insert_with(|| dcel.new_vertex());
+            MaximalPlanar::get_or_create_vertex(&mut node_id_mapper, v, &mut dcel);
 
             for h in hs {
                 let (a_node, b_node) = graph_copy.edge_endpoints(h).unwrap();
                 let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
-                let b_vertex = node_id_mapper
-                    .entry(b_node)
-                    .or_insert_with(|| dcel.new_vertex())
-                    .clone();
+                let b_vertex =
+                    MaximalPlanar::get_or_create_vertex(&mut node_id_mapper, b_node, &mut dcel);
 
                 let (new_dart, _) =
                     dcel.new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
@@ -296,6 +294,17 @@ impl MaximalPlanar {
         (0..count)
             .map(|_| stack.pop().unwrap().unwrap_edge())
             .collect::<Vec<_>>()
+    }
+
+    fn get_or_create_vertex(
+        node_id_mapper: &mut HashMap<NodeIndex, LinkVertex>,
+        key: NodeIndex,
+        dcel: &mut LinkGraph,
+    ) -> LinkVertex {
+        node_id_mapper
+            .entry(key)
+            .or_insert_with(|| dcel.new_vertex())
+            .clone()
     }
 }
 
