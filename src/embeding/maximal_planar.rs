@@ -164,7 +164,7 @@ impl MaximalPlanar {
         let mut last_dart: Option<LinkDart> = None;
         while let Some(entry) = stack.pop() {
             let k = entry.unwrap_degree();
-
+            let mut create_face = false;
             let (ec, hc) = match k {
                 3 => (0, 3),
                 4 => (1, 4),
@@ -174,21 +174,18 @@ impl MaximalPlanar {
                     continue;
                 }
             };
-            let es = (0..ec)
-                .map(|_| stack.pop().unwrap().unwrap_edge())
-                .collect::<Vec<_>>();
+            let es = MaximalPlanar::pop_edges(&mut stack, ec);
             let v = stack.pop().unwrap().unwrap_node();
-            let hs = (0..hc)
-                .map(|_| stack.pop().unwrap().unwrap_edge())
-                .collect::<Vec<_>>();
+            let hs = MaximalPlanar::pop_edges(&mut stack, hc);
 
             for e in es {
                 let (a_node, _) = graph_copy.edge_endpoints(e).unwrap();
                 let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
                 dcel.remove_edge(&a_vertex, dcel.dart_vertex(&a_vertex));
             }
+
             node_id_mapper.entry(v).or_insert_with(|| dcel.new_vertex());
-            let mut insert = false;
+
             for h in hs {
                 let (a_node, b_node) = graph_copy.edge_endpoints(h).unwrap();
                 let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
@@ -200,10 +197,10 @@ impl MaximalPlanar {
                 let (new_dart, _) =
                     dcel.new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
 
-                if !insert {
-                    insert = true;
-                } else {
+                if create_face {
                     dcel.new_face(new_dart.clone());
+                } else {
+                    create_face = true;
                 }
 
                 last_dart = Some(new_dart);
@@ -293,6 +290,12 @@ impl MaximalPlanar {
         let d0 = dcel.new_edge(vertex1, vertex2.clone(), None, None, None).0;
         let f0 = dcel.new_face(d0.clone());
         let _d1 = dcel.new_edge(vertex2, vertex3, Some(d0), None, Some(f0)).0;
+    }
+
+    fn pop_edges(stack: &mut Vec<StackItem>, count: i32) -> Vec<EdgeIndex> {
+        (0..count)
+            .map(|_| stack.pop().unwrap().unwrap_edge())
+            .collect::<Vec<_>>()
     }
 }
 
