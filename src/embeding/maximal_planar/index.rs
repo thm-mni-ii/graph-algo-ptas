@@ -7,8 +7,7 @@ use petgraph::Undirected;
 
 use crate::data_structure::graph_dcel::GraphDCEL;
 use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkGraphIter, LinkVertex};
-
-use super::index::Embeding;
+use crate::embeding::index::Embeding;
 
 #[derive(Debug)]
 enum StackItem {
@@ -353,11 +352,10 @@ mod tests {
         data_structure::link_graph::LinkGraph,
         embeding::{
             index::Embeding,
-            maximal_planar::{Phase1, Phase2},
+            maximal_planar::index::{MaximalPlanar, Phase1, Phase2},
         },
     };
 
-    use super::MaximalPlanar;
     use crate::data_structure::graph_dcel::GraphDCEL;
 
     fn k4_graph() -> StableGraph<u32, (), Undirected> {
