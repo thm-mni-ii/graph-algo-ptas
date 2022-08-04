@@ -9,6 +9,7 @@ use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkGraph
 use crate::embeding::index::Embeding;
 
 use super::phase1::Phase1;
+use super::phase2::Phase2;
 
 #[derive(Debug)]
 pub enum StackItem {
@@ -61,39 +62,6 @@ impl
         Phase3::new(graph, graph_copy, &mut stack, &mut dcel).execute();
 
         dcel
-    }
-}
-
-pub struct Phase2<'a> {
-    dcel: &'a mut LinkGraph,
-}
-
-impl Phase2<'_> {
-    fn new(dcel: &mut LinkGraph) -> Phase2 {
-        Phase2 { dcel }
-    }
-
-    fn execute(&mut self) {
-        let v0 = self.dcel.new_vertex();
-        let v1 = self.dcel.new_vertex();
-        let v2 = self.dcel.new_vertex();
-        let v3 = self.dcel.new_vertex();
-
-        self.create_face(v0.clone(), v1.clone(), v3.clone());
-        self.create_face(v1, v2.clone(), v3.clone());
-        self.create_face(v2, v0, v3);
-    }
-
-    fn create_face(&mut self, vertex1: LinkVertex, vertex2: LinkVertex, vertex3: LinkVertex) {
-        let d0 = self
-            .dcel
-            .new_edge(vertex1, vertex2.clone(), None, None, None)
-            .0;
-        let f0 = self.dcel.new_face(d0.clone());
-        let _d1 = self
-            .dcel
-            .new_edge(vertex2, vertex3, Some(d0), None, Some(f0))
-            .0;
     }
 }
 
@@ -197,13 +165,7 @@ mod tests {
         Undirected,
     };
 
-    use crate::{
-        data_structure::link_graph::LinkGraph,
-        embeding::{
-            index::Embeding,
-            maximal_planar::index::{MaximalPlanar, Phase2},
-        },
-    };
+    use crate::embeding::{index::Embeding, maximal_planar::index::MaximalPlanar};
 
     use crate::data_structure::graph_dcel::GraphDCEL;
 
@@ -240,17 +202,6 @@ mod tests {
             (4, 5),
             (5, 1),
         ])
-    }
-
-    #[test]
-    fn phase_2() {
-        let mut dcel = LinkGraph::new();
-
-        Phase2::new(&mut dcel).execute();
-
-        assert_eq!(dcel.get_vertexes().count(), 4);
-        assert_eq!(dcel.get_faces().count(), 3);
-        // TODO: Test structure
     }
 
     #[test]
