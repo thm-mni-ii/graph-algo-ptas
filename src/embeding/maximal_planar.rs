@@ -58,7 +58,9 @@ impl
 
         Phase1::new(&mut graph, &mut stack).execute();
         Phase2::new(&mut dcel).execute();
-        MaximalPlanar::phase_3(graph, graph_copy, stack, dcel)
+        Phase3::new(graph, graph_copy, &mut stack, &mut dcel).execute();
+
+        dcel
     }
 }
 
@@ -247,20 +249,38 @@ impl Phase2<'_> {
     }
 }
 
-impl MaximalPlanar {
-    fn phase_3(
+struct Phase3<'a> {
+    graph: StableGraph<u32, (), Undirected>,
+    graph_copy: StableGraph<u32, (), Undirected>,
+    stack: &'a mut Vec<StackItem>,
+    dcel: &'a mut LinkGraph,
+    node_id_mapper: HashMap<NodeIndex, LinkVertex>,
+}
+
+impl Phase3<'_> {
+    fn new<'a>(
         graph: StableGraph<u32, (), Undirected>,
         graph_copy: StableGraph<u32, (), Undirected>,
-        mut stack: Vec<StackItem>,
-        mut dcel: LinkGraph,
-    ) -> LinkGraph {
-        let mut node_id_mapper = graph
+        stack: &'a mut Vec<StackItem>,
+        dcel: &'a mut LinkGraph,
+    ) -> Phase3<'a> {
+        let node_id_mapper = graph
             .node_indices()
             .zip(dcel.get_vertexes())
             .collect::<HashMap<NodeIndex, LinkVertex>>();
 
+        Phase3 {
+            graph,
+            graph_copy,
+            stack,
+            dcel,
+            node_id_mapper,
+        }
+    }
+
+    fn execute(&mut self) {
         let mut last_dart: Option<LinkDart> = None;
-        while let Some(entry) = stack.pop() {
+        while let Some(entry) = self.stack.pop() {
             let k = entry.unwrap_degree();
             let mut create_face = false;
             let (ec, hc) = match k {
@@ -272,29 +292,30 @@ impl MaximalPlanar {
                     continue;
                 }
             };
-            let es = MaximalPlanar::pop_edges(&mut stack, ec);
-            let v = stack.pop().unwrap().unwrap_node();
-            let hs = MaximalPlanar::pop_edges(&mut stack, hc);
+            let es = self.pop_edges(ec);
+            let v = self.stack.pop().unwrap().unwrap_node();
+            let hs = self.pop_edges(hc);
 
             for e in es {
-                let (a_node, _) = graph_copy.edge_endpoints(e).unwrap();
-                let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
-                dcel.remove_edge(&a_vertex, dcel.dart_vertex(&a_vertex));
+                let (a_node, _) = self.graph_copy.edge_endpoints(e).unwrap();
+                let a_vertex = self.node_id_mapper.get(&a_node).unwrap().clone();
+                self.dcel
+                    .remove_edge(&a_vertex, self.dcel.dart_vertex(&a_vertex));
             }
 
-            MaximalPlanar::get_or_create_vertex(&mut node_id_mapper, v, &mut dcel);
+            self.get_or_create_vertex(v);
 
             for h in hs {
-                let (a_node, b_node) = graph_copy.edge_endpoints(h).unwrap();
-                let a_vertex = node_id_mapper.get(&a_node).unwrap().clone();
-                let b_vertex =
-                    MaximalPlanar::get_or_create_vertex(&mut node_id_mapper, b_node, &mut dcel);
+                let (a_node, b_node) = self.graph_copy.edge_endpoints(h).unwrap();
+                let a_vertex = self.node_id_mapper.get(&a_node).unwrap().clone();
+                let b_vertex = self.get_or_create_vertex(b_node);
 
                 let (new_dart, _) =
-                    dcel.new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
+                    self.dcel
+                        .new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
 
                 if create_face {
-                    dcel.new_face(new_dart.clone());
+                    self.dcel.new_face(new_dart.clone());
                 } else {
                     create_face = true;
                 }
@@ -302,24 +323,18 @@ impl MaximalPlanar {
                 last_dart = Some(new_dart);
             }
         }
-
-        dcel
     }
 
-    fn pop_edges(stack: &mut Vec<StackItem>, count: i32) -> Vec<EdgeIndex> {
+    fn pop_edges(&mut self, count: i32) -> Vec<EdgeIndex> {
         (0..count)
-            .map(|_| stack.pop().unwrap().unwrap_edge())
+            .map(|_| self.stack.pop().unwrap().unwrap_edge())
             .collect::<Vec<_>>()
     }
 
-    fn get_or_create_vertex(
-        node_id_mapper: &mut HashMap<NodeIndex, LinkVertex>,
-        key: NodeIndex,
-        dcel: &mut LinkGraph,
-    ) -> LinkVertex {
-        node_id_mapper
+    fn get_or_create_vertex(&mut self, key: NodeIndex) -> LinkVertex {
+        self.node_id_mapper
             .entry(key)
-            .or_insert_with(|| dcel.new_vertex())
+            .or_insert_with(|| self.dcel.new_vertex())
             .clone()
     }
 }
