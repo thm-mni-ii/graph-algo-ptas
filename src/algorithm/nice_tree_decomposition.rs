@@ -2,7 +2,7 @@ use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHasher;
 use std::{collections::HashSet, hash::BuildHasherDefault};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum NiceTdNodeType {
     Join,
     Introduce(usize),
@@ -11,14 +11,14 @@ pub enum NiceTdNodeType {
 }
 
 pub struct NiceTreeDecomposition {
-    td: TreeDecomposition,
-    mapping: Vec<NiceTdNodeType>,
+    pub td: TreeDecomposition,
+    pub mapping: Vec<NiceTdNodeType>,
 }
 
 type FxHashSet<T> = HashSet<T, BuildHasherDefault<FxHasher>>;
 
 impl NiceTreeDecomposition {
-    fn from(mut td: TreeDecomposition) -> Self {
+    pub fn new(mut td: TreeDecomposition) -> Self {
         let root = td.root.unwrap_or(0);
         td.root = Some(root);
 
@@ -197,11 +197,7 @@ impl NiceTreeDecomposition {
             parent_id = new_child_id;
         }
 
-        Self::nicify_single_child_nodes(
-            child_id,
-            &get_child_bag_ids(td, child_id, parent_id),
-            td,
-        );
+        Self::nicify_single_child_nodes(child_id, &get_child_bag_ids(td, child_id, parent_id), td);
     }
 
     fn nicify_leaf_nodes(id: usize, children: &FxHashSet<usize>, td: &mut TreeDecomposition) {
@@ -371,15 +367,135 @@ impl NiceTreeDecomposition {
     }
 }
 
-pub fn get_child_bag_ids(
-    td: &TreeDecomposition,
-    vertex_id: usize,
-    parent_id: usize,
-) -> FxHashSet<usize> {
-    td.bags()[vertex_id]
+pub fn get_child_bag_ids(td: &TreeDecomposition, id: usize, parent_id: usize) -> FxHashSet<usize> {
+    td.bags()[id]
         .neighbors
         .iter()
         .filter(|id| **id != parent_id)
         .copied()
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::NiceTreeDecomposition;
+    use crate::{
+        algorithm::nice_tree_decomposition::get_child_bag_ids,
+        utils::random_graph::random_hashmap_graph,
+    };
+    use arboretum_td::{solver::Solver, tree_decomposition::TreeDecomposition};
+    use fxhash::FxHasher;
+    use rand::{rngs::StdRng, Rng, SeedableRng};
+    use std::{collections::HashSet, hash::BuildHasherDefault};
+
+    type FxHashSet<T> = HashSet<T, BuildHasherDefault<FxHasher>>;
+
+    #[test]
+    fn single_bag_with_1_vertex() {
+        let mut td = TreeDecomposition::default();
+        let mut vertex_set = FxHashSet::default();
+        vertex_set.insert(1);
+        td.add_bag(vertex_set);
+
+        let nice_td = NiceTreeDecomposition::new(td.clone());
+        assert!(nice_td.td.bags().len() == td.bags().len());
+        assert!(nice_td.td.bags()[0].vertex_set == td.bags()[0].vertex_set);
+    }
+
+    #[test]
+    fn single_bag_with_multiple_vertices() {
+        let mut td = TreeDecomposition::default();
+        let mut vertex_set = FxHashSet::default();
+        vertex_set.insert(1);
+        vertex_set.insert(2);
+        vertex_set.insert(3);
+        let id = td.add_bag(vertex_set);
+
+        let nice_td = NiceTreeDecomposition::new(td.clone());
+        let bag = &nice_td.td.bags()[id];
+        let child_id = *bag.neighbors.iter().next().unwrap();
+        let grandchild_id = get_child_bag_id(&nice_td.td, child_id, id).unwrap();
+
+        assert!(nice_td.td.bags().len() == 3);
+        assert!(bag.vertex_set.len() == 3);
+        assert!(
+            NiceTreeDecomposition::is_nice_td_intro(&nice_td.td, id, &bag.neighbors.clone())
+                .is_some()
+        );
+        assert!(NiceTreeDecomposition::is_nice_td_intro(
+            &nice_td.td,
+            child_id,
+            &get_child_bag_ids(&nice_td.td, child_id, id)
+        )
+        .is_some());
+        assert!(NiceTreeDecomposition::is_nice_td_leaf(
+            &nice_td.td,
+            grandchild_id,
+            &get_child_bag_ids(&nice_td.td, grandchild_id, child_id)
+        ));
+    }
+
+    #[test]
+    fn two_bags_with_multiple_vertices() {
+        let mut td = TreeDecomposition::default();
+        let mut vertex_set_1 = FxHashSet::default();
+        vertex_set_1.insert(1);
+        vertex_set_1.insert(2);
+        let mut vertex_set_2 = FxHashSet::default();
+        vertex_set_2.insert(2);
+        vertex_set_2.insert(3);
+
+        let id_1 = td.add_bag(vertex_set_1);
+        let id_2 = td.add_bag(vertex_set_2);
+        td.add_edge(id_1, id_2);
+
+        let nice_td = NiceTreeDecomposition::new(td.clone());
+        let bag = &nice_td.td.bags()[id_1];
+        let child_id = *bag.neighbors.iter().next().unwrap();
+        let grandchild_id = get_child_bag_id(&nice_td.td, child_id, id_1).unwrap();
+        let grandgrandchild_id = get_child_bag_id(&nice_td.td, grandchild_id, child_id).unwrap();
+
+        assert!(nice_td.td.bags().len() == 4);
+        assert_eq!(
+            NiceTreeDecomposition::is_nice_td_intro(&nice_td.td, id_1, &bag.neighbors.clone()),
+            Some(1)
+        );
+        assert_eq!(
+            NiceTreeDecomposition::is_nice_td_forget(
+                &nice_td.td,
+                child_id,
+                &get_child_bag_ids(&nice_td.td, child_id, id_1)
+            ),
+            Some(3)
+        );
+        assert!(NiceTreeDecomposition::is_nice_td_intro(
+            &nice_td.td,
+            grandchild_id,
+            &get_child_bag_ids(&nice_td.td, grandchild_id, child_id)
+        )
+        .is_some());
+        assert!(NiceTreeDecomposition::is_nice_td_leaf(
+            &nice_td.td,
+            grandgrandchild_id,
+            &get_child_bag_ids(&nice_td.td, grandgrandchild_id, grandchild_id)
+        ));
+    }
+
+    #[test]
+    fn random() {
+        let seed = [1; 32];
+        let mut rng = StdRng::from_seed(seed);
+
+        for _ in 0..100 {
+            let graph =
+                random_hashmap_graph(rng.gen_range(1..30), rng.gen_range(0.05..0.1), &mut rng);
+            let td = Solver::default().solve(&graph);
+            let nice_td = NiceTreeDecomposition::new(td);
+            assert!(nice_td.td.verify(&graph).is_ok(), "seed: {:?}", seed);
+        }
+    }
+
+    fn get_child_bag_id(td: &TreeDecomposition, id: usize, parent_id: usize) -> Option<usize> {
+        get_child_bag_ids(td, id, parent_id).iter().copied().next()
+    }
 }

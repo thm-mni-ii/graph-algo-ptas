@@ -1,6 +1,7 @@
-use super::nice_tree_decomposition::{get_child_bag_ids, NiceTdNodeType};
+use super::nice_tree_decomposition::{get_child_bag_ids, NiceTdNodeType, NiceTreeDecomposition};
 use arboretum_td::{
     graph::{BaseGraph, HashMapGraph},
+    solver::Solver,
     tree_decomposition::TreeDecomposition,
 };
 use bitvec::vec::BitVec;
@@ -12,12 +13,6 @@ use std::{
 };
 
 type FxHashSet<T> = HashSet<T, BuildHasherDefault<FxHasher>>;
-
-#[derive(Debug, Clone)]
-struct MaxIndependentSet {
-    size: usize,
-    sol: Vec<bool>,
-}
 
 // The BitVec key represents the subset to which the table entry belongs
 type DynamicProgrammingTable = HashMap<BitVec, DynamicProgrammingTableEntry>;
@@ -70,28 +65,27 @@ impl DynamicProgrammingTableEntry {
     }
 }
 
-fn solve_mis(
-    td: &TreeDecomposition,
-    graph: &HashMapGraph,
-    mapping: &[NiceTdNodeType],
-) -> MaxIndependentSet {
-    let mut tables = vec![DynamicProgrammingTable::new(); td.bags().len()];
-    let root = td.root.unwrap();
+fn solve_max_independent_set(graph: &HashMapGraph) -> (Vec<bool>, usize) {
+    let td = Solver::default().solve(graph);
+    let nice_td = NiceTreeDecomposition::new(td);
 
-    solve_mis_rec(
-        td,
+    let mut tables: Vec<_> = vec![DynamicProgrammingTable::new(); nice_td.td.bags().len()];
+    let root = nice_td.td.root.unwrap();
+
+    solve_max_independent_set_rec(
+        &nice_td.td,
         graph,
         root,
-        &td.bags()[root].neighbors.clone(),
-        mapping,
+        &nice_td.td.bags()[root].neighbors.clone(),
+        &nice_td.mapping,
         &mut tables,
     );
 
     let sol = vec![false; graph.order()];
-    read_mis_solution(&tables, root, sol)
+    read_max_independent_set_solution(&tables, root, sol)
 }
 
-fn solve_mis_rec(
+fn solve_max_independent_set_rec(
     td: &TreeDecomposition,
     graph: &HashMapGraph,
     id: usize,
@@ -100,7 +94,7 @@ fn solve_mis_rec(
     tables: &mut Vec<DynamicProgrammingTable>,
 ) {
     for child_id in children {
-        solve_mis_rec(
+        solve_max_independent_set_rec(
             td,
             graph,
             *child_id,
@@ -110,8 +104,7 @@ fn solve_mis_rec(
         );
     }
 
-    let node_type = mapping[id];
-    match node_type {
+    match mapping[id] {
         NiceTdNodeType::Leaf => {
             tables[id].insert(
                 BitVec::from_element(0),
@@ -199,21 +192,18 @@ fn solve_mis_rec(
     }
 }
 
-fn read_mis_solution(
+fn read_max_independent_set_solution(
     tables: &[DynamicProgrammingTable],
     root: usize,
     mut sol: Vec<bool>,
-) -> MaxIndependentSet {
+) -> (Vec<bool>, usize) {
     let root_entry = tables[root]
         .values()
         .max_by(|e1, e2| e1.val.cmp(&e2.val))
         .unwrap();
     read_mis_solution_rec(tables, root_entry, &mut sol);
 
-    MaxIndependentSet {
-        size: root_entry.val as usize,
-        sol,
-    }
+    (sol, root_entry.val as usize)
 }
 
 fn read_mis_solution_rec(
@@ -251,4 +241,71 @@ fn subset_with(subset: &BitVec, v: usize) -> BitVec {
     let mut subset = subset.clone();
     subset.set(v, true);
     subset
+}
+
+#[cfg(test)]
+mod tests {
+    use super::solve_max_independent_set;
+    use crate::utils::random_graph::random_hashmap_graph;
+    use arboretum_td::graph::{BaseGraph, HashMapGraph};
+    use rand::{rngs::StdRng, Rng, SeedableRng};
+
+    #[test]
+    fn isolated() {
+        for n in 1..10 {
+            let seed = [1; 32];
+            let mut rng = StdRng::from_seed(seed);
+            let graph = random_hashmap_graph(n, 0., &mut rng);
+            let (sol, size) = solve_max_independent_set(&graph);
+
+            assert!(size == n);
+            assert!(sol.iter().all(|b| { *b }));
+        }
+    }
+
+    #[test]
+    fn clique() {
+        for n in 1..10 {
+            let seed = [1; 32];
+            let mut rng = StdRng::from_seed(seed);
+            let graph = random_hashmap_graph(n, 1., &mut rng);
+            let (sol, size) = solve_max_independent_set(&graph);
+
+            assert!(size == 1);
+            assert!(sol.iter().filter(|b| { **b }).count() == 1);
+        }
+    }
+
+    #[test]
+    fn random() {
+        let seed = [1; 32];
+        let mut rng = StdRng::from_seed(seed);
+
+        for _ in 0..30 {
+            let graph =
+                random_hashmap_graph(rng.gen_range(1..30), rng.gen_range(0.05..0.1), &mut rng);
+            let (sol, _) = solve_max_independent_set(&graph);
+            assert!(is_independet_set(&graph, &sol));
+        }
+    }
+
+    fn is_independet_set(graph: &HashMapGraph, sol: &[bool]) -> bool {
+        for u in 0..sol.len() {
+            if !sol[u] {
+                continue;
+            }
+
+            for (v, is_included) in sol.iter().enumerate().skip(u + 1) {
+                if !is_included {
+                    continue;
+                }
+
+                if graph.has_edge(u, v) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
 }
