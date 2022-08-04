@@ -147,40 +147,20 @@ impl MaximalPlanar {
         let d0 = dcel.new_edge(v0.clone(), v1.clone(), None, None, None).0;
         let f0 = dcel.new_face(d0.clone());
         let _d1 = dcel
-            .new_edge(
-                v1.clone(),
-                v3.clone(),
-                Some(d0.clone()),
-                None,
-                Some(f0.clone()),
-            )
+            .new_edge(v1.clone(), v3.clone(), Some(d0), None, Some(f0))
             .0;
 
         // Face 2
-        let d3 = dcel.new_edge(v1.clone(), v2.clone(), None, None, None).0;
+        let d3 = dcel.new_edge(v1, v2.clone(), None, None, None).0;
         let f1 = dcel.new_face(d3.clone());
         let _d4 = dcel
-            .new_edge(
-                v2.clone(),
-                v3.clone(),
-                Some(d3.clone()),
-                None,
-                Some(f1.clone()),
-            )
+            .new_edge(v2.clone(), v3.clone(), Some(d3), None, Some(f1))
             .0;
 
         // Face 3
-        let d6 = dcel.new_edge(v2.clone(), v0.clone(), None, None, None).0;
+        let d6 = dcel.new_edge(v2, v0.clone(), None, None, None).0;
         let f3 = dcel.new_face(d6.clone());
-        let _d7 = dcel
-            .new_edge(
-                v0.clone(),
-                v3.clone(),
-                Some(d6.clone()),
-                None,
-                Some(f3.clone()),
-            )
-            .0;
+        let _d7 = dcel.new_edge(v0, v3, Some(d6), None, Some(f3)).0;
 
         dcel
     }
