@@ -54,10 +54,10 @@ impl
     fn embed(mut graph: StableGraph<u32, (), Undirected>) -> LinkGraph {
         let graph_copy = graph.clone();
         let mut stack = Vec::new();
+        let mut dcel = LinkGraph::new();
 
         Phase1::new(&mut graph, &mut stack).execute();
-        //MaximalPlanar::phase_1(&mut graph, &mut stack);
-        let dcel = MaximalPlanar::phase_2();
+        Phase2::new(&mut dcel).execute();
         MaximalPlanar::phase_3(graph, graph_copy, stack, dcel)
     }
 }
@@ -214,22 +214,40 @@ impl Phase1<'_> {
     }
 }
 
-impl MaximalPlanar {
-    fn phase_2() -> LinkGraph {
-        let mut dcel = LinkGraph::new();
+pub struct Phase2<'a> {
+    dcel: &'a mut LinkGraph,
+}
 
-        let v0 = dcel.new_vertex();
-        let v1 = dcel.new_vertex();
-        let v2 = dcel.new_vertex();
-        let v3 = dcel.new_vertex();
-
-        MaximalPlanar::create_face(&mut dcel, v0.clone(), v1.clone(), v3.clone());
-        MaximalPlanar::create_face(&mut dcel, v1, v2.clone(), v3.clone());
-        MaximalPlanar::create_face(&mut dcel, v2, v0, v3);
-
-        dcel
+impl Phase2<'_> {
+    fn new(dcel: &mut LinkGraph) -> Phase2 {
+        Phase2 { dcel }
     }
 
+    fn execute(&mut self) {
+        let v0 = self.dcel.new_vertex();
+        let v1 = self.dcel.new_vertex();
+        let v2 = self.dcel.new_vertex();
+        let v3 = self.dcel.new_vertex();
+
+        self.create_face(v0.clone(), v1.clone(), v3.clone());
+        self.create_face(v1, v2.clone(), v3.clone());
+        self.create_face(v2, v0, v3);
+    }
+
+    fn create_face(&mut self, vertex1: LinkVertex, vertex2: LinkVertex, vertex3: LinkVertex) {
+        let d0 = self
+            .dcel
+            .new_edge(vertex1, vertex2.clone(), None, None, None)
+            .0;
+        let f0 = self.dcel.new_face(d0.clone());
+        let _d1 = self
+            .dcel
+            .new_edge(vertex2, vertex3, Some(d0), None, Some(f0))
+            .0;
+    }
+}
+
+impl MaximalPlanar {
     fn phase_3(
         graph: StableGraph<u32, (), Undirected>,
         graph_copy: StableGraph<u32, (), Undirected>,
@@ -288,17 +306,6 @@ impl MaximalPlanar {
         dcel
     }
 
-    fn create_face(
-        dcel: &mut LinkGraph,
-        vertex1: LinkVertex,
-        vertex2: LinkVertex,
-        vertex3: LinkVertex,
-    ) {
-        let d0 = dcel.new_edge(vertex1, vertex2.clone(), None, None, None).0;
-        let f0 = dcel.new_face(d0.clone());
-        let _d1 = dcel.new_edge(vertex2, vertex3, Some(d0), None, Some(f0)).0;
-    }
-
     fn pop_edges(stack: &mut Vec<StackItem>, count: i32) -> Vec<EdgeIndex> {
         (0..count)
             .map(|_| stack.pop().unwrap().unwrap_edge())
@@ -327,7 +334,13 @@ mod tests {
         Undirected,
     };
 
-    use crate::embeding::{index::Embeding, maximal_planar::Phase1};
+    use crate::{
+        data_structure::link_graph::LinkGraph,
+        embeding::{
+            index::Embeding,
+            maximal_planar::{Phase1, Phase2},
+        },
+    };
 
     use super::MaximalPlanar;
     use crate::data_structure::graph_dcel::GraphDCEL;
@@ -380,7 +393,9 @@ mod tests {
 
     #[test]
     fn phase_2() {
-        let dcel = MaximalPlanar::phase_2();
+        let mut dcel = LinkGraph::new();
+
+        Phase2::new(&mut dcel).execute();
 
         assert_eq!(dcel.get_vertexes().count(), 4);
         assert_eq!(dcel.get_faces().count(), 3);
