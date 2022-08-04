@@ -201,12 +201,12 @@ fn read_max_independent_set_solution(
         .values()
         .max_by(|e1, e2| e1.val.cmp(&e2.val))
         .unwrap();
-    read_mis_solution_rec(tables, root_entry, &mut sol);
+    read_max_independent_set_solution_rec(tables, root_entry, &mut sol);
 
     (sol, root_entry.val as usize)
 }
 
-fn read_mis_solution_rec(
+fn read_max_independent_set_solution_rec(
     tables: &[DynamicProgrammingTable],
     entry: &DynamicProgrammingTableEntry,
     sol: &mut Vec<bool>,
@@ -216,7 +216,7 @@ fn read_mis_solution_rec(
     }
 
     for (v, subset) in &entry.children {
-        read_mis_solution_rec(tables, tables[*v].get(subset).unwrap(), sol);
+        read_max_independent_set_solution_rec(tables, tables[*v].get(subset).unwrap(), sol);
     }
 }
 
