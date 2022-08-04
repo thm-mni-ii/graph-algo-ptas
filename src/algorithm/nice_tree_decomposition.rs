@@ -1,7 +1,6 @@
-use std::{collections::HashSet, hash::BuildHasherDefault};
-
 use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHasher;
+use std::{collections::HashSet, hash::BuildHasherDefault};
 
 #[derive(Debug, Clone, Copy)]
 pub enum NiceTdNodeType {
@@ -53,7 +52,7 @@ impl NiceTreeDecomposition {
             for child_id in children {
                 Self::nicify_multi_child_nodes(
                     *child_id,
-                    &Self::get_child_bag_ids(td, *child_id, id),
+                    &get_child_bag_ids(td, *child_id, id),
                     td,
                 );
             }
@@ -74,13 +73,13 @@ impl NiceTreeDecomposition {
 
         Self::nicify_multi_child_nodes(
             left_child_id,
-            &Self::get_child_bag_ids(td, left_child_id, id),
+            &get_child_bag_ids(td, left_child_id, id),
             td,
         );
 
         Self::nicify_multi_child_nodes(
             right_child_id,
-            &Self::get_child_bag_ids(td, right_child_id, id),
+            &get_child_bag_ids(td, right_child_id, id),
             td,
         );
     }
@@ -94,7 +93,7 @@ impl NiceTreeDecomposition {
             for child_id in children {
                 Self::nicify_double_child_nodes(
                     *child_id,
-                    &Self::get_child_bag_ids(td, *child_id, id),
+                    &get_child_bag_ids(td, *child_id, id),
                     td,
                 );
             }
@@ -118,13 +117,13 @@ impl NiceTreeDecomposition {
 
         Self::nicify_double_child_nodes(
             left_child_id,
-            &Self::get_child_bag_ids(td, left_child_id, new_left_child_id),
+            &get_child_bag_ids(td, left_child_id, new_left_child_id),
             td,
         );
 
         Self::nicify_double_child_nodes(
             right_child_id,
-            &Self::get_child_bag_ids(td, right_child_id, new_right_child_id),
+            &get_child_bag_ids(td, right_child_id, new_right_child_id),
             td,
         );
     }
@@ -138,7 +137,7 @@ impl NiceTreeDecomposition {
             for child_id in children {
                 Self::nicify_single_child_nodes(
                     *child_id,
-                    &Self::get_child_bag_ids(td, *child_id, id),
+                    &get_child_bag_ids(td, *child_id, id),
                     td,
                 );
             }
@@ -153,12 +152,12 @@ impl NiceTreeDecomposition {
         if vertex_set.eq(&child_vertex_set.clone()) {
             Self::remove_edge(td, id, child_id);
 
-            for grandchild_id in Self::get_child_bag_ids(td, child_id, id) {
+            for grandchild_id in get_child_bag_ids(td, child_id, id) {
                 td.add_edge(id, grandchild_id);
                 Self::remove_edge(td, child_id, grandchild_id);
                 Self::nicify_single_child_nodes(
                     grandchild_id,
-                    &Self::get_child_bag_ids(td, grandchild_id, id),
+                    &get_child_bag_ids(td, grandchild_id, id),
                     td,
                 );
             }
@@ -200,7 +199,7 @@ impl NiceTreeDecomposition {
 
         Self::nicify_single_child_nodes(
             child_id,
-            &Self::get_child_bag_ids(td, child_id, parent_id),
+            &get_child_bag_ids(td, child_id, parent_id),
             td,
         );
     }
@@ -208,7 +207,7 @@ impl NiceTreeDecomposition {
     fn nicify_leaf_nodes(id: usize, children: &FxHashSet<usize>, td: &mut TreeDecomposition) {
         if !children.is_empty() {
             for child_id in children {
-                Self::nicify_leaf_nodes(*child_id, &Self::get_child_bag_ids(td, *child_id, id), td);
+                Self::nicify_leaf_nodes(*child_id, &get_child_bag_ids(td, *child_id, id), td);
             }
 
             return;
@@ -240,7 +239,7 @@ impl NiceTreeDecomposition {
                     Self::is_nice_td(
                         td,
                         *child_id,
-                        &Self::get_child_bag_ids(td, *child_id, id),
+                        &get_child_bag_ids(td, *child_id, id),
                         mapping,
                     )
                 })
@@ -370,17 +369,17 @@ impl NiceTreeDecomposition {
             }
         }
     }
+}
 
-    fn get_child_bag_ids(
-        td: &TreeDecomposition,
-        vertex_id: usize,
-        parent_id: usize,
-    ) -> FxHashSet<usize> {
-        td.bags()[vertex_id]
-            .neighbors
-            .iter()
-            .filter(|id| **id != parent_id)
-            .copied()
-            .collect()
-    }
+pub fn get_child_bag_ids(
+    td: &TreeDecomposition,
+    vertex_id: usize,
+    parent_id: usize,
+) -> FxHashSet<usize> {
+    td.bags()[vertex_id]
+        .neighbors
+        .iter()
+        .filter(|id| **id != parent_id)
+        .copied()
+        .collect()
 }

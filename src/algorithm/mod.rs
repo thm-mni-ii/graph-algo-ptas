@@ -8,3 +8,5 @@ pub mod tree_decomposition;
 pub mod triangulation;
 #[allow(dead_code)]
 pub mod nice_tree_decomposition;
+#[allow(dead_code)]
+pub mod dynamic_programming;
