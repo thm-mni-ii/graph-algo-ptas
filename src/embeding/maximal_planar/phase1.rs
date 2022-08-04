@@ -5,7 +5,7 @@ use petgraph::stable_graph::StableGraph;
 use petgraph::visit::EdgeRef;
 use petgraph::Undirected;
 
-use super::index::StackItem;
+use super::stack_item::StackItem;
 
 pub struct Phase1<'a> {
     graph: &'a mut StableGraph<u32, (), Undirected>,

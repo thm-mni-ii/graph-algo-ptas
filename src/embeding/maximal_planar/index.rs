@@ -1,4 +1,3 @@
-use petgraph::graph::{EdgeIndex, NodeIndex};
 use petgraph::stable_graph::StableGraph;
 use petgraph::Undirected;
 
@@ -8,34 +7,6 @@ use crate::embeding::index::Embeding;
 use super::phase1::Phase1;
 use super::phase2::Phase2;
 use super::phase3::Phase3;
-
-#[derive(Debug)]
-pub enum StackItem {
-    Node(NodeIndex),
-    Edge(EdgeIndex),
-    Degree(usize),
-}
-
-impl StackItem {
-    pub fn unwrap_node(self) -> NodeIndex {
-        match self {
-            StackItem::Node(node) => node,
-            _ => panic!("failed to unwrap node"),
-        }
-    }
-    pub fn unwrap_edge(self) -> EdgeIndex {
-        match self {
-            StackItem::Edge(edge) => edge,
-            _ => panic!("failed to unwrap edge"),
-        }
-    }
-    pub fn unwrap_degree(self) -> usize {
-        match self {
-            StackItem::Degree(degree) => degree,
-            _ => panic!("failed to unwrap degree"),
-        }
-    }
-}
 
 pub struct MaximalPlanar {}
 

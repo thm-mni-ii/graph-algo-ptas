@@ -7,7 +7,7 @@ use petgraph::Undirected;
 use crate::data_structure::graph_dcel::GraphDCEL;
 use crate::data_structure::link_graph::{LinkDart, LinkGraph, LinkVertex};
 
-use super::index::StackItem;
+use super::stack_item::StackItem;
 
 pub struct Phase3<'a> {
     graph: StableGraph<u32, (), Undirected>,
