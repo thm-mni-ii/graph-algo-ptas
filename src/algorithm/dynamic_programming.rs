@@ -285,11 +285,11 @@ mod tests {
             let graph =
                 random_hashmap_graph(rng.gen_range(1..30), rng.gen_range(0.05..0.1), &mut rng);
             let (sol, _) = solve_max_independent_set(&graph);
-            assert!(is_independet_set(&graph, &sol));
+            assert!(is_independent_set(&graph, &sol));
         }
     }
 
-    fn is_independet_set(graph: &HashMapGraph, sol: &[bool]) -> bool {
+    fn is_independent_set(graph: &HashMapGraph, sol: &[bool]) -> bool {
         for u in 0..sol.len() {
             if !sol[u] {
                 continue;
