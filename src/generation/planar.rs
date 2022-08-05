@@ -1,5 +1,5 @@
 use crate::data_structure::list_graph::ListGraph;
-use rand::{seq::SliceRandom, Rng, thread_rng};
+use rand::{seq::SliceRandom, thread_rng, Rng};
 
 pub fn generate(mut n: usize) -> ListGraph {
     #[cfg(debug_graph_generation)]
