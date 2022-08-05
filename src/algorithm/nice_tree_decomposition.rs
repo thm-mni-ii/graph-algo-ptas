@@ -1,6 +1,5 @@
 use arboretum_td::tree_decomposition::TreeDecomposition;
-use fxhash::FxHasher;
-use std::{collections::HashSet, hash::BuildHasherDefault};
+use fxhash::FxHashSet;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum NiceTdNodeType {
@@ -14,8 +13,6 @@ pub struct NiceTreeDecomposition {
     pub td: TreeDecomposition,
     pub mapping: Vec<NiceTdNodeType>,
 }
-
-type FxHashSet<T> = HashSet<T, BuildHasherDefault<FxHasher>>;
 
 impl NiceTreeDecomposition {
     pub fn new(mut td: TreeDecomposition) -> Self {
@@ -384,11 +381,8 @@ mod tests {
         utils::random_graph::random_hashmap_graph,
     };
     use arboretum_td::{solver::Solver, tree_decomposition::TreeDecomposition};
-    use fxhash::FxHasher;
+    use fxhash::FxHashSet;
     use rand::{rngs::StdRng, Rng, SeedableRng};
-    use std::{collections::HashSet, hash::BuildHasherDefault};
-
-    type FxHashSet<T> = HashSet<T, BuildHasherDefault<FxHasher>>;
 
     #[test]
     fn single_bag_with_1_vertex() {

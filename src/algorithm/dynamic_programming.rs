@@ -5,14 +5,9 @@ use arboretum_td::{
     tree_decomposition::TreeDecomposition,
 };
 use bitvec::vec::BitVec;
-use fxhash::FxHasher;
+use fxhash::FxHashSet;
 use itertools::Itertools;
-use std::{
-    collections::{HashMap, HashSet},
-    hash::BuildHasherDefault,
-};
-
-type FxHashSet<T> = HashSet<T, BuildHasherDefault<FxHasher>>;
+use std::collections::{HashMap, HashSet};
 
 // The BitVec key represents the subset to which the table entry belongs
 type DynamicProgrammingTable = HashMap<BitVec, DynamicProgrammingTableEntry>;
