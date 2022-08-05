@@ -2,6 +2,7 @@ use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHashSet;
 
 use std::collections::{HashMap, HashSet};
+use crate::algorithm::spantree::Span;
 
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
@@ -18,7 +19,7 @@ fn tree_decomposition(
         LinkGraphIter<LinkFace>,
     >,
     dual_graph: HashMap<LinkFace, HashSet<LinkFace>>,
-    spantree: &HashMap<LinkVertex, LinkVertex>,
+    spantree: &Span<LinkVertex>,
     root_vertex: LinkFace,
 ) -> TreeDecomposition {
     let mut tree: TreeDecomposition = Default::default();
@@ -32,7 +33,7 @@ fn add_bags(
     vertex: LinkFace,
     parent: usize,
     tree: &mut TreeDecomposition,
-    spantree: &HashMap<LinkVertex, LinkVertex>,
+    spantree: &Span<LinkVertex>,
     dual_graph: &HashMap<LinkFace, HashSet<LinkFace>>,
     graph: &impl GraphDCEL<
         LinkVertex,
@@ -69,7 +70,7 @@ fn add_bags(
 
 fn create_bag(
     face_vertices: HashSet<LinkVertex>,
-    spantree: &&HashMap<LinkVertex, LinkVertex>,
+    spantree: &&Span<LinkVertex>,
 ) -> FxHashSet<usize> {
     let mut vertices: FxHashSet<usize> = FxHashSet::default();
 
@@ -78,8 +79,8 @@ fn create_bag(
 
         vertices.insert(node.get_id());
 
-        while spantree.get(&node).is_some() {
-            node = spantree.get(&node).unwrap().clone();
+        while spantree.upwards.get(&node).is_some() {
+            node = spantree.upwards.get(&node).unwrap().clone();
             vertices.insert(node.get_id());
         }
     }
@@ -108,7 +109,7 @@ fn get_face_vertices(
 #[cfg(test)]
 mod tests {
     use crate::algorithm::dualgraph::dual_graph;
-    use crate::algorithm::spantree::span;
+    use crate::algorithm::spantree::Span;
     use crate::algorithm::tree_decomposition::tree_decomposition;
     use crate::data_structure::link_graph::LinkGraph;
     use fxhash::FxHashSet;
@@ -129,7 +130,7 @@ mod tests {
             Some(ld1),
             Some(lf.clone()),
         );
-        let span = span(&lg, lv1.clone());
+        let span = Span::compute(&lg, lv1.clone());
         let td = tree_decomposition(&lg, dual_graph(&lg, &span), &span, lf);
 
         println!("[RESULT]: {:?}", td);
@@ -188,7 +189,7 @@ mod tests {
             Some(lof.clone()),
         );
 
-        let span = span(&lg, lv1.clone());
+        let span = Span::compute(&lg, lv1.clone());
         let td = tree_decomposition(&lg, dual_graph(&lg, &span), &span, lof);
 
         println!("[RESULT]: {:?}", td);

@@ -4,50 +4,67 @@ use crate::data_structure::{
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 
-pub fn span(
-    g: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
-    v: LinkVertex,
-) -> HashMap<LinkVertex, LinkVertex> {
-    if g.get_vertexes().count() <= 1 {
-        return HashMap::new();
-    }
-    let mut queue = VecDeque::new();
-    let mut result = HashMap::new();
-    let mut visited = HashSet::new();
-    queue.push_back(v);
+pub struct Span<T> {
+    pub root: T,
+    pub downwards: HashMap<T, HashSet<T>>,
+    pub upwards: HashMap<T, T>,
+}
 
-    while !queue.is_empty() {
-        let v = queue.pop_front().unwrap();
-        visited.insert(v.clone());
-        for n in g.neighbors(&v) {
-            if visited.insert(n.clone()) {
-                queue.push_back(n.clone());
-                result.insert(n, v.clone());
+impl Span<LinkVertex> {
+    pub fn compute(
+        g: &impl GraphDCEL<
+            LinkVertex,
+            LinkDart,
+            LinkFace,
+            LinkGraphIter<LinkVertex>,
+            LinkGraphIter<LinkDart>,
+            LinkGraphIter<LinkFace>,
+        >,
+        v: LinkVertex,
+    ) -> Span<LinkVertex> {
+        assert!(g.get_vertexes().count() > 1);
+        let mut queue = VecDeque::new();
+        let mut upwards = HashMap::new();
+        let mut downwards = HashMap::new();
+        let mut visited = HashSet::new();
+        downwards.insert(v.clone(), HashSet::new());
+        queue.push_back(v.clone());
+
+        while !queue.is_empty() {
+            let u = queue.pop_front().unwrap();
+            visited.insert(u.clone());
+            for n in g.neighbors(&u) {
+                if visited.insert(n.clone()) {
+                    queue.push_back(n.clone());
+                    upwards.insert(n.clone(), u.clone());
+                    if downwards.get(&u).is_none() {
+                        downwards.insert(u.clone(), HashSet::new());
+                    }
+                    downwards.get_mut(&u).unwrap().insert(n);
+                }
             }
         }
+        Span {
+            root: v,
+            downwards,
+            upwards
+        }
     }
-    result
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::spantree::span;
+    use crate::algorithm::spantree::Span;
     use crate::data_structure::link_graph::LinkGraph;
     use std::collections::HashMap;
 
     #[test]
+    #[should_panic]
     fn single_vertex() {
         let mut lg = LinkGraph::new();
         let lv1 = lg.new_vertex();
 
-        let edges = span(&lg, lv1);
+        let edges = Span::compute(&lg, lv1).upwards;
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges, HashMap::new());
@@ -70,7 +87,7 @@ mod tests {
             Some(lf),
         );
 
-        let edges = span(&lg, lv1.clone());
+        let edges = Span::compute(&lg, lv1.clone()).upwards;
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges.len(), 1);
@@ -122,7 +139,7 @@ mod tests {
             Some(lof),
         );
 
-        let edges = span(&lg, lv1.clone());
+        let edges = Span::compute(&lg, lv1.clone()).upwards;
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges.len(), 2);

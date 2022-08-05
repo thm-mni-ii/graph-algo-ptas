@@ -3,6 +3,7 @@ use crate::data_structure::{
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
 use std::collections::{HashMap, HashSet};
+use crate::algorithm::spantree::Span;
 
 pub fn dual_graph(
     g: &impl GraphDCEL<
@@ -13,7 +14,7 @@ pub fn dual_graph(
         LinkGraphIter<LinkDart>,
         LinkGraphIter<LinkFace>,
     >,
-    span: &HashMap<LinkVertex, LinkVertex>,
+    span: &Span<LinkVertex>,
 ) -> HashMap<LinkFace, HashSet<LinkFace>> {
     let mut result = HashMap::new();
     let mut visited = HashSet::new();
@@ -36,9 +37,9 @@ pub fn dual_graph(
             let next_face = g.face(&g.twin(&current_dart));
 
             if visited.insert(next_face.clone())
-                && (span.get(&g.dart_target(&current_dart))
+                && (span.upwards.get(&g.dart_target(&current_dart))
                     == Some(&g.dart_target(&g.twin(&current_dart)))
-                    || span.get(&g.dart_target(&g.twin(&current_dart)))
+                    || span.upwards.get(&g.dart_target(&g.twin(&current_dart)))
                         == Some(&g.dart_target(&current_dart)))
             {
                 match result.get_mut(&face) {
@@ -76,7 +77,7 @@ fn dart_as_tuple(
 #[cfg(test)]
 mod tests {
     use crate::algorithm::dualgraph::dual_graph;
-    use crate::algorithm::spantree::span;
+    use crate::algorithm::spantree::Span;
     use crate::data_structure::link_graph::LinkGraph;
     use std::collections::HashSet;
 
@@ -97,7 +98,7 @@ mod tests {
             Some(lf.clone()),
         );
 
-        let span = span(&lg, lv1);
+        let span = Span::compute(&lg, lv1);
         let dual = dual_graph(&lg, &span);
 
         println!("[RESULT]: {:?}", dual);
@@ -159,7 +160,7 @@ mod tests {
             Some(lof.clone()),
         );
 
-        let span = span(&lg, lv1);
+        let span = Span::compute(&lg, lv1);
         let dual = dual_graph(&lg, &span);
 
         println!("[RESULT]: {:?}", dual);
