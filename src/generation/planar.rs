@@ -56,7 +56,7 @@ pub fn generate(mut n: usize) -> ListGraph {
                 new_vertex,
                 edge,
                 current_edge,
-                new_vertex,
+                new_edge,
                 &mut counter,
             );
             active[new_edge] = true;
