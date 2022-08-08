@@ -1,3 +1,6 @@
+use petgraph::stable_graph::{DefaultIx, StableGraph};
+use petgraph::Undirected;
+
 pub type EdgeId = usize;
 pub type NodeId = usize;
 
@@ -242,6 +245,14 @@ impl ListGraph {
         let new_len = self.nodes.len() + 1;
         self.nodes.resize_with(new_len, Vec::new);
         new_len - 1
+    }
+
+    pub fn to_pet_graph(&self) -> StableGraph<usize, usize, Undirected, DefaultIx> {
+        StableGraph::from_edges(
+            self.all_edges()
+                .iter()
+                .map(|(from, to)| (*from as u32, *to as u32)),
+        )
     }
 }
 
@@ -543,5 +554,12 @@ mod tests {
         assert_eq!(graph.neighbors(1), Some(vec![2, 3, 0]));
         assert_eq!(graph.neighbors(2), Some(vec![0, 3, 1]));
         assert_eq!(graph.neighbors(3), Some(vec![0, 1, 2]));
+    }
+
+    #[test]
+    fn test_to_pet_graph() {
+        let pet_graph = ListGraph::k4().to_pet_graph();
+        assert_eq!(pet_graph.node_count(), 4);
+        assert_eq!(pet_graph.edge_count(), 6);
     }
 }
