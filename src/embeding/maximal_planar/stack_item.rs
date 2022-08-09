@@ -1,9 +1,9 @@
-use petgraph::graph::{EdgeIndex, NodeIndex};
+use petgraph::graph::NodeIndex;
 
 #[derive(Debug)]
 pub enum StackItem {
     Node(NodeIndex),
-    Edge(EdgeIndex),
+    Edge((NodeIndex, NodeIndex)),
     Degree(usize),
 }
 
@@ -14,7 +14,7 @@ impl StackItem {
             _ => panic!("failed to unwrap node"),
         }
     }
-    pub fn unwrap_edge(self) -> EdgeIndex {
+    pub fn unwrap_edge(self) -> (NodeIndex, NodeIndex) {
         match self {
             StackItem::Edge(edge) => edge,
             _ => panic!("failed to unwrap edge"),

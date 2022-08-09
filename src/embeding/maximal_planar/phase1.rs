@@ -46,7 +46,8 @@ impl Phase1<'_> {
             let h = self.graph.neighbors(v).collect::<BTreeSet<_>>();
 
             self.graph.clone().edges(v).for_each(|e| {
-                self.stack.push(StackItem::Edge(e.id()));
+                self.stack
+                    .push(StackItem::Edge(self.graph.edge_endpoints(e.id()).unwrap()));
                 self.graph.remove_edge(e.id());
             });
 
@@ -60,21 +61,7 @@ impl Phase1<'_> {
                 None
             };
 
-            if degree == 4 {
-                let mut x = h.clone();
-                self.graph.neighbors(*w.unwrap()).for_each(|n| {
-                    x.remove(&n);
-                });
-                x.remove(w.unwrap());
-
-                self.stack.push(StackItem::Edge(self.graph.add_edge(
-                    *w.unwrap(),
-                    *x.iter().next().unwrap(),
-                    (),
-                )));
-            }
-
-            if degree == 5 {
+            if degree >= 4 {
                 let mut x = h.clone();
                 self.graph.neighbors(*w.unwrap()).for_each(|n| {
                     x.remove(&n);
@@ -83,17 +70,11 @@ impl Phase1<'_> {
 
                 let mut xi = x.iter();
 
-                self.stack.push(StackItem::Edge(self.graph.add_edge(
-                    *w.unwrap(),
-                    *xi.next().unwrap(),
-                    (),
-                )));
+                self.add_edge(*w.unwrap(), *xi.next().unwrap());
 
-                self.stack.push(StackItem::Edge(self.graph.add_edge(
-                    *w.unwrap(),
-                    *xi.next().unwrap(),
-                    (),
-                )));
+                if degree == 5 {
+                    self.add_edge(*w.unwrap(), *xi.next().unwrap());
+                }
             }
 
             self.update_local(&h);
@@ -156,6 +137,11 @@ impl Phase1<'_> {
         } else {
             self.reducible.remove(&node_idx);
         }
+    }
+
+    fn add_edge(&mut self, a: NodeIndex, b: NodeIndex) {
+        self.graph.add_edge(a, b, ());
+        self.stack.push(StackItem::Edge((a, b)));
     }
 }
 

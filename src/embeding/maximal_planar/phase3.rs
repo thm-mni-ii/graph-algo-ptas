@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use petgraph::graph::{EdgeIndex, NodeIndex};
+use petgraph::graph::NodeIndex;
 use petgraph::stable_graph::StableGraph;
 use petgraph::Undirected;
 
@@ -57,7 +57,7 @@ impl Phase3<'_> {
             let hs = self.pop_edges(hc);
 
             for e in es {
-                let (a_node, _) = self.graph_copy.edge_endpoints(e).unwrap();
+                let (a_node, _) = e;
                 let a_vertex = self.node_id_mapper.get(&a_node).unwrap().clone();
                 self.dcel
                     .remove_edge(&a_vertex, self.dcel.dart_vertex(&a_vertex));
@@ -66,8 +66,8 @@ impl Phase3<'_> {
             self.get_or_create_vertex(v);
 
             for h in hs {
-                let (a_node, b_node) = self.graph_copy.edge_endpoints(h).unwrap();
-                let a_vertex = self.node_id_mapper.get(&a_node).unwrap().clone();
+                let (a_node, b_node) = h;
+                let a_vertex = self.get_or_create_vertex(a_node);
                 let b_vertex = self.get_or_create_vertex(b_node);
 
                 let (new_dart, _) =
@@ -85,7 +85,7 @@ impl Phase3<'_> {
         }
     }
 
-    fn pop_edges(&mut self, count: i32) -> Vec<EdgeIndex> {
+    fn pop_edges(&mut self, count: i32) -> Vec<(NodeIndex, NodeIndex)> {
         (0..count)
             .map(|_| self.stack.pop().unwrap().unwrap_edge())
             .collect::<Vec<_>>()
