@@ -413,8 +413,17 @@ impl LinkGraph {
         (dart, twin)
     }
 
-    pub fn remove_dart(&mut self, from: &LinkVertex, dart: LinkDart) -> LinkDart {
-        dart.0.borrow_mut().face.take();
+    fn remove_dart(&mut self, from: &LinkVertex, dart: LinkDart) -> LinkDart {
+        let mut dart_ref = dart.0.borrow_mut();
+        dart_ref.twin.take();
+        dart_ref.next.take();
+        dart_ref.prev.take();
+        dart_ref.face.take();
+        drop(dart_ref);
+
+        if let Some(dart_pos) = self.darts.iter().position(|d| &dart == d) {
+            self.darts.remove(dart_pos);
+        }
         from.0.borrow_mut().dart.take();
         dart
     }
