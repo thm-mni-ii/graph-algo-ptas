@@ -72,7 +72,14 @@ struct LinkVertexStruct {
 }
 
 impl_non_recursive_eq!(LinkVertexStruct);
-impl_non_recursive_debug!(LinkVertexStruct, "LinkVertex");
+impl Debug for LinkVertexStruct {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LinkVertex")
+            .field("id", &self.id)
+            .field("dart", &self.dart.as_ref().map(|dart| dart.0.borrow().id))
+            .finish()
+    }
+}
 
 /// A vertex in the LinkGraph
 #[derive(Clone, Default, Eq)]
@@ -112,6 +119,7 @@ impl Debug for LinkDartStructure {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LinkDart")
             .field("id", &self.id)
+            .field("target", &self.target.0.borrow().id)
             .field(
                 "next_id",
                 &self.next.as_ref().map(|next| next.0.borrow().id),
@@ -416,20 +424,26 @@ impl LinkGraph {
     fn remove_dart(&mut self, from: &LinkVertex, dart: LinkDart) -> LinkDart {
         let mut dart_ref = dart.0.borrow_mut();
         dart_ref.twin.take();
-        dart_ref.next.take();
-        dart_ref.prev.take();
+        let next = if let Some(next) = dart_ref.next.take() {
+            next.0.borrow_mut().prev = dart_ref.prev.clone();
+            Some(next)
+        } else { None };
+        if let Some(prev) = dart_ref.prev.take() {
+            prev.0.borrow_mut().next = next.clone();
+        }
         dart_ref.face.take();
         drop(dart_ref);
 
         if let Some(dart_pos) = self.darts.iter().position(|d| &dart == d) {
             self.darts.remove(dart_pos);
         }
-        from.0.borrow_mut().dart.take();
+        from.0.borrow_mut().dart = next;
         dart
     }
 
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
-        (self.remove_dart(from, dart.clone()), self.remove_dart(from, self.twin(&dart)))
+        let twin = self.twin(&dart);
+        (self.remove_dart(from, dart.clone()), self.remove_dart(from, twin))
     }
 }
 
@@ -457,6 +471,7 @@ impl Drop for LinkGraph {
 #[cfg(test)]
 mod tests {
     use std::{cmp::Ordering, collections::HashSet};
+    use dot::GraphWalk;
 
     use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
@@ -708,5 +723,29 @@ mod tests {
         let g = example_graph();
 
         assert_eq!(g.neighbors_count(&g.get_vertexes().next().unwrap()), 2);
+    }
+
+    #[test]
+    fn test_add_edge() {
+        let mut g = example_graph();
+        let first_vertex = g.vertexes[0].clone();
+        let dart = g.dart_vertex(&first_vertex);
+        let prev_dart = g.prev(&dart);
+        let new_vertex = g.new_vertex();
+        g.new_edge(first_vertex.clone(), new_vertex.clone(), Some(prev_dart), Some(dart), None);
+        assert!(g.neighbors(&first_vertex).contains(&new_vertex));
+        assert!(g.neighbors(&new_vertex).contains(&first_vertex));
+        assert_eq!(g.edge_count(), 4)
+    }
+
+    #[test]
+    fn test_remove_edge() {
+        let mut g = example_graph();
+        let first_vertex = g.vertexes[0].clone();
+        let dart = g.dart_vertex(&first_vertex);
+        let target = g.target(&dart);
+        g.remove_edge(&first_vertex, dart);
+        assert!(!g.neighbors(&first_vertex).contains(&target));
+        assert_eq!(g.edge_count(), 2)
     }
 }
