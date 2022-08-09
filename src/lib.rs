@@ -6,7 +6,7 @@
 extern crate core;
 
 mod algorithm;
-mod data_structure;
+pub mod data_structure;
 mod debug;
 mod generation;
 mod utils;
