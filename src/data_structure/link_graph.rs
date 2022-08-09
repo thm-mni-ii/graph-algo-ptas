@@ -393,6 +393,7 @@ impl LinkGraph {
         lv
     }
 
+    /// Adds an edge to the graph
     pub fn new_edge(
         &mut self,
         from: LinkVertex,
@@ -441,6 +442,7 @@ impl LinkGraph {
         dart
     }
 
+    /// Removes the given dart and its twin from the graph
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
         let twin = self.twin(&dart);
         (self.remove_dart(from, dart.clone()), self.remove_dart(from, twin))
