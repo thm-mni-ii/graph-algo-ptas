@@ -38,54 +38,18 @@ impl
 mod tests {
     use std::fs::File;
 
-    use petgraph::{
-        dot::{Config, Dot},
-        stable_graph::StableGraph,
-        Undirected,
-    };
+    use petgraph::dot::{Config, Dot};
 
-    use crate::embeding::{index::Embeding, maximal_planar::index::MaximalPlanar};
+    use crate::{
+        embeding::{index::Embeding, maximal_planar::index::MaximalPlanar},
+        generation::planar::generate,
+    };
 
     use crate::data_structure::graph_dcel::GraphDCEL;
 
-    fn k4_graph() -> StableGraph<u32, (), Undirected> {
-        StableGraph::from_edges([(0, 1), (1, 2), (2, 0), (1, 3), (2, 3)])
-    }
-
-    fn other_graph() -> StableGraph<u32, (), Undirected> {
-        StableGraph::from_edges([
-            (0, 1),
-            (1, 2),
-            (2, 0),
-            (1, 3),
-            (2, 3),
-            (0, 4),
-            (1, 4),
-            (2, 4),
-            (3, 4),
-        ])
-    }
-
-    fn large_graph() -> StableGraph<u32, (), Undirected> {
-        StableGraph::from_edges([
-            (0, 1),
-            (1, 2),
-            (2, 0),
-            (1, 3),
-            (2, 3),
-            (0, 4),
-            (1, 4),
-            (2, 4),
-            (3, 4),
-            (3, 5),
-            (4, 5),
-            (5, 1),
-        ])
-    }
-
     #[test]
     fn embend() {
-        let graph = large_graph();
+        let graph = generate(200).to_pet_graph();
         let mut f = File::create("circle.dot").unwrap();
 
         println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
