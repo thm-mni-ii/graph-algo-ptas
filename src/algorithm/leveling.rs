@@ -46,11 +46,6 @@ mod tests {
         let lv1 = lg.new_vertex();
         let lv2 = lg.new_vertex();
 
-        let mut lg = LinkGraph::new();
-        let lv0 = lg.new_vertex();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
-
         let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, None, None);
         let lof = lg.new_face(lt0.clone()); // Outer Face first
 
