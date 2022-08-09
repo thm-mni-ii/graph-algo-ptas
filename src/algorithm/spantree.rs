@@ -21,7 +21,7 @@ impl Span<LinkVertex> {
             LinkGraphIter<LinkFace>,
         >,
         v: LinkVertex,
-    ) -> Span<LinkVertex> {
+    ) -> Self {
         assert!(g.get_vertexes().count() > 1);
         let mut queue = VecDeque::new();
         let mut upwards = HashMap::new();
@@ -47,7 +47,7 @@ impl Span<LinkVertex> {
         Span {
             root: v,
             downwards,
-            upwards
+            upwards,
         }
     }
 }

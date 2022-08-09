@@ -1,8 +1,8 @@
 use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHashSet;
 
-use std::collections::{HashMap, HashSet};
 use crate::algorithm::spantree::Span;
+use std::collections::{HashMap, HashSet};
 
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
