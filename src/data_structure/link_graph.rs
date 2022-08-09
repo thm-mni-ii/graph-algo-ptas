@@ -386,6 +386,12 @@ impl LinkGraph {
     }
 }
 
+impl Default for LinkGraph {
+    fn default() -> Self {
+        LinkGraph::new()
+    }
+}
+
 impl Drop for LinkGraph {
     fn drop(&mut self) {
         for vertex in &self.vertexes {

@@ -281,6 +281,12 @@ impl ListGraph {
     }
 }
 
+impl Default for ListGraph {
+    fn default() -> Self {
+        ListGraph::new()
+    }
+}
+
 /// A helper struct for iterating over all nodes in the ListGraph
 pub type NodeIndexIter<'a> =
     IndexIter<'a, Vec<(NodeId, EdgeId, bool)>, fn(&Vec<(NodeId, EdgeId, bool)>) -> bool>;
