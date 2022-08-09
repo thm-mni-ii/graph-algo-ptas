@@ -57,10 +57,10 @@ impl Phase3<'_> {
             let hs = self.pop_edges(hc);
 
             for e in es {
-                let (a_node, _) = e;
-                let a_vertex = self.node_id_mapper.get(&a_node).unwrap().clone();
+                let (_, b_node) = e;
+                let b_vertex = self.node_id_mapper.get(&b_node).unwrap().clone();
                 self.dcel
-                    .remove_edge(&a_vertex, self.dcel.dart_vertex(&a_vertex));
+                    .remove_edge(&b_vertex, self.dcel.dart_vertex(&b_vertex));
             }
 
             self.get_or_create_vertex(v);
