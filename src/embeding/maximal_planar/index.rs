@@ -36,9 +36,7 @@ impl
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-
-    use petgraph::dot::{Config, Dot};
+    use petgraph::{stable_graph::StableGraph, Undirected};
 
     use crate::{
         embeding::{index::Embeding, maximal_planar::index::MaximalPlanar},
@@ -47,16 +45,40 @@ mod tests {
 
     use crate::data_structure::graph_dcel::GraphDCEL;
 
+    fn test_embend(graph: StableGraph<u32, (), Undirected>) {
+        let dcel = MaximalPlanar::embed(graph.clone());
+
+        assert_eq!(dcel.vertex_count(), graph.node_count());
+        assert_eq!(dcel.edge_count(), graph.edge_count())
+    }
+
     #[test]
-    fn embend() {
-        let graph = generate(200).to_pet_graph();
-        let mut f = File::create("circle.dot").unwrap();
+    fn embend_k4_graph() {
+        let graph = generate(4).to_pet_graph();
+        test_embend(graph)
+    }
 
-        println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
+    #[test]
+    fn embend_min_graph() {
+        let graph = generate(5).to_pet_graph();
+        test_embend(graph)
+    }
 
-        let dcel = MaximalPlanar::embed(graph);
+    #[test]
+    fn embend_small_graph() {
+        let graph = generate(10).to_pet_graph();
+        test_embend(graph)
+    }
 
-        dot::render(&dcel, &mut f).unwrap();
-        println!("FACE COUNT: {:?}", dcel.get_faces().count());
+    #[test]
+    fn embend_medium_graph() {
+        let graph = generate(50).to_pet_graph();
+        test_embend(graph)
+    }
+
+    #[test]
+    fn embend_large_graph() {
+        let graph = generate(100).to_pet_graph();
+        test_embend(graph)
     }
 }
