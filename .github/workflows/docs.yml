@@ -8,7 +8,9 @@ jobs:
   docs:
     name: Publish docs
     runs-on: ubuntu-latest
-
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
