@@ -1,3 +1,4 @@
+//! Contains a linked implementation of the DCEL trait
 use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
 
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
@@ -73,17 +74,19 @@ struct LinkVertexStruct {
 impl_non_recursive_eq!(LinkVertexStruct);
 impl_non_recursive_debug!(LinkVertexStruct, "LinkVertex");
 
+/// A vertex in the LinkGraph
 #[derive(Clone, Default, Eq)]
 pub struct LinkVertex(Rc<RefCell<LinkVertexStruct>>);
 
 impl LinkVertex {
-    pub fn new(id: usize) -> LinkVertex {
+    fn new(id: usize) -> LinkVertex {
         LinkVertex(Rc::new(RefCell::new(LinkVertexStruct {
             id,
             ..Default::default()
         })))
     }
 
+    /// Returns the id of this LinkVertex
     pub fn get_id(&self) -> usize {
         return self.0.clone().borrow().id;
     }
@@ -125,6 +128,7 @@ impl Debug for LinkDartStructure {
     }
 }
 
+/// A dart in the LinkGraph
 #[derive(Clone, Default, Eq)]
 pub struct LinkDart(Rc<RefCell<LinkDartStructure>>);
 
@@ -134,7 +138,7 @@ impl_ord!(LinkDart);
 impl Dart for LinkDart {}
 
 impl LinkDart {
-    pub fn new(id: usize, target: LinkVertex) -> LinkDart {
+    fn new(id: usize, target: LinkVertex) -> LinkDart {
         LinkDart(Rc::new(RefCell::new(LinkDartStructure {
             id,
             target,
@@ -142,6 +146,7 @@ impl LinkDart {
         })))
     }
 
+    /// Returns the id of this LinkDart
     pub fn get_id(&self) -> usize {
         return self.0.clone().borrow().id;
     }
@@ -156,6 +161,7 @@ struct LinkFaceStructure {
 impl_non_recursive_eq!(LinkFaceStructure);
 impl_non_recursive_debug!(LinkFaceStructure, "LinkFace");
 
+/// A face in the LinkGraph
 #[derive(Clone, Default, Eq)]
 pub struct LinkFace(Rc<RefCell<LinkFaceStructure>>);
 
@@ -165,15 +171,17 @@ impl_ord!(LinkFace);
 impl Face for LinkFace {}
 
 impl LinkFace {
-    pub fn new(id: usize, dart: LinkDart) -> LinkFace {
+    fn new(id: usize, dart: LinkDart) -> LinkFace {
         LinkFace(Rc::new(RefCell::new(LinkFaceStructure { id, dart })))
     }
 
+    /// Returns the id of this LinkFace
     pub fn get_id(&self) -> usize {
         return self.0.clone().borrow().id;
     }
 }
 
+/// A linked implementation of the DCEL trait
 pub struct LinkGraph {
     id_counter: usize,
     vertexes: Vec<LinkVertex>,
@@ -181,6 +189,7 @@ pub struct LinkGraph {
     faces: Vec<LinkFace>,
 }
 
+/// A helper struct to iterate over the LinkGraph
 pub struct LinkGraphIter<T: Clone> {
     counter: usize,
     inner: Vec<T>,
@@ -305,6 +314,7 @@ impl
 }
 
 impl LinkGraph {
+    /// Returns a new empty ListGraph
     pub fn new() -> LinkGraph {
         LinkGraph {
             id_counter: 0,
@@ -318,11 +328,13 @@ impl LinkGraph {
         self.id_counter += 1;
         id
     }
+    /// Adds a new vertex to this LinkGraph
     pub fn new_vertex(&mut self) -> LinkVertex {
         let lv = LinkVertex::new(self.next_id());
         self.vertexes.push(lv.clone());
         lv
     }
+    /// Adds a new dart to this LinkGraph
     pub fn new_dart(
         &mut self,
         from: LinkVertex,
@@ -364,6 +376,8 @@ impl LinkGraph {
         from.0.borrow_mut().dart = Some(ld.clone());
         ld
     }
+
+    /// Adds a new face to this LinkGraph
     pub fn new_face(&mut self, dart: LinkDart) -> LinkFace {
         let lv = LinkFace::new(self.next_id(), dart.clone());
         self.faces.push(lv.clone());
@@ -407,6 +421,12 @@ impl LinkGraph {
 
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
         (self.remove_dart(from, dart.clone()), self.remove_dart(from, self.twin(&dart)))
+    }
+}
+
+impl Default for LinkGraph {
+    fn default() -> Self {
+        LinkGraph::new()
     }
 }
 

@@ -1,15 +1,22 @@
+//! Contains an implementation of the data structure described in [A simple linear time algorithm
+//! for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+
 use petgraph::stable_graph::{DefaultIx, StableGraph};
 use petgraph::Undirected;
 
+/// The type of the edge id
 pub type EdgeId = usize;
+/// The type of the node id
 pub type NodeId = usize;
 
+/// The structure containing the graphs
 pub struct ListGraph {
     nodes: Vec<Vec<(NodeId, EdgeId, bool)>>,
     edges: Vec<(NodeId, NodeId, bool)>,
 }
 
 impl ListGraph {
+    /// Creates a new empty ListGraph
     pub fn new() -> ListGraph {
         ListGraph {
             nodes: Vec::new(),
@@ -17,6 +24,7 @@ impl ListGraph {
         }
     }
 
+    /// Creates a new ListGraph containing the edges and required odes
     pub fn from_edges<'a>(edges: impl Iterator<Item = &'a (NodeId, NodeId)>) -> ListGraph {
         let mut graph = ListGraph::new();
         for (from, to) in edges {
@@ -25,6 +33,7 @@ impl ListGraph {
         graph
     }
 
+    /// Creates a k4 graph
     pub fn k4() -> ListGraph {
         ListGraph::from_edges_node_list(
             [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)].iter(),
@@ -38,6 +47,7 @@ impl ListGraph {
         )
     }
 
+    /// Same as from_edges but with the addition of being able to define the order of the adjacency list for each node
     pub fn from_edges_node_list<'a, 'b>(
         edges: impl Iterator<Item = &'a (NodeId, NodeId)>,
         nodes: impl Iterator<Item = &'b &'b [EdgeId]>,
@@ -132,6 +142,9 @@ impl ListGraph {
         })
     }
 
+    /// Adds an edge to the graph
+    /// If the given nodes do not exist they are created
+    /// It is the responsibility of the caller of this function to ensure `from` != `to` or else this function will panic.
     pub fn add_edge(
         &mut self,
         from: NodeId,
@@ -154,6 +167,7 @@ impl ListGraph {
         edge_id
     }
 
+    /// Removes an edge from the graph
     pub fn remove_edge(&mut self, edge_id: EdgeId) {
         if let Some((from_ref, to_ref, active)) = self.edges.get_mut(edge_id) {
             if *active {
@@ -166,6 +180,7 @@ impl ListGraph {
         }
     }
 
+    /// Returns an iterator iterating over all indexes of nodes in the graph
     pub fn node_indexes(&self) -> NodeIndexIter {
         IndexIter {
             i: 0,
@@ -174,6 +189,7 @@ impl ListGraph {
         }
     }
 
+    /// Returns an iterator iterating over all indexes of edges in the graph
     pub fn edge_indexes(&self) -> EdgeIndexIter {
         IndexIter {
             i: 0,
@@ -182,12 +198,14 @@ impl ListGraph {
         }
     }
 
+    /// Returns the ids of the nodes adjacent to the given edge
     pub fn edge(&self, edge_id: EdgeId) -> Option<(NodeId, NodeId)> {
         self.edges
             .get(edge_id)
             .and_then(|(from, to, active)| if *active { Some((*from, *to)) } else { None })
     }
 
+    /// List the ids of all edges adjacent to the given node
     pub fn edges(&self, node_id: NodeId) -> Option<Vec<EdgeId>> {
         self.nodes.get(node_id).map(|edges| {
             edges
@@ -198,6 +216,7 @@ impl ListGraph {
         })
     }
 
+    /// Returns the id of all neighbouring nodes to the given node
     pub fn neighbors(&self, node_id: NodeId) -> Option<Vec<NodeId>> {
         self.nodes.get(node_id).map(|edges| {
             edges
@@ -208,15 +227,18 @@ impl ListGraph {
         })
     }
 
+    /// Returns the id of the edge following the given edge in the adjacency list of the given node
     pub fn cyclic_incident_succ(&self, edge: EdgeId, node: NodeId) -> Option<EdgeId> {
         self.cyclic_incident_rel(edge, node, 1)
     }
 
+    /// Returns the id of the edge preceding the given edge in the adjacency list of the given node
     pub fn cyclic_incident_prev(&self, edge: EdgeId, node: NodeId) -> Option<EdgeId> {
         self.cyclic_incident_rel(edge, node, -1)
     }
 
-    pub fn opposite(&self, node: NodeId, edge: EdgeId) -> Option<EdgeId> {
+    /// Returns the id of the node opposite to the given node on the given edge
+    pub fn opposite(&self, node: NodeId, edge: EdgeId) -> Option<NodeId> {
         self.edges.get(edge).and_then(|(a_node, b_node, active)| {
             if *active {
                 if node == *a_node {
@@ -232,6 +254,7 @@ impl ListGraph {
         })
     }
 
+    /// Returns a vector containing all edges in the graph as a pair containing the id of the nodes the edge is connecting
     pub fn all_edges(&self) -> Vec<(NodeId, NodeId)> {
         return self
             .edges
@@ -241,6 +264,7 @@ impl ListGraph {
             .collect();
     }
 
+    /// Adds a new vertex to the graph
     pub fn new_vertex(&mut self) -> NodeId {
         let new_len = self.nodes.len() + 1;
         self.nodes.resize_with(new_len, Vec::new);
@@ -256,10 +280,20 @@ impl ListGraph {
     }
 }
 
-type NodeIndexIter<'a> =
-    IndexIter<'a, Vec<(NodeId, EdgeId, bool)>, fn(&Vec<(NodeId, EdgeId, bool)>) -> bool>;
-type EdgeIndexIter<'a> = IndexIter<'a, (NodeId, NodeId, bool), fn(&(NodeId, NodeId, bool)) -> bool>;
+impl Default for ListGraph {
+    fn default() -> Self {
+        ListGraph::new()
+    }
+}
 
+/// A helper struct for iterating over all nodes in the ListGraph
+pub type NodeIndexIter<'a> =
+    IndexIter<'a, Vec<(NodeId, EdgeId, bool)>, fn(&Vec<(NodeId, EdgeId, bool)>) -> bool>;
+/// A helper struct for iterating over all edges in the ListGraph
+pub type EdgeIndexIter<'a> =
+    IndexIter<'a, (NodeId, NodeId, bool), fn(&(NodeId, NodeId, bool)) -> bool>;
+
+/// A helper struct for iterating over all nodes/edges in the ListGraph
 pub struct IndexIter<'a, T, VF: Fn(&T) -> bool> {
     i: usize,
     entries: &'a [T],

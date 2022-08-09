@@ -1,3 +1,13 @@
+//! Implements the dot GraphWalker trait for LinkGraph to allow dot creation
+//! ```
+//! use std::fs::File;
+//! use graph_algo_ptas::data_structure::link_graph::LinkGraph;
+//!
+//! let g = LinkGraph::new(); // the graph to render
+//! let mut o = File::create("circle.dot").unwrap(); // or any implementation std::io::Write
+//! dot::render(&g, &mut o).unwrap();
+//! ```
+
 use crate::data_structure::graph_dcel::GraphDCEL;
 use crate::data_structure::link_graph::{LinkDart, LinkGraph, LinkVertex};
 use dot::{Edges, GraphWalk, Id, Labeller, Nodes};
