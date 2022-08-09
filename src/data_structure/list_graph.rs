@@ -247,7 +247,7 @@ impl ListGraph {
         new_len - 1
     }
 
-    pub fn to_pet_graph(&self) -> StableGraph<usize, usize, Undirected, DefaultIx> {
+    pub fn to_pet_graph(&self) -> StableGraph<u32, (), Undirected, DefaultIx> {
         StableGraph::from_edges(
             self.all_edges()
                 .iter()
