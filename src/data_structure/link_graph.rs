@@ -222,6 +222,59 @@ impl
         LinkGraphIter::new(self.faces.clone())
     }
 
+    fn vertex_count(&self) -> usize {
+        self.vertexes.len()
+    }
+
+    fn dart_count(&self) -> usize {
+        self.darts.len()
+    }
+
+    fn edge_count(&self) -> usize {
+        self.dart_count() / 2
+    }
+
+    fn face_count(&self) -> usize {
+        self.faces.len()
+    }
+
+    fn face_vertex_count(&self, face: &LinkFace) -> usize {
+        let mut count = 1;
+        let dart = self.dart_face(face);
+        let mut current_dart = dart.clone();
+
+        loop {
+            current_dart = self.next(&current_dart);
+
+            if current_dart == dart {
+                break count;
+            }
+
+            count += 1;
+        }
+    }
+
+    fn neighbors_count(&self, vertex: &LinkVertex) -> usize {
+        self.neighbors(vertex).len()
+    }
+
+    fn neighbors(&self, vertex: &LinkVertex) -> Vec<LinkVertex> {
+        let mut current_dart = self.dart_vertex(vertex);
+        let first_dart = current_dart.clone();
+        let mut current_neighbor = self.dart_target(&current_dart);
+        let mut result = vec![];
+        loop {
+            result.push(current_neighbor);
+            let twin_dart = self.twin(&current_dart);
+            current_dart = self.next(&twin_dart);
+            if current_dart == first_dart {
+                break;
+            }
+            current_neighbor = self.dart_target(&current_dart);
+        }
+        result
+    }
+
     fn dart_vertex(&self, vertex: &LinkVertex) -> LinkDart {
         vertex.0.borrow().dart.clone().unwrap()
     }
@@ -376,12 +429,7 @@ impl Drop for LinkGraph {
 mod tests {
     use std::{cmp::Ordering, collections::HashSet};
 
-    use crate::data_structure::{
-        graph_dcel::GraphDCEL,
-        link_graph::{LinkDart, LinkGraph},
-    };
-
-    use super::{LinkFace, LinkVertex};
+    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
@@ -409,33 +457,19 @@ mod tests {
             Some(ld2.clone()),
             Some(ld1.clone()),
             None,
-            Some(lf.clone()),
+            Some(lf),
         );
-        let lt1 = lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
-            None,
-            None,
-            Some(ld1.clone()),
-            None,
-        );
+        let lt1 = lg.new_dart(lv2.clone(), lv1.clone(), None, None, Some(ld1), None);
         let lof = lg.new_face(lt1.clone());
         let lt2 = lg.new_dart(
             lv3.clone(),
-            lv2.clone(),
-            Some(lt1.clone()),
+            lv2,
             None,
-            Some(ld2.clone()),
-            Some(lof.clone()),
-        );
-        let _lt3 = lg.new_dart(
-            lv1.clone(),
-            lv3.clone(),
-            Some(lt2.clone()),
             Some(lt1.clone()),
-            Some(ld3.clone()),
+            Some(ld2),
             Some(lof.clone()),
         );
+        let _lt3 = lg.new_dart(lv1, lv3, Some(lt1), Some(lt2), Some(ld3), Some(lof));
         lg
     }
 
@@ -453,7 +487,7 @@ mod tests {
         assert_eq!(twin_back_dart, dart);
         let twin_2_dart = graph.next(&twin_dart);
         let twin_dart_3 = graph.twin(&dart_3);
-        assert_ne!(twin_2_dart, twin_dart_3);
+        assert_eq!(twin_2_dart, twin_dart_3);
         let face = graph.face(&dart);
         graph.dart_face(&face);
         let prev_dart = graph.prev(&dart);
@@ -468,12 +502,10 @@ mod tests {
     #[test]
     fn iter_test() {
         let graph = example_graph();
-        let vertexes: Vec<LinkVertex> = graph.get_vertexes().collect();
-        let darts: Vec<LinkDart> = graph.get_darts().collect();
-        let faces: Vec<LinkFace> = graph.get_faces().collect();
-        assert_eq!(vertexes.len(), 3);
-        assert_eq!(darts.len(), 6);
-        assert_eq!(faces.len(), 2);
+
+        assert_eq!(graph.get_vertexes().count(), 3);
+        assert_eq!(graph.get_darts().count(), 6);
+        assert_eq!(graph.get_faces().count(), 2);
     }
 
     #[test]
@@ -540,5 +572,112 @@ mod tests {
         assert_eq!(f2.partial_cmp(&f1), Some(Ordering::Greater));
         assert_eq!(f1.cmp(&f2), Ordering::Less);
         assert_eq!(f2.cmp(&f1), Ordering::Greater);
+    }
+
+    #[test]
+    fn neighbors_single_edge() {
+        let mut lg = LinkGraph::new();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+
+        let ld1 = lg.new_dart(lv1.clone(), lv2.clone(), None, None, None, None);
+        let lf = lg.new_face(ld1.clone());
+        lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(ld1.clone()),
+            Some(ld1.clone()),
+            Some(ld1),
+            Some(lf),
+        );
+
+        assert_eq!(lg.neighbors(&lv1), vec![lv2.clone()]);
+        assert_eq!(lg.neighbors(&lv2), vec![lv1]);
+    }
+
+    #[test]
+    fn neighbors_triangle() {
+        let mut lg = LinkGraph::new();
+        let lv0 = lg.new_vertex();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
+        let lf = lg.new_face(ld0.clone());
+        let ld1 = lg.new_dart(
+            lv1.clone(),
+            lv2.clone(),
+            Some(ld0.clone()),
+            None,
+            None,
+            Some(lf.clone()),
+        );
+        let ld2 = lg.new_dart(
+            lv2.clone(),
+            lv0.clone(),
+            Some(ld1.clone()),
+            Some(ld0.clone()),
+            None,
+            Some(lf),
+        );
+
+        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);
+        let lof = lg.new_face(lt0.clone());
+        let lt2 = lg.new_dart(
+            lv0.clone(),
+            lv2.clone(),
+            Some(lt0.clone()),
+            None,
+            Some(ld2),
+            Some(lof.clone()),
+        );
+        lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2),
+            Some(lt0),
+            Some(ld1),
+            Some(lof),
+        );
+
+        assert_eq!(lg.neighbors(&lv0), vec![lv2.clone(), lv1.clone()]);
+        assert_eq!(lg.neighbors(&lv1), vec![lv0.clone(), lv2.clone()]);
+        assert_eq!(lg.neighbors(&lv2), vec![lv1, lv0]);
+    }
+
+    #[test]
+    fn dart_count() {
+        let g = example_graph();
+
+        assert_eq!(g.dart_count(), 6)
+    }
+
+    #[test]
+    fn edge_count() {
+        let g = example_graph();
+
+        assert_eq!(g.edge_count(), 3);
+    }
+
+    #[test]
+    fn face_count() {
+        let g = example_graph();
+
+        assert_eq!(g.face_count(), 2);
+    }
+
+    #[test]
+    fn face_vertex_count() {
+        let g = example_graph();
+        let f = g.face(&g.get_darts().next().unwrap());
+
+        assert_eq!(g.face_vertex_count(&f), 3);
+    }
+
+    #[test]
+    fn neighbors_count() {
+        let g = example_graph();
+
+        assert_eq!(g.neighbors_count(&g.get_vertexes().next().unwrap()), 2);
     }
 }
