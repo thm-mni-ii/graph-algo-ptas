@@ -1,5 +1,5 @@
 //! Contains an implementation of the data structure described in [A simple linear time algorithm
-// for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+//! for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
 use petgraph::stable_graph::{DefaultIx, StableGraph};
 use petgraph::Undirected;
