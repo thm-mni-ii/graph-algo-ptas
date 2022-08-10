@@ -7,10 +7,10 @@ struct Leveling<T> {
 }
 
 impl Leveling<LinkVertex> {
-    fn compute(span: Span<LinkVertex>, root: LinkVertex) -> Self {
+    fn compute(span: Span<LinkVertex>) -> Self {
         let mut result = vec![];
         let mut level = HashSet::new();
-        level.insert(root);
+        level.insert(span.root);
         while !level.is_empty() {
             result.push(level.clone());
             let mut new_level = HashSet::new();
@@ -41,11 +41,6 @@ mod tests {
 
     #[test]
     fn triangle() {
-        let mut lg = LinkGraph::new();
-        let lv0 = lg.new_vertex();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
-
         let mut lg = LinkGraph::new();
         let lv0 = lg.new_vertex();
         let lv1 = lg.new_vertex();
@@ -100,12 +95,13 @@ mod tests {
 
         let span = Span::compute(&lg, lv1.clone());
 
-        let leveling = Leveling::compute(span, lv1.clone());
-        let lc0 = HashSet::from([lv1]);
-        let lc1 = HashSet::from([lv0, lv2]);
+        let leveling = Leveling::compute(span);
         println!("[RESULT]: {:?}", leveling.levels);
         assert_eq!(leveling.size(), 2);
-        assert_eq!(leveling.levels, vec![lc0, lc1])
+        assert_eq!(
+            leveling.levels,
+            vec![HashSet::from([lv1]), HashSet::from([lv0, lv2])]
+        )
     }
 
     #[test]
@@ -200,13 +196,17 @@ mod tests {
 
         let span = Span::compute(&lg, lv1.clone());
 
-        let leveling = Leveling::compute(span, lv1.clone());
-        let lc0 = HashSet::from([lv1]);
-        let lc1 = HashSet::from([lv0, lv2]);
-        let lc2 = HashSet::from([lv3]);
+        let leveling = Leveling::compute(span);
         println!("[RESULT]: {:?}", leveling.levels);
         assert_eq!(leveling.size(), 3);
-        assert_eq!(leveling.levels, vec![lc0, lc1, lc2])
+        assert_eq!(
+            leveling.levels,
+            vec![
+                HashSet::from([lv1]),
+                HashSet::from([lv0, lv2]),
+                HashSet::from([lv3])
+            ]
+        )
     }
 
     #[test]
@@ -336,12 +336,16 @@ mod tests {
 
         let span = Span::compute(&lg, lv1.clone());
 
-        let leveling = Leveling::compute(span, lv1.clone());
-        let lc0 = HashSet::from([lv1]);
-        let lc1 = HashSet::from([lv0, lv2]);
-        let lc2 = HashSet::from([lv3, lv4]);
+        let leveling = Leveling::compute(span);
         println!("[RESULT]: {:?}", leveling.levels);
         assert_eq!(leveling.size(), 3);
-        assert_eq!(leveling.levels, vec![lc0, lc1, lc2])
+        assert_eq!(
+            leveling.levels,
+            vec![
+                HashSet::from([lv1]),
+                HashSet::from([lv0, lv2]),
+                HashSet::from([lv3, lv4])
+            ]
+        )
     }
 }
