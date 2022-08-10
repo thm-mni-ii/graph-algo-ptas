@@ -1,6 +1,8 @@
 //! Contains a linked implementation of the DCEL trait
 use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
 
+use dot::GraphWalk;
+
 use super::graph_dcel::{Dart, Face, GraphDCEL, Vertex};
 
 macro_rules! impl_non_recursive_eq {
@@ -131,6 +133,10 @@ impl Debug for LinkDartStructure {
             .field(
                 "twin_id",
                 &self.twin.as_ref().map(|twin| twin.0.borrow().id),
+            )
+            .field(
+                "face_id",
+                &self.face.as_ref().map(|twin| twin.0.borrow().id),
             )
             .finish()
     }
@@ -401,6 +407,7 @@ impl LinkGraph {
         prev: Option<LinkDart>,
         next: Option<LinkDart>,
         face: Option<LinkFace>,
+        twin_face: Option<LinkFace>,
     ) -> (LinkDart, LinkDart) {
         let dart = self.new_dart(
             from.clone(),
@@ -408,7 +415,7 @@ impl LinkGraph {
             prev.clone(),
             next.clone(),
             None,
-            face.clone(),
+            face,
         );
         let twin = self.new_dart(
             to,
@@ -416,7 +423,7 @@ impl LinkGraph {
             next.and_then(|n| n.0.borrow().twin.clone()),
             prev.and_then(|n| n.0.borrow().twin.clone()),
             Some(dart.clone()),
-            face,
+            twin_face,
         );
 
         (dart, twin)
@@ -428,7 +435,9 @@ impl LinkGraph {
         let next = if let Some(next) = dart_ref.next.take() {
             next.0.borrow_mut().prev = dart_ref.prev.clone();
             Some(next)
-        } else { None };
+        } else {
+            None
+        };
         if let Some(prev) = dart_ref.prev.take() {
             prev.0.borrow_mut().next = next.clone();
         }
@@ -444,8 +453,52 @@ impl LinkGraph {
 
     /// Removes the given dart and its twin from the graph
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
-        let twin = self.twin(&dart);
-        (self.remove_dart(from, dart.clone()), self.remove_dart(from, twin))
+        self.get_darts()
+            .position(|global_dart| global_dart == dart)
+            .expect("dart not in list");
+        let twin = if let Some(twin) = &dart.0.borrow().twin {
+            let twin_from = self.target(&dart);
+            self.remove_dart(&twin_from, twin.clone())
+        } else {
+            dart.clone()
+        };
+        let res = (self.remove_dart(from, dart.clone()), twin);
+        res
+    }
+
+    fn validate_darts(&self) {
+        for dart in self.get_darts() {
+            let dart_inner = dart.0.borrow();
+            let next = dart_inner.next.as_ref().expect("next required");
+            self.get_darts()
+                .position(|global_dart| &global_dart == next)
+                .expect("next not found in darts");
+            let prev = dart_inner.prev.as_ref().expect("prev required");
+            self.get_darts()
+                .position(|global_dart| &global_dart == prev)
+                .expect("prev not found in darts");
+            let twin = dart_inner.twin.as_ref().expect("twin required");
+            self.get_darts()
+                .position(|global_dart| &global_dart == twin)
+                .expect("twin not found in darts");
+            dart_inner.face.as_ref().expect("face required");
+        }
+    }
+
+    fn validate_vertexes(&self) {
+        for vertex in self.get_vertexes() {
+            let vertex_inner = vertex.0.borrow();
+            let dart = vertex_inner.dart.as_ref().expect("dart required");
+            self.get_darts()
+                .position(|global_dart| &global_dart == dart)
+                .expect("dart not found in darts");
+        }
+    }
+
+    /// Validates the integrity of the graph. Panics if graph is invalid. Therefor mainly usefull for debugging.
+    pub fn validate(&self) {
+        self.validate_darts();
+        self.validate_vertexes();
     }
 }
 
@@ -472,8 +525,8 @@ impl Drop for LinkGraph {
 
 #[cfg(test)]
 mod tests {
-    use std::{cmp::Ordering, collections::HashSet};
     use dot::GraphWalk;
+    use std::{cmp::Ordering, collections::HashSet};
 
     use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
@@ -734,7 +787,15 @@ mod tests {
         let dart = g.dart_vertex(&first_vertex);
         let prev_dart = g.prev(&dart);
         let new_vertex = g.new_vertex();
-        g.new_edge(first_vertex.clone(), new_vertex.clone(), Some(prev_dart), Some(dart), None);
+        g.new_edge(
+            first_vertex.clone(),
+            new_vertex.clone(),
+            Some(prev_dart),
+            Some(dart),
+            None,
+            None,
+        );
+        g.validate();
         assert!(g.neighbors(&first_vertex).contains(&new_vertex));
         assert!(g.neighbors(&new_vertex).contains(&first_vertex));
         assert_eq!(g.edge_count(), 4)
@@ -747,7 +808,8 @@ mod tests {
         let dart = g.dart_vertex(&first_vertex);
         let target = g.target(&dart);
         g.remove_edge(&first_vertex, dart);
+        g.validate();
         assert!(!g.neighbors(&first_vertex).contains(&target));
-        assert_eq!(g.edge_count(), 2)
+        assert_eq!(g.edge_count(), 2);
     }
 }

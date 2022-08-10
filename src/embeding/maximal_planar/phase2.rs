@@ -21,15 +21,22 @@ impl Phase2<'_> {
     }
 
     fn create_face(&mut self, vertex1: LinkVertex, vertex2: LinkVertex, vertex3: LinkVertex) {
-        let d0 = self
+        let (d0, t0) = self
             .dcel
-            .new_edge(vertex1, vertex2.clone(), None, None, None)
-            .0;
+            .new_edge(vertex1.clone(), vertex2.clone(), None, None, None, None);
         let f0 = self.dcel.new_face(d0.clone());
-        let _d1 = self
-            .dcel
-            .new_edge(vertex2, vertex3, Some(d0), None, Some(f0))
-            .0;
+        let tf0 = self.dcel.new_face(t0.clone()); // ToDo macht das semantisch sinn?
+        let (d1, _t1) = self.dcel.new_edge(
+            vertex2,
+            vertex3.clone(),
+            Some(d0.clone()),
+            None,
+            Some(f0.clone()),
+            Some(tf0.clone()),
+        );
+        let (_d2, _t2) =
+            self.dcel
+                .new_edge(vertex3, vertex1, Some(d1), Some(d0), Some(f0), Some(tf0));
     }
 }
 

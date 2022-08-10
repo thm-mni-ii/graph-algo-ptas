@@ -39,10 +39,10 @@ impl Phase3<'_> {
     }
 
     pub fn execute(&mut self) {
+        let mut first_dart: Option<LinkDart> = None;
         let mut last_dart: Option<LinkDart> = None;
         while let Some(entry) = self.stack.pop() {
             let k = entry.unwrap_degree();
-            let mut create_face = false;
             let (ec, hc) = match k {
                 3 => (0, 3),
                 4 => (1, 4),
@@ -70,17 +70,20 @@ impl Phase3<'_> {
                 let a_vertex = self.get_or_create_vertex(a_node);
                 let b_vertex = self.get_or_create_vertex(b_node);
 
-                let (new_dart, _) =
-                    self.dcel
-                        .new_edge(a_vertex.clone(), b_vertex.clone(), last_dart, None, None);
+                let (new_dart, new_twin) = self.dcel.new_edge(
+                    a_vertex.clone(),
+                    b_vertex.clone(),
+                    last_dart,
+                    first_dart,
+                    None,
+                    None,
+                );
 
-                if create_face {
-                    self.dcel.new_face(new_dart.clone());
-                } else {
-                    create_face = true;
-                }
+                self.dcel.new_face(new_dart.clone());
+                self.dcel.new_face(new_twin.clone());
 
-                last_dart = Some(new_dart);
+                last_dart = Some(new_dart.clone());
+                first_dart = Some(new_dart);
             }
         }
     }
