@@ -7,10 +7,10 @@ struct Leveling<T> {
 }
 
 impl Leveling<LinkVertex> {
-    fn compute(span: Span<LinkVertex>, root: LinkVertex) -> Self {
+    fn compute(span: Span<LinkVertex>) -> Self {
         let mut result = vec![];
         let mut level = HashSet::new();
-        level.insert(root);
+        level.insert(span.root);
         while !level.is_empty() {
             result.push(level.clone());
             let mut new_level = HashSet::new();
@@ -95,12 +95,13 @@ mod tests {
 
         let span = Span::compute(&lg, lv1.clone());
 
-        let leveling = Leveling::compute(span, lv1.clone());
-        let lc0 = HashSet::from([lv1]);
-        let lc1 = HashSet::from([lv0, lv2]);
+        let leveling = Leveling::compute(span);
         println!("[RESULT]: {:?}", leveling.levels);
         assert_eq!(leveling.size(), 2);
-        assert_eq!(leveling.levels, vec![lc0, lc1])
+        assert_eq!(
+            leveling.levels,
+            vec![HashSet::from([lv1]), HashSet::from([lv0, lv2])]
+        )
     }
 
     #[test]
@@ -195,13 +196,17 @@ mod tests {
 
         let span = Span::compute(&lg, lv1.clone());
 
-        let leveling = Leveling::compute(span, lv1.clone());
-        let lc0 = HashSet::from([lv1]);
-        let lc1 = HashSet::from([lv0, lv2]);
-        let lc2 = HashSet::from([lv3]);
+        let leveling = Leveling::compute(span);
         println!("[RESULT]: {:?}", leveling.levels);
         assert_eq!(leveling.size(), 3);
-        assert_eq!(leveling.levels, vec![lc0, lc1, lc2])
+        assert_eq!(
+            leveling.levels,
+            vec![
+                HashSet::from([lv1]),
+                HashSet::from([lv0, lv2]),
+                HashSet::from([lv3])
+            ]
+        )
     }
 
     #[test]
@@ -331,12 +336,100 @@ mod tests {
 
         let span = Span::compute(&lg, lv1.clone());
 
-        let leveling = Leveling::compute(span, lv1.clone());
-        let lc0 = HashSet::from([lv1]);
-        let lc1 = HashSet::from([lv0, lv2]);
-        let lc2 = HashSet::from([lv3, lv4]);
+        let leveling = Leveling::compute(span);
         println!("[RESULT]: {:?}", leveling.levels);
         assert_eq!(leveling.size(), 3);
-        assert_eq!(leveling.levels, vec![lc0, lc1, lc2])
+        assert_eq!(
+            leveling.levels,
+            vec![
+                HashSet::from([lv1]),
+                HashSet::from([lv0, lv2]),
+                HashSet::from([lv3, lv4])
+            ]
+        )
+    }
+
+    #[test]
+    fn test() {
+        let mut lg = LinkGraph::new();
+        let lv0 = lg.new_vertex();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+        let lv3 = lg.new_vertex();
+        let lv4 = lg.new_vertex();
+
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
+        let lof = lg.new_face(ld0.clone());
+        let ld1 = lg.new_dart(
+            lv1.clone(),
+            lv2.clone(),
+            Some(ld0.clone()),
+            None,
+            None,
+            Some(lof.clone()),
+        );
+        let ld2 = lg.new_dart(
+            lv2.clone(),
+            lv3.clone(),
+            Some(ld1.clone()),
+            None,
+            None,
+            Some(lof.clone()),
+        );
+        let ld3 = lg.new_dart(
+            lv3.clone(),
+            lv4.clone(),
+            Some(ld2.clone()),
+            None,
+            None,
+            Some(lof.clone()),
+        );
+        let lt3 = lg.new_dart(
+            lv4.clone(),
+            lv3.clone(),
+            Some(ld3.clone()),
+            None,
+            Some(ld3),
+            Some(lof.clone()),
+        );
+        let lt2 = lg.new_dart(
+            lv3.clone(),
+            lv2.clone(),
+            Some(lt3),
+            None,
+            Some(ld2),
+            Some(lof.clone()),
+        );
+        let lt1 = lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2),
+            None,
+            Some(ld1),
+            Some(lof.clone()),
+        );
+        lg.new_dart(
+            lv1.clone(),
+            lv0.clone(),
+            Some(lt1),
+            Some(ld0.clone()),
+            Some(ld0),
+            Some(lof),
+        );
+
+        let span = Span::compute(&lg, lv1.clone());
+
+        let leveling = Leveling::compute(span);
+        println!("[RESULT]: {:?}", leveling.levels);
+        assert_eq!(leveling.size(), 4);
+        assert_eq!(
+            leveling.levels,
+            vec![
+                HashSet::from([lv1]),
+                HashSet::from([lv0, lv2]),
+                HashSet::from([lv3]),
+                HashSet::from([lv4]),
+            ]
+        )
     }
 }
