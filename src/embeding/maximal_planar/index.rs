@@ -36,6 +36,7 @@ impl
 
 #[cfg(test)]
 mod tests {
+    use std::option::Option::None;
     use petgraph::{stable_graph::StableGraph, Undirected};
 
     use crate::{
@@ -54,31 +55,31 @@ mod tests {
 
     #[test]
     fn embend_k4_graph() {
-        let graph = generate(4).to_pet_graph();
+        let graph = generate(4, Some(0)).to_pet_graph();
         test_embend(graph)
     }
 
     #[test]
     fn embend_min_graph() {
-        let graph = generate(5).to_pet_graph();
+        let graph = generate(5, Some(0)).to_pet_graph();
         test_embend(graph)
     }
 
     #[test]
     fn embend_small_graph() {
-        let graph = generate(10).to_pet_graph();
+        let graph = generate(10, Some(0)).to_pet_graph();
         test_embend(graph)
     }
 
     #[test]
     fn embend_medium_graph() {
-        let graph = generate(50).to_pet_graph();
+        let graph = generate(50, Some(0)).to_pet_graph();
         test_embend(graph)
     }
 
     #[test]
     fn embend_large_graph() {
-        let graph = generate(100).to_pet_graph();
+        let graph = generate(100, Some(0)).to_pet_graph();
         test_embend(graph)
     }
 }

@@ -1,14 +1,18 @@
 use crate::data_structure::list_graph::ListGraph;
-use rand::{seq::SliceRandom, thread_rng, Rng};
+use rand::{seq::SliceRandom, Rng, SeedableRng};
+use rand::rngs::StdRng;
 
-pub fn generate(mut n: usize) -> ListGraph {
+pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
     #[cfg(debug_graph_generation)]
     let mut counter = 0;
     let max_edges = 5 * n;
     let mut graph = ListGraph::k4();
     let mut urn = Vec::with_capacity(max_edges);
     let mut active = vec![false; max_edges];
-    let mut rng = thread_rng();
+    let mut rng = match seed {
+        Some(seed) => StdRng::seed_from_u64(seed),
+        None => StdRng::from_entropy(),
+    };
 
     for edge in graph.edge_indexes() {
         urn.push(edge);
@@ -100,39 +104,40 @@ fn debug_graph(
 
 #[cfg(test)]
 mod tests {
+    use std::option::Option::None;
     use super::generate;
 
     #[test]
     fn test_graph_generation_base() {
-        let graph = generate(4);
+        let graph = generate(4, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 4);
     }
 
     #[test]
     fn test_graph_generation_min() {
-        let graph = generate(5);
+        let graph = generate(5, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 5);
     }
 
     #[test]
     fn test_graph_generation_small() {
-        let graph = generate(10);
+        let graph = generate(10, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 10);
     }
 
     #[test]
     fn test_graph_generation_medium() {
-        let graph = generate(50);
+        let graph = generate(50, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 50);
     }
 
     #[test]
     fn test_graph_generation_large() {
-        let graph = generate(100);
+        let graph = generate(100, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 100);
     }
