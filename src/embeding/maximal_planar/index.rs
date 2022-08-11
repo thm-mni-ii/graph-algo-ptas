@@ -36,7 +36,6 @@ impl
 
 #[cfg(test)]
 mod tests {
-    use std::option::Option::None;
     use petgraph::{stable_graph::StableGraph, Undirected};
 
     use crate::{

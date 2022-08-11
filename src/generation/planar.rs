@@ -1,6 +1,6 @@
 use crate::data_structure::list_graph::ListGraph;
-use rand::{seq::SliceRandom, Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{seq::SliceRandom, Rng, SeedableRng};
 
 pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
     #[cfg(debug_graph_generation)]
@@ -104,7 +104,6 @@ fn debug_graph(
 
 #[cfg(test)]
 mod tests {
-    use std::option::Option::None;
     use super::generate;
 
     #[test]
