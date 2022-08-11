@@ -431,18 +431,20 @@ impl LinkGraph {
 
     fn remove_dart(&mut self, from: &LinkVertex, dart: LinkDart) -> LinkDart {
         let mut dart_ref = dart.0.borrow_mut();
+
         dart_ref.twin.take();
-        let next = if let Some(next) = dart_ref.next.take() {
-            next.0.borrow_mut().prev = dart_ref.prev.clone();
-            Some(next)
-        } else {
-            None
-        };
-        if let Some(prev) = dart_ref.prev.take() {
-            prev.0.borrow_mut().next = next.clone();
-        }
+        let next = dart_ref.next.take();
+        let prev = dart_ref.prev.take();
         dart_ref.face.take();
         drop(dart_ref);
+
+        if let Some(next) = next.clone() {
+            let tmp = prev.clone();
+            next.0.borrow_mut().prev = tmp;
+        }
+        if let Some(prev) = prev {
+            prev.0.borrow_mut().next = next.clone();
+        }
 
         if let Some(dart_pos) = self.darts.iter().position(|d| &dart == d) {
             self.darts.remove(dart_pos);
@@ -453,17 +455,13 @@ impl LinkGraph {
 
     /// Removes the given dart and its twin from the graph
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
-        self.get_darts()
-            .position(|global_dart| global_dart == dart)
-            .expect("dart not in list");
         let twin = if let Some(twin) = &dart.0.borrow().twin {
             let twin_from = self.target(&dart);
             self.remove_dart(&twin_from, twin.clone())
         } else {
             dart.clone()
         };
-        let res = (self.remove_dart(from, dart.clone()), twin);
-        res
+        (self.remove_dart(from, dart), twin)
     }
 
     fn validate_darts(&self) {
