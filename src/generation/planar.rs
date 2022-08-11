@@ -1,6 +1,10 @@
+//! Contains an algorithm that generates a maximally planar graph.  
+//! Based on [A simple linear time algorithm for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+
 use crate::data_structure::list_graph::ListGraph;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 
+/// generate a maximally planar graph with n vertices
 pub fn generate(mut n: usize) -> ListGraph {
     #[cfg(debug_graph_generation)]
     let mut counter = 0;

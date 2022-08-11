@@ -12,7 +12,7 @@ use petgraph::dot::{Config, Dot};
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
-    /// Generate Random graph with n Nodes
+    /// Generate Random graph with n vertices
     #[clap(short, long, value_parser, value_name = "n")]
     generate: Option<usize>,
 
