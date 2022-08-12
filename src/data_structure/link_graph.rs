@@ -1,5 +1,6 @@
 //! Contains a linked implementation of the DCEL trait
 use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
+use std::collections::HashSet;
 
 use dot::GraphWalk;
 
@@ -201,6 +202,8 @@ pub struct LinkGraph {
     vertexes: Vec<LinkVertex>,
     darts: Vec<LinkDart>,
     faces: Vec<LinkFace>,
+    #[cfg(debug_link_graph_double_edges)]
+    created_darts: HashSet<(usize, usize)>,
 }
 
 /// A helper struct to iterate over the LinkGraph
@@ -335,6 +338,8 @@ impl LinkGraph {
             vertexes: Vec::new(),
             darts: Vec::new(),
             faces: Vec::new(),
+            #[cfg(debug_link_graph_double_edges)]
+            created_darts: HashSet::new(),
         }
     }
     fn next_id(&mut self) -> usize {
@@ -348,6 +353,7 @@ impl LinkGraph {
         self.vertexes.push(lv.clone());
         lv
     }
+
     /// Adds a new dart to this LinkGraph
     pub fn new_dart(
         &mut self,
@@ -408,24 +414,6 @@ impl LinkGraph {
         lv
     }
 
-    fn edge_exists(&self, from: &LinkVertex, to: &LinkVertex) -> Option<(LinkDart, LinkDart)> {
-        self.validate_prev_circle();
-        self.validate_next_circle();
-        self.validate_twin();
-        let mut current_dart = from.0.borrow().dart.clone()?;
-        let first_dart = current_dart.clone();
-        while {
-            let twin_dart = current_dart.0.borrow().twin.clone()?;
-            let dart_target = self.dart_target(&current_dart);
-            if &dart_target == to {
-                return Some((current_dart, twin_dart));
-            }
-            current_dart = twin_dart.0.borrow().next.clone()?;
-            current_dart != first_dart
-        } {}
-        None
-    }
-
     /// Adds an edge to the graph
     pub fn new_edge(
         &mut self,
@@ -436,11 +424,13 @@ impl LinkGraph {
         face: Option<LinkFace>,
         twin_face: Option<LinkFace>,
     ) -> (LinkDart, LinkDart) {
-        /*if prev.clone().map(|prev| prev.0.borrow().id == 37).unwrap_or(false) {
-            panic!("break")
-        }*/
-        if let Some(darts) = self.edge_exists(&from, &to) {
-            return darts;
+        #[cfg(debug_link_graph_double_edges)]
+        {
+            let edge_pair = (from.get_id().min(to.get_id()), from.get_id().max(to.get_id()));
+            if self.created_darts.contains(&edge_pair) {
+                panic!("dart from {} to {} already exists", from.get_id(), to.get_id());
+            }
+            self.created_darts.insert(edge_pair);
         }
         let dart = self.new_dart(
             from.clone(),
@@ -511,6 +501,12 @@ impl LinkGraph {
         } else {
             (dart.clone(), dart.0.borrow().clone())
         };
+        #[cfg(debug_link_graph_double_edges)]
+        {
+            let to = twin_data.target.clone();
+            let insert_touple = (from.get_id().min(to.get_id()), from.get_id().max(to.get_id()));
+            self.created_darts.remove(&insert_touple);
+        }
         (self.remove_dart(from, dart, twin_data), twin)
     }
 
@@ -917,53 +913,15 @@ mod tests {
         assert_eq!(g.edge_count(), 2);
     }
 
+
+    #[cfg(debug_link_graph_double_edges)]
     #[test]
-    fn test_edge_exists() {
+    #[should_panic]
+    fn test_add_already_existing_edge() {
         let mut g = LinkGraph::new();
         let first_vertex = g.new_vertex();
         let second_vertex = g.new_vertex();
-        let third_vertex = g.new_vertex();
-        let first_edge = g.new_edge(
-            first_vertex.clone(),
-            second_vertex.clone(),
-            None,
-            None,
-            None,
-            None,
-        );
-        let inner_face = g.new_face(first_edge.0.clone());
-        let outer_face = g.new_face(first_edge.1.clone());
-        let second_edge = g.new_edge(
-            second_vertex.clone(),
-            third_vertex.clone(),
-            Some(first_edge.0),
-            None,
-            Some(inner_face.clone()),
-            Some(outer_face.clone()),
-        );
-        assert!(g.edge_exists(&first_vertex, &second_vertex).is_some());
-        assert!(g.edge_exists(&second_vertex, &third_vertex).is_some());
-        assert!(g.edge_exists(&third_vertex, &first_vertex).is_none());
-        g.new_edge(
-            third_vertex.clone(),
-            first_vertex.clone(),
-            Some(second_edge.0),
-            None,
-            Some(inner_face),
-            Some(outer_face),
-        );
-        assert!(g.edge_exists(&third_vertex, &first_vertex).is_some());
-        g.validate();
-    }
-
-    #[test]
-    fn test_add_already_existing_edge() {
-        let mut g = example_graph();
-        assert_eq!(g.edge_count(), 3);
-        let first_vertex = g.vertexes[0].clone();
-        let second_vertex = g.vertexes[1].clone();
+        g.new_edge(first_vertex.clone(), second_vertex.clone(), None, None, None, None);
         g.new_edge(first_vertex, second_vertex, None, None, None, None);
-        g.validate();
-        assert_eq!(g.edge_count(), 3);
     }
 }
