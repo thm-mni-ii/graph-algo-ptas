@@ -1,3 +1,5 @@
+//! Contains the implementation of the maximal planar embeding algorithm
+
 use petgraph::stable_graph::StableGraph;
 use petgraph::Undirected;
 
@@ -8,6 +10,7 @@ use super::phase1::Phase1;
 use super::phase2::Phase2;
 use super::phase3::Phase3;
 
+/// Contains the implementation of the maximal planar embeding algorithm
 pub struct MaximalPlanar {}
 
 impl
