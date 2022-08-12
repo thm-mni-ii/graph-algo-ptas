@@ -106,7 +106,7 @@ impl_hash_and_eq!(LinkVertex);
 impl_ord!(LinkVertex);
 impl Vertex for LinkVertex {}
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct LinkDartStructure {
     id: usize,
     target: LinkVertex,
@@ -359,20 +359,29 @@ impl LinkGraph {
         face: Option<LinkFace>,
     ) -> LinkDart {
         let ld = LinkDart::new(self.next_id(), to);
-        match prev {
-            Some(prev_dart) => {
-                prev_dart.0.borrow_mut().next = Some(ld.clone());
-                ld.0.borrow_mut().prev = Some(prev_dart);
-            }
-            None => {}
+
+        let prev_dart = match prev {
+            Some(prev_dart) => prev_dart,
+            None => next
+                .clone()
+                .and_then(|next| next.0.borrow().prev.clone())
+                .unwrap_or_else(|| ld.clone()),
         };
-        match next {
-            Some(next_dart) => {
-                next_dart.0.borrow_mut().prev = Some(ld.clone());
-                ld.0.borrow_mut().next = Some(next_dart);
-            }
-            None => {}
+        let next_dart = match next {
+            Some(next_dart) => next_dart,
+            None => prev_dart
+                .0
+                .borrow()
+                .next
+                .clone()
+                .unwrap_or_else(|| ld.clone()),
         };
+
+        next_dart.0.borrow_mut().prev = Some(ld.clone());
+        ld.0.borrow_mut().next = Some(next_dart);
+        prev_dart.0.borrow_mut().next = Some(ld.clone());
+        ld.0.borrow_mut().prev = Some(prev_dart);
+
         match twin {
             Some(twin_dart) => {
                 twin_dart.0.borrow_mut().twin = Some(ld.clone());
@@ -399,6 +408,24 @@ impl LinkGraph {
         lv
     }
 
+    fn edge_exists(&self, from: &LinkVertex, to: &LinkVertex) -> Option<(LinkDart, LinkDart)> {
+        self.validate_prev_circle();
+        self.validate_next_circle();
+        self.validate_twin();
+        let mut current_dart = from.0.borrow().dart.clone()?;
+        let first_dart = current_dart.clone();
+        while {
+            let twin_dart = current_dart.0.borrow().twin.clone()?;
+            let dart_target = self.dart_target(&current_dart);
+            if &dart_target == to {
+                return Some((current_dart, twin_dart));
+            }
+            current_dart = twin_dart.0.borrow().next.clone()?;
+            current_dart != first_dart
+        } {}
+        None
+    }
+
     /// Adds an edge to the graph
     pub fn new_edge(
         &mut self,
@@ -409,6 +436,12 @@ impl LinkGraph {
         face: Option<LinkFace>,
         twin_face: Option<LinkFace>,
     ) -> (LinkDart, LinkDart) {
+        /*if prev.clone().map(|prev| prev.0.borrow().id == 37).unwrap_or(false) {
+            panic!("break")
+        }*/
+        if let Some(darts) = self.edge_exists(&from, &to) {
+            return darts;
+        }
         let dart = self.new_dart(
             from.clone(),
             to.clone(),
@@ -425,25 +458,29 @@ impl LinkGraph {
             Some(dart.clone()),
             twin_face,
         );
-
         (dart, twin)
     }
 
-    fn remove_dart(&mut self, from: &LinkVertex, dart: LinkDart) -> LinkDart {
+    fn remove_dart(
+        &mut self,
+        from: &LinkVertex,
+        dart: LinkDart,
+        twin_data: LinkDartStructure,
+    ) -> LinkDart {
         let mut dart_ref = dart.0.borrow_mut();
-
-        dart_ref.twin.take();
         let next = dart_ref.next.take();
         let prev = dart_ref.prev.take();
         dart_ref.face.take();
         drop(dart_ref);
 
+        let twin_next = twin_data.next.clone();
+        let twin_prev = twin_data.prev;
+
         if let Some(next) = next.clone() {
-            let tmp = prev.clone();
-            next.0.borrow_mut().prev = tmp;
+            next.0.borrow_mut().prev = twin_prev;
         }
         if let Some(prev) = prev {
-            prev.0.borrow_mut().next = next.clone();
+            prev.0.borrow_mut().next = twin_next;
         }
 
         if let Some(dart_pos) = self.darts.iter().position(|d| &dart == d) {
@@ -455,13 +492,26 @@ impl LinkGraph {
 
     /// Removes the given dart and its twin from the graph
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
-        let twin = if let Some(twin) = &dart.0.borrow().twin {
-            let twin_from = self.target(&dart);
-            self.remove_dart(&twin_from, twin.clone())
-        } else {
-            dart.clone()
+        let twin = {
+            let dart_ref = dart.0.borrow();
+            let twin = dart_ref.twin.clone();
+            drop(dart_ref);
+            twin
         };
-        (self.remove_dart(from, dart), twin)
+        let dart_data = {
+            let dart_borrow = dart.0.borrow();
+            let dart_data = dart_borrow.clone();
+            drop(dart_borrow);
+            dart_data
+        };
+        let (twin, twin_data) = if let Some(twin) = twin {
+            let twin_from = self.target(&dart);
+            let twin_data = twin.0.borrow().clone();
+            (self.remove_dart(&twin_from, twin, dart_data), twin_data)
+        } else {
+            (dart.clone(), dart.0.borrow().clone())
+        };
+        (self.remove_dart(from, dart, twin_data), twin)
     }
 
     fn validate_darts(&self) {
@@ -493,10 +543,63 @@ impl LinkGraph {
         }
     }
 
-    /// Validates the integrity of the graph. Panics if graph is invalid. Therefor mainly usefull for debugging.
+    fn validate_circle<W: Fn(&LinkDart) -> LinkDart>(&self, description: &str, walk_fn: W) {
+        let max = self.edge_count() + 1;
+        for dart in &self.darts {
+            let mut current_dart = dart.clone();
+            let mut i = 0;
+            while {
+                if i > max {
+                    panic!("{} does not form circle", description)
+                }
+                i += 1;
+                let last_dart = current_dart.clone();
+                current_dart = walk_fn(&current_dart);
+                self.darts
+                    .iter()
+                    .position(|d| d == &current_dart)
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "reference to removed dart {} found on {} from {}",
+                            current_dart.get_id(),
+                            description,
+                            last_dart.get_id()
+                        )
+                    });
+                dart != &current_dart
+            } {}
+        }
+    }
+
+    fn validate_next_circle(&self) {
+        self.validate_circle("next", |dart| {
+            dart.0.borrow().next.clone().expect("dart has no next")
+        });
+    }
+
+    fn validate_prev_circle(&self) {
+        self.validate_circle("prev", |dart| {
+            dart.0.borrow().prev.clone().expect("dart has no prev")
+        });
+    }
+
+    fn validate_twin(&self) {
+        for dart in &self.darts {
+            let twin = self.twin(dart);
+            let back = self.twin(&twin);
+            if dart != &back {
+                panic!("twin link non symmetric");
+            }
+        }
+    }
+
+    /// Validates the integrity of the graph. Panics if graph is invalid. Therefor mainly usefully for debugging.
     pub fn validate(&self) {
         self.validate_darts();
         self.validate_vertexes();
+        self.validate_prev_circle();
+        self.validate_next_circle();
+        self.validate_twin();
     }
 }
 
@@ -567,6 +670,7 @@ mod tests {
             Some(lof.clone()),
         );
         let _lt3 = lg.new_dart(lv1, lv3, Some(lt1), Some(lt2), Some(ld3), Some(lof));
+        lg.validate();
         lg
     }
 
@@ -785,7 +889,7 @@ mod tests {
         let dart = g.dart_vertex(&first_vertex);
         let prev_dart = g.prev(&dart);
         let new_vertex = g.new_vertex();
-        g.new_edge(
+        let (inner_dart, outer_dart) = g.new_edge(
             first_vertex.clone(),
             new_vertex.clone(),
             Some(prev_dart),
@@ -793,6 +897,8 @@ mod tests {
             None,
             None,
         );
+        g.new_face(inner_dart);
+        g.new_face(outer_dart);
         g.validate();
         assert!(g.neighbors(&first_vertex).contains(&new_vertex));
         assert!(g.neighbors(&new_vertex).contains(&first_vertex));
@@ -809,5 +915,55 @@ mod tests {
         g.validate();
         assert!(!g.neighbors(&first_vertex).contains(&target));
         assert_eq!(g.edge_count(), 2);
+    }
+
+    #[test]
+    fn test_edge_exists() {
+        let mut g = LinkGraph::new();
+        let first_vertex = g.new_vertex();
+        let second_vertex = g.new_vertex();
+        let third_vertex = g.new_vertex();
+        let first_edge = g.new_edge(
+            first_vertex.clone(),
+            second_vertex.clone(),
+            None,
+            None,
+            None,
+            None,
+        );
+        let inner_face = g.new_face(first_edge.0.clone());
+        let outer_face = g.new_face(first_edge.1.clone());
+        let second_edge = g.new_edge(
+            second_vertex.clone(),
+            third_vertex.clone(),
+            Some(first_edge.0),
+            None,
+            Some(inner_face.clone()),
+            Some(outer_face.clone()),
+        );
+        assert!(g.edge_exists(&first_vertex, &second_vertex).is_some());
+        assert!(g.edge_exists(&second_vertex, &third_vertex).is_some());
+        assert!(g.edge_exists(&third_vertex, &first_vertex).is_none());
+        g.new_edge(
+            third_vertex.clone(),
+            first_vertex.clone(),
+            Some(second_edge.0),
+            None,
+            Some(inner_face),
+            Some(outer_face),
+        );
+        assert!(g.edge_exists(&third_vertex, &first_vertex).is_some());
+        g.validate();
+    }
+
+    #[test]
+    fn test_add_already_existing_edge() {
+        let mut g = example_graph();
+        assert_eq!(g.edge_count(), 3);
+        let first_vertex = g.vertexes[0].clone();
+        let second_vertex = g.vertexes[1].clone();
+        g.new_edge(first_vertex, second_vertex, None, None, None, None);
+        g.validate();
+        assert_eq!(g.edge_count(), 3);
     }
 }
