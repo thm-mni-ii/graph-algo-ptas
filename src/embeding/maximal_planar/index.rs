@@ -48,8 +48,21 @@ mod tests {
     fn test_embend(graph: StableGraph<u32, (), Undirected>) {
         let dcel = MaximalPlanar::embed(graph.clone());
 
-        assert_eq!(dcel.vertex_count(), graph.node_count());
-        assert_eq!(dcel.edge_count(), graph.edge_count())
+        dcel.validate();
+        assert_eq!(
+            dcel.vertex_count(),
+            graph.node_count(),
+            "Invalid Vertex count. Expected {} got {}",
+            graph.node_count(),
+            dcel.vertex_count()
+        );
+        assert_eq!(
+            dcel.edge_count(),
+            graph.edge_count(),
+            "Invalid Edge count. Expected {} got {}",
+            graph.edge_count(),
+            dcel.edge_count(),
+        );
     }
 
     #[test]
