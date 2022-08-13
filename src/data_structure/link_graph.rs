@@ -202,7 +202,7 @@ pub struct LinkGraph {
     vertexes: Vec<LinkVertex>,
     darts: Vec<LinkDart>,
     faces: Vec<LinkFace>,
-    #[cfg(debug_link_graph_double_edges)]
+    #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
     created_darts: HashSet<(usize, usize)>,
 }
 
@@ -338,7 +338,7 @@ impl LinkGraph {
             vertexes: Vec::new(),
             darts: Vec::new(),
             faces: Vec::new(),
-            #[cfg(debug_link_graph_double_edges)]
+            #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
             created_darts: HashSet::new(),
         }
     }
@@ -424,7 +424,7 @@ impl LinkGraph {
         face: Option<LinkFace>,
         twin_face: Option<LinkFace>,
     ) -> (LinkDart, LinkDart) {
-        #[cfg(debug_link_graph_double_edges)]
+        #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
         {
             let edge_pair = (from.get_id().min(to.get_id()), from.get_id().max(to.get_id()));
             if self.created_darts.contains(&edge_pair) {
@@ -501,7 +501,7 @@ impl LinkGraph {
         } else {
             (dart.clone(), dart.0.borrow().clone())
         };
-        #[cfg(debug_link_graph_double_edges)]
+        #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
         {
             let to = twin_data.target.clone();
             let insert_touple = (from.get_id().min(to.get_id()), from.get_id().max(to.get_id()));
@@ -914,7 +914,7 @@ mod tests {
     }
 
 
-    #[cfg(debug_link_graph_double_edges)]
+    #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
     #[test]
     #[should_panic]
     fn test_add_already_existing_edge() {

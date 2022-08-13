@@ -3,7 +3,7 @@ use rand::rngs::StdRng;
 use rand::{seq::SliceRandom, Rng, SeedableRng};
 
 pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
-    #[cfg(debug_graph_generation)]
+    #[cfg(feature = "debug_graph_generation")]
     let mut counter = 0;
     let max_edges = 5 * n;
     let mut graph = ListGraph::k4();
@@ -52,7 +52,7 @@ pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
         let mut current_vertex = vertex;
         while {
             let new_edge = graph.add_edge(new_vertex, current_vertex, None, Some(current_edge));
-            #[cfg(debug_graph_generation)]
+            #[cfg(feature = "debug_graph_generation")]
             debug_graph(
                 &graph,
                 vertex,
@@ -78,9 +78,9 @@ pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
     graph
 }
 
-#[cfg(debug_graph_generation)]
+#[cfg(feature = "debug_graph_generation")]
 use crate::data_structure::list_graph::{EdgeId, NodeId};
-#[cfg(debug_graph_generation)]
+#[cfg(feature = "debug_graph_generation")]
 fn debug_graph(
     graph: &ListGraph,
     vertex: NodeId,
