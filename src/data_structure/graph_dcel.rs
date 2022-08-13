@@ -56,4 +56,20 @@ pub trait GraphDCEL<
     fn next(&self, current: &D) -> D;
     /// Returns the previous dart in the dart order
     fn prev(&self, current: &D) -> D;
+
+
+    /// Adds a new vertex
+    fn add_vertex(&mut self) -> V;
+    /// Adds a new dart
+    fn add_dart(
+        &mut self,
+        from: V,
+        to: V,
+        prev: Option<D>,
+        next: Option<D>,
+        twin: Option<D>,
+        face: Option<F>,
+    ) -> D;
+    /// Adds a new face
+    fn add_face(&mut self, dart: D) -> F;
 }
