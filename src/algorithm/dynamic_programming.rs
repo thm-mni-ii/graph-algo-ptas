@@ -60,14 +60,19 @@ impl DynamicProgrammingTableEntry {
     }
 }
 
-fn solve_max_independent_set(graph: &HashMapGraph) -> (Vec<bool>, usize) {
-    let td = Solver::default().solve(graph);
+pub fn dp_max_independent_set(
+    graph: &HashMapGraph,
+    td: Option<TreeDecomposition>,
+) -> HashSet<usize> {
+    let td = td.unwrap_or_else(|| Solver::default().solve(graph));
     let nice_td = NiceTreeDecomposition::new(td);
+
+    assert!(nice_td.td.verify(graph).is_ok());
 
     let mut tables: Vec<_> = vec![DynamicProgrammingTable::new(); nice_td.td.bags().len()];
     let root = nice_td.td.root.unwrap();
 
-    solve_max_independent_set_rec(
+    dp_max_independent_set_rec(
         &nice_td.td,
         graph,
         root,
@@ -76,11 +81,11 @@ fn solve_max_independent_set(graph: &HashMapGraph) -> (Vec<bool>, usize) {
         &mut tables,
     );
 
-    let sol = vec![false; graph.order()];
+    let sol = HashSet::new();
     read_max_independent_set_solution(&tables, root, sol)
 }
 
-fn solve_max_independent_set_rec(
+fn dp_max_independent_set_rec(
     td: &TreeDecomposition,
     graph: &HashMapGraph,
     id: usize,
@@ -89,7 +94,7 @@ fn solve_max_independent_set_rec(
     tables: &mut Vec<DynamicProgrammingTable>,
 ) {
     for child_id in children {
-        solve_max_independent_set_rec(
+        dp_max_independent_set_rec(
             td,
             graph,
             *child_id,
@@ -190,24 +195,24 @@ fn solve_max_independent_set_rec(
 fn read_max_independent_set_solution(
     tables: &[DynamicProgrammingTable],
     root: usize,
-    mut sol: Vec<bool>,
-) -> (Vec<bool>, usize) {
+    mut sol: HashSet<usize>,
+) -> HashSet<usize> {
     let root_entry = tables[root]
         .values()
         .max_by(|e1, e2| e1.val.cmp(&e2.val))
         .unwrap();
     read_max_independent_set_solution_rec(tables, root_entry, &mut sol);
 
-    (sol, root_entry.val as usize)
+    sol
 }
 
 fn read_max_independent_set_solution_rec(
     tables: &[DynamicProgrammingTable],
     entry: &DynamicProgrammingTableEntry,
-    sol: &mut Vec<bool>,
+    sol: &mut HashSet<usize>,
 ) {
     if let Some(v) = entry.node_used {
-        sol[v] = true;
+        sol.insert(v);
     }
 
     for (v, subset) in &entry.children {
@@ -240,9 +245,11 @@ fn subset_with(subset: &BitVec, v: usize) -> BitVec {
 
 #[cfg(test)]
 mod tests {
-    use super::solve_max_independent_set;
-    use crate::utils::random_graph::random_hashmap_graph;
-    use arboretum_td::graph::{BaseGraph, HashMapGraph};
+    use super::dp_max_independent_set;
+    use crate::utils::{
+        max_independent_set::{brute_force_max_independent_set, is_independent_set},
+        random_graph::random_hashmap_graph,
+    };
     use rand::{rngs::StdRng, Rng, SeedableRng};
 
     #[test]
@@ -251,10 +258,9 @@ mod tests {
             let seed = [1; 32];
             let mut rng = StdRng::from_seed(seed);
             let graph = random_hashmap_graph(n, 0., &mut rng);
-            let (sol, size) = solve_max_independent_set(&graph);
+            let sol = dp_max_independent_set(&graph, None);
 
-            assert!(size == n);
-            assert!(sol.iter().all(|b| { *b }));
+            assert!(sol.len() == n);
         }
     }
 
@@ -264,10 +270,9 @@ mod tests {
             let seed = [1; 32];
             let mut rng = StdRng::from_seed(seed);
             let graph = random_hashmap_graph(n, 1., &mut rng);
-            let (sol, size) = solve_max_independent_set(&graph);
+            let sol = dp_max_independent_set(&graph, None);
 
-            assert!(size == 1);
-            assert!(sol.iter().filter(|b| { **b }).count() == 1);
+            assert!(sol.len() == 1);
         }
     }
 
@@ -278,29 +283,13 @@ mod tests {
 
         for _ in 0..30 {
             let graph =
-                random_hashmap_graph(rng.gen_range(1..30), rng.gen_range(0.05..0.1), &mut rng);
-            let (sol, _) = solve_max_independent_set(&graph);
-            assert!(is_independent_set(&graph, &sol));
+                random_hashmap_graph(rng.gen_range(1..15), rng.gen_range(0.05..0.1), &mut rng);
+            let sol = dp_max_independent_set(&graph, None);
+
+            assert!(is_independent_set(&graph, &sol), "{:?} {:?}", graph, sol);
+
+            let sol2 = brute_force_max_independent_set(&graph);
+            assert!(sol.len() == sol2.len());
         }
-    }
-
-    fn is_independent_set(graph: &HashMapGraph, sol: &[bool]) -> bool {
-        for u in 0..sol.len() {
-            if !sol[u] {
-                continue;
-            }
-
-            for (v, is_included) in sol.iter().enumerate().skip(u + 1) {
-                if !is_included {
-                    continue;
-                }
-
-                if graph.has_edge(u, v) {
-                    return false;
-                }
-            }
-        }
-
-        true
     }
 }
