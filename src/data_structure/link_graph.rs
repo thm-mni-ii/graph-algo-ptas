@@ -1,6 +1,7 @@
 //! Contains a linked implementation of the DCEL trait
-use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
+#[cfg(feature = "debug_link_graph_panic_on_double_edges")]
 use std::collections::HashSet;
+use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
 
 use dot::GraphWalk;
 
@@ -426,9 +427,16 @@ impl LinkGraph {
     ) -> (LinkDart, LinkDart) {
         #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
         {
-            let edge_pair = (from.get_id().min(to.get_id()), from.get_id().max(to.get_id()));
+            let edge_pair = (
+                from.get_id().min(to.get_id()),
+                from.get_id().max(to.get_id()),
+            );
             if self.created_darts.contains(&edge_pair) {
-                panic!("dart from {} to {} already exists", from.get_id(), to.get_id());
+                panic!(
+                    "dart from {} to {} already exists",
+                    from.get_id(),
+                    to.get_id()
+                );
             }
             self.created_darts.insert(edge_pair);
         }
@@ -504,7 +512,10 @@ impl LinkGraph {
         #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
         {
             let to = twin_data.target.clone();
-            let insert_touple = (from.get_id().min(to.get_id()), from.get_id().max(to.get_id()));
+            let insert_touple = (
+                from.get_id().min(to.get_id()),
+                from.get_id().max(to.get_id()),
+            );
             self.created_darts.remove(&insert_touple);
         }
         (self.remove_dart(from, dart, twin_data), twin)
@@ -913,7 +924,6 @@ mod tests {
         assert_eq!(g.edge_count(), 2);
     }
 
-
     #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
     #[test]
     #[should_panic]
@@ -921,7 +931,14 @@ mod tests {
         let mut g = LinkGraph::new();
         let first_vertex = g.new_vertex();
         let second_vertex = g.new_vertex();
-        g.new_edge(first_vertex.clone(), second_vertex.clone(), None, None, None, None);
+        g.new_edge(
+            first_vertex.clone(),
+            second_vertex.clone(),
+            None,
+            None,
+            None,
+            None,
+        );
         g.new_edge(first_vertex, second_vertex, None, None, None, None);
     }
 }
