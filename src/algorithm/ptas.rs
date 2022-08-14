@@ -20,8 +20,7 @@ pub fn ptas_max_independent_set(graph: &UndirectedGraph, eps: f64) -> HashSet<us
         sols.push(sol);
     }
 
-    sols
-        .iter()
+    sols.iter()
         .max_by(|s1, s2| s1.len().cmp(&s2.len()))
         .unwrap()
         .clone()
@@ -61,7 +60,7 @@ fn get_ring_decompositions(graph: &mut UndirectedGraph, eps: f64) -> Vec<RingDec
 
     let mut ring_decompositions: Vec<RingDecomposition> = vec![];
 
-    for i in 0..k + 1 {
+    for i in 0..k {
         let mut rings = graph.clone();
         let mut vertices_deleted = HashSet::new();
         let mut level = 1;
@@ -90,7 +89,7 @@ fn get_ring_decompositions(graph: &mut UndirectedGraph, eps: f64) -> Vec<RingDec
             }
             visited.insert(current);
 
-            if level % (k + 1) == i {
+            if level % k == i {
                 vertices_deleted.insert(current);
                 rings.remove_node(current);
             }

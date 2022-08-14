@@ -1,6 +1,6 @@
 use super::nice_tree_decomposition::{get_child_bag_ids, NiceTdNodeType, NiceTreeDecomposition};
 use arboretum_td::{
-    graph::{BaseGraph, HashMapGraph},
+    graph::{BaseGraph, HashMapGraph, MutableGraph},
     solver::Solver,
     tree_decomposition::TreeDecomposition,
 };
@@ -60,29 +60,57 @@ impl DynamicProgrammingTableEntry {
     }
 }
 
+fn remap_vertices(graph: &HashMapGraph) -> (HashMapGraph, HashMap<usize, usize>) {
+    let mut remapped_graph = HashMapGraph::new();
+    let mut forward_mapping = HashMap::new();
+    let mut backward_mapping = HashMap::new();
+
+    for (i, v) in graph.vertices().enumerate() {
+        remapped_graph.add_vertex(i);
+        forward_mapping.insert(v, i);
+        backward_mapping.insert(i, v);
+    }
+
+    for u in graph.vertices() {
+        for v in graph.neighborhood(u) {
+            let remapped_u = forward_mapping.get(&u).unwrap();
+            let remapped_v = forward_mapping.get(&v).unwrap();
+            remapped_graph.add_edge(*remapped_u, *remapped_v);
+        }
+    }
+
+    (remapped_graph, backward_mapping)
+}
+
 pub fn dp_max_independent_set(
     graph: &HashMapGraph,
     td: Option<TreeDecomposition>,
 ) -> HashSet<usize> {
-    let td = td.unwrap_or_else(|| Solver::default().solve(graph));
+    let (graph, mapping) = remap_vertices(graph);
+    let td = td.unwrap_or_else(|| Solver::default().solve(&graph));
     let nice_td = NiceTreeDecomposition::new(td);
 
-    assert!(nice_td.td.verify(graph).is_ok());
+    assert!(nice_td.td.verify(&graph).is_ok());
 
     let mut tables: Vec<_> = vec![DynamicProgrammingTable::new(); nice_td.td.bags().len()];
     let root = nice_td.td.root.unwrap();
 
     dp_max_independent_set_rec(
         &nice_td.td,
-        graph,
+        &graph,
         root,
         &nice_td.td.bags()[root].neighbors.clone(),
         &nice_td.mapping,
         &mut tables,
     );
 
-    let sol = HashSet::new();
-    read_max_independent_set_solution(&tables, root, sol)
+    let mut sol = HashSet::new();
+    read_max_independent_set_solution(&tables, root, &mut sol);
+
+    sol.iter()
+        .map(|v| mapping.get(v).unwrap())
+        .copied()
+        .collect()
 }
 
 fn dp_max_independent_set_rec(
@@ -107,12 +135,12 @@ fn dp_max_independent_set_rec(
     match mapping[id] {
         NiceTdNodeType::Leaf => {
             tables[id].insert(
-                BitVec::from_element(0),
+                make_bit_vec(graph.order()),
                 DynamicProgrammingTableEntry::new_leaf(0, None),
             );
             let v = *td.bags()[id].vertex_set.iter().next().unwrap();
             tables[id].insert(
-                subset_with(&BitVec::from_element(0), v),
+                subset_with(&make_bit_vec(graph.order()), v),
                 DynamicProgrammingTableEntry::new_leaf(1, Some(v)),
             );
         }
@@ -122,7 +150,7 @@ fn dp_max_independent_set_rec(
             let left_id = it.next().unwrap();
             let right_id = it.next().unwrap();
 
-            for subset in powerset(vertex_set) {
+            for subset in powerset(vertex_set, graph.order()) {
                 let left_val = tables[*left_id].get(&subset).unwrap().val;
                 let right_val = tables[*right_id].get(&subset).unwrap().val;
                 let val = left_val
@@ -141,7 +169,7 @@ fn dp_max_independent_set_rec(
             let mut it = children.iter();
             let child_id = *it.next().unwrap();
 
-            for subset in powerset(vertex_set) {
+            for subset in powerset(vertex_set, graph.order()) {
                 let val = tables[child_id].get(&subset).unwrap().val;
                 let subset_with_v = subset_with(&subset, v);
                 let val_with_v = tables[child_id].get(&subset_with_v).unwrap().val;
@@ -161,7 +189,8 @@ fn dp_max_independent_set_rec(
             let child_id = *it.next().unwrap();
             let child_vertex_set: &FxHashSet<usize> = &td.bags()[child_id].vertex_set;
 
-            for subset in powerset(child_vertex_set) {
+            for subset_vec in child_vertex_set.iter().powerset() {
+                let subset = to_bit_vec(subset_vec.iter().copied(), graph.order());
                 let val = tables[child_id].get(&subset).unwrap().val;
                 tables[id].insert(
                     subset.clone(),
@@ -169,8 +198,8 @@ fn dp_max_independent_set_rec(
                 );
 
                 let mut has_edge = false;
-                for (w, is_included) in subset.iter().enumerate() {
-                    if *is_included && graph.has_edge(v, w) {
+                for w in subset_vec {
+                    if graph.has_edge(v, *w) {
                         has_edge = true;
                         break;
                     }
@@ -195,15 +224,13 @@ fn dp_max_independent_set_rec(
 fn read_max_independent_set_solution(
     tables: &[DynamicProgrammingTable],
     root: usize,
-    mut sol: HashSet<usize>,
-) -> HashSet<usize> {
+    sol: &mut HashSet<usize>,
+) {
     let root_entry = tables[root]
         .values()
         .max_by(|e1, e2| e1.val.cmp(&e2.val))
         .unwrap();
-    read_max_independent_set_solution_rec(tables, root_entry, &mut sol);
-
-    sol
+    read_max_independent_set_solution_rec(tables, root_entry, sol);
 }
 
 fn read_max_independent_set_solution_rec(
@@ -220,15 +247,21 @@ fn read_max_independent_set_solution_rec(
     }
 }
 
-fn powerset(set: &FxHashSet<usize>) -> Vec<BitVec> {
+fn powerset(set: &FxHashSet<usize>, subset_size: usize) -> Vec<BitVec> {
     set.iter()
         .powerset()
-        .map(|subset| to_bit_vec(subset.iter().copied()))
+        .map(|subset| to_bit_vec(subset.iter().copied(), subset_size))
         .collect()
 }
 
-fn to_bit_vec<'a>(it: impl Iterator<Item = &'a usize>) -> BitVec {
-    let mut bit_vec: BitVec = BitVec::from_element(0);
+fn make_bit_vec(size: usize) -> BitVec {
+    let n = (size as f64 / 64.0).ceil() as usize;
+
+    BitVec::from_vec(vec![0; n])
+}
+
+fn to_bit_vec<'a>(it: impl Iterator<Item = &'a usize>, size: usize) -> BitVec {
+    let mut bit_vec: BitVec = make_bit_vec(size);
 
     for x in it {
         bit_vec.set(*x, true);
@@ -245,12 +278,36 @@ fn subset_with(subset: &BitVec, v: usize) -> BitVec {
 
 #[cfg(test)]
 mod tests {
-    use super::dp_max_independent_set;
+    use super::{dp_max_independent_set, make_bit_vec, remap_vertices};
     use crate::utils::{
         max_independent_set::{brute_force_max_independent_set, is_independent_set},
         random_graph::random_hashmap_graph,
     };
+    use arboretum_td::graph::{BaseGraph, HashMapGraph, MutableGraph};
     use rand::{rngs::StdRng, Rng, SeedableRng};
+
+    #[test]
+    fn remapping() {
+        let mut graph = HashMapGraph::new();
+        graph.add_vertex(10);
+        graph.add_vertex(11);
+        graph.add_vertex(12);
+        graph.add_edge(10, 11);
+
+        let (remapped_graph, _) = remap_vertices(&graph);
+
+        assert!(remapped_graph.order() == graph.order());
+        assert!(remapped_graph.has_vertex(0));
+        assert!(remapped_graph.has_vertex(1));
+        assert!(remapped_graph.has_vertex(2));
+        assert!(remapped_graph.has_edge(0, 1) ^ remapped_graph.has_edge(1, 2));
+    }
+
+    #[test]
+    fn large_bit_vec() {
+        let mut bit_vec = make_bit_vec(65);
+        bit_vec.set(127, true);
+    }
 
     #[test]
     fn isolated() {
