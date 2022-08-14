@@ -72,4 +72,7 @@ pub trait GraphDCEL<
     ) -> D;
     /// Adds a new face
     fn add_face(&mut self, dart: D) -> F;
+
+    /// Sets the face for the given Dart
+    fn set_face(&self, dart: &D, face: F);
 }

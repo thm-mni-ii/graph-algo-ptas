@@ -42,8 +42,9 @@ pub fn ring_segment<
     } else {
         None
     };
+    let mut outer_face: Option<F> = None;
 
-    let mut stack = Vec::new();
+    let mut stack: Vec<D> = Vec::new();
     let mut visited = HashSet::new();
 
     let start_vertex = match ring.iter().next() {
@@ -75,7 +76,20 @@ pub fn ring_segment<
                         .clone(),
                 ),
                 Ordering::Less => inner_vertex.clone(),
-                Ordering::Greater => None,
+                Ordering::Greater => {
+                    if let Some(last) = stack.last() {
+                        let outer_face = match &outer_face {
+                            Some(outer_face) => outer_face.clone(),
+                            None => {
+                                let new_face = output_graph.add_face(last.clone());
+                                outer_face = Some(new_face.clone());
+                                new_face
+                            }
+                        };
+                        output_graph.set_face(last, outer_face);
+                    }
+                    None
+                },
             };
 
             if let Some(target_vertex) = target_vertex_option {

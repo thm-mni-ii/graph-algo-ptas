@@ -377,6 +377,10 @@ impl
     fn add_face(&mut self, dart: LinkDart) -> LinkFace {
         self.new_face(dart)
     }
+
+    fn set_face(&self, dart: &LinkDart, face: LinkFace) {
+        dart.0.borrow_mut().face = Some(face);
+    }
 }
 
 impl LinkGraph {
