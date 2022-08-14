@@ -512,7 +512,11 @@ impl LinkGraph {
         if let Some(dart_pos) = self.darts.iter().position(|d| &dart == d) {
             self.darts.remove(dart_pos);
         }
-        from.0.borrow_mut().dart = next;
+        from.0.borrow_mut().dart = if self.target(&next.clone().unwrap()) == *from {
+            Some(self.twin(&next.unwrap()))
+        } else {
+            next
+        };
         dart
     }
 
@@ -1007,7 +1011,6 @@ mod tests {
         assert_eq!(g.next(&darts[2]), darts[9].clone());
         assert_eq!(darts[10].0.borrow().face, darts[1].0.borrow().face);
     }
-
 
     #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
     #[test]
