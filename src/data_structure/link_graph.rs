@@ -165,6 +165,19 @@ impl LinkDart {
     pub fn get_id(&self) -> usize {
         return self.0.clone().borrow().id;
     }
+
+    /// Change the face of the dart
+    pub fn change_face(
+        &mut self,
+        face: Option<LinkFace>,
+        prev: Option<LinkDart>,
+        next: Option<LinkDart>,
+    ) {
+        let mut dart = self.0.borrow_mut();
+        dart.face = face;
+        dart.prev = prev;
+        dart.next = next;
+    }
 }
 
 #[derive(Default)]
@@ -684,8 +697,8 @@ mod tests {
     use dot::GraphWalk;
     use std::{cmp::Ordering, collections::HashSet};
 
-    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
     use crate::data_structure::link_graph::example::three_ring_graph;
+    use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
 
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
