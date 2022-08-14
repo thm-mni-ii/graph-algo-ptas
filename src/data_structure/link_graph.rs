@@ -655,6 +655,7 @@ mod tests {
     use std::{cmp::Ordering, collections::HashSet};
 
     use crate::data_structure::{graph_dcel::GraphDCEL, link_graph::LinkGraph};
+    use crate::data_structure::link_graph::example::three_ring_graph;
 
     fn example_graph() -> LinkGraph {
         let mut lg = LinkGraph::new();
@@ -941,6 +942,27 @@ mod tests {
         assert!(!g.neighbors(&first_vertex).contains(&target));
         assert_eq!(g.edge_count(), 2);
     }
+
+    #[test]
+    fn test_remove_edge_from_complex_graph() {
+        let (mut g, vertexes, darts) = three_ring_graph();
+
+        assert_eq!(g.edge_count(), 28);
+        assert_eq!(g.prev(&darts[1]), darts[0].clone());
+        assert_eq!(g.next(&darts[10]), darts[11].clone());
+        assert_eq!(g.prev(&darts[9]), darts[11].clone());
+        assert_eq!(g.next(&darts[2]), darts[0].clone());
+
+        g.remove_edge(&vertexes[0], darts[0].clone());
+        g.validate();
+
+        assert_eq!(g.edge_count(), 27);
+        assert_eq!(g.prev(&darts[1]), darts[10].clone());
+        assert_eq!(g.next(&darts[10]), darts[1].clone());
+        assert_eq!(g.prev(&darts[9]), darts[2].clone());
+        assert_eq!(g.next(&darts[2]), darts[9].clone());
+    }
+
 
     #[cfg(feature = "debug_link_graph_panic_on_double_edges")]
     #[test]
