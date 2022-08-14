@@ -489,11 +489,12 @@ impl LinkGraph {
 
     /// Removes the given dart and its twin from the graph
     pub fn remove_edge(&mut self, from: &LinkVertex, dart: LinkDart) -> (LinkDart, LinkDart) {
-        let twin = {
+        let (twin, next) = {
             let dart_ref = dart.0.borrow();
             let twin = dart_ref.twin.clone();
+            let next = dart_ref.next.clone();
             drop(dart_ref);
-            twin
+            (twin, next)
         };
         let dart_data = {
             let dart_borrow = dart.0.borrow();
@@ -517,7 +518,11 @@ impl LinkGraph {
             );
             self.created_darts.remove(&insert_touple);
         }
-        (self.remove_dart(from, dart, twin_data), twin)
+        let res = (self.remove_dart(from, dart, twin_data), twin);
+        if let Some(next) = next {
+            self.auto_face_dart(next);
+        }
+        res
     }
 
     fn validate_darts(&self) {
@@ -608,20 +613,29 @@ impl LinkGraph {
         self.validate_twin();
     }
 
+    fn auto_face_dart(&mut self, dart: LinkDart) -> HashSet<LinkDart> {
+        let mut current_dart = dart.clone();
+        let face = self.new_face(current_dart.clone());
+        let mut visited = HashSet::new();
+        while {
+            current_dart = self.next(&current_dart);
+            current_dart.0.borrow_mut().face = Some(face.clone());
+            visited.insert(current_dart.clone());
+            current_dart != dart
+        } {}
+        visited
+    }
+
     /// Automatically generates faces for the graph
     pub fn auto_face(&mut self) {
         let mut todo_darts = self.get_darts().collect::<HashSet<_>>();
         while !todo_darts.is_empty() {
             let next_dart = todo_darts.iter().next().unwrap().clone();
             todo_darts.remove(&next_dart);
-            let mut current_dart = next_dart.clone();
-            let face = self.new_face(current_dart.clone());
-            while {
-                current_dart = self.next(&current_dart);
-                current_dart.0.borrow_mut().face = Some(face.clone());
-                todo_darts.remove(&current_dart);
-                current_dart != next_dart
-            } {}
+            let darts = self.auto_face_dart(next_dart);
+            for dart in darts {
+                todo_darts.remove(&dart);
+            }
         }
     }
 }
@@ -952,6 +966,7 @@ mod tests {
         assert_eq!(g.next(&darts[10]), darts[11].clone());
         assert_eq!(g.prev(&darts[9]), darts[11].clone());
         assert_eq!(g.next(&darts[2]), darts[0].clone());
+        assert_ne!(darts[10].0.borrow().face, darts[1].0.borrow().face);
 
         g.remove_edge(&vertexes[0], darts[0].clone());
         g.validate();
@@ -961,6 +976,7 @@ mod tests {
         assert_eq!(g.next(&darts[10]), darts[1].clone());
         assert_eq!(g.prev(&darts[9]), darts[2].clone());
         assert_eq!(g.next(&darts[2]), darts[9].clone());
+        assert_eq!(darts[10].0.borrow().face, darts[1].0.borrow().face);
     }
 
 
