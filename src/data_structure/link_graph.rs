@@ -1,5 +1,4 @@
 //! Contains a linked implementation of the DCEL trait
-#[cfg(feature = "debug_link_graph_panic_on_double_edges")]
 use std::collections::HashSet;
 use std::{cell::RefCell, cmp::PartialEq, fmt::Debug, hash::Hash, rc::Rc};
 
@@ -608,6 +607,23 @@ impl LinkGraph {
         self.validate_next_circle();
         self.validate_twin();
     }
+
+    /// Automatically generates faces for the graph
+    pub fn auto_face(&mut self) {
+        let mut todo_darts = self.get_darts().collect::<HashSet<_>>();
+        while !todo_darts.is_empty() {
+            let next_dart = todo_darts.iter().next().unwrap().clone();
+            todo_darts.remove(&next_dart);
+            let mut current_dart = next_dart.clone();
+            let face = self.new_face(current_dart.clone());
+            while {
+                current_dart = self.next(&current_dart);
+                current_dart.0.borrow_mut().face = Some(face.clone());
+                todo_darts.remove(&current_dart);
+                current_dart != next_dart
+            } {}
+        }
+    }
 }
 
 impl Default for LinkGraph {
@@ -630,6 +646,8 @@ impl Drop for LinkGraph {
         }
     }
 }
+
+pub mod example;
 
 #[cfg(test)]
 mod tests {
