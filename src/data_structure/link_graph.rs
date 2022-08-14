@@ -301,6 +301,22 @@ impl
         result
     }
 
+    fn get_dart(&self, vertex: &LinkVertex, target: &LinkVertex) -> Option<LinkDart> {
+        let first_dart = self.dart_vertex(vertex);
+        let mut dart = first_dart.clone();
+
+        loop {
+            if &self.target(&dart.clone()) == target {
+                break Some(dart);
+            }
+
+            dart = self.next(&self.twin(&dart));
+            if dart.clone() == first_dart.clone() {
+                break None;
+            }
+        }
+    }
+
     fn dart_vertex(&self, vertex: &LinkVertex) -> LinkDart {
         vertex.0.borrow().dart.clone().unwrap()
     }
