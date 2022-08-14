@@ -1,11 +1,11 @@
 //! Contains example LinkGraphs
-use crate::data_structure::link_graph::LinkGraph;
+use crate::data_structure::link_graph::{LinkDart, LinkGraph, LinkVertex};
 
 /// Returns an example LinkGraph which contains three interconnected circles.
 /// The first circle contains one vertex.
 /// The second circle contains four vertex.
 /// The third circle contains eight vertex.
-pub fn three_ring_graph() -> LinkGraph {
+pub fn three_ring_graph() -> (LinkGraph, Vec<LinkVertex>, Vec<LinkDart>) {
     let mut g = LinkGraph::new();
     let vertexes = (0..13).map(|_| g.new_vertex()).collect::<Vec<_>>();
 
@@ -67,12 +67,21 @@ pub fn three_ring_graph() -> LinkGraph {
         (13, 12, Some(54), Some(41)),
         (6, 13, Some(55), Some(47)),
     ];
-    let mut edges = vec![None; edge_definition.len()];
-    for (i , (from, to, prev, twin)) in edge_definition.iter().enumerate() {
-        edges[i]  = Some(g.new_dart(vertexes[from-1].clone(), vertexes[to-1].clone(), prev.map(|p| edges[p-1].clone().unwrap()), None, twin.map(|t| edges[t-1].clone().unwrap()), None));
+    let mut edges: Vec<LinkDart> = Vec::with_capacity(edge_definition.len());
+    for (from, to, prev, twin) in edge_definition {
+        edges.push(
+            g.new_dart(
+                vertexes[from-1].clone(),
+                vertexes[to-1].clone(),
+                prev.map(|p| edges[p-1].clone()),
+                None,
+                twin.map(|t| edges[t-1].clone()),
+                None
+            )
+        );
     }
     g.auto_face();
-    g
+    (g, vertexes, edges)
 }
 
 #[cfg(test)]
@@ -81,7 +90,7 @@ mod test {
 
     #[test]
     pub fn validate_three_ring_graph() {
-        let g = three_ring_graph();
+        let (g, _, _) = three_ring_graph();
         g.validate();
     }
 }
