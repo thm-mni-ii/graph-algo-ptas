@@ -312,9 +312,7 @@ mod tests {
     #[test]
     fn isolated() {
         for n in 1..10 {
-            let seed = [1; 32];
-            let mut rng = StdRng::from_seed(seed);
-            let graph = random_hashmap_graph(n, 0., &mut rng);
+            let graph = random_hashmap_graph(n, 0., Some(n as u64));
             let sol = dp_max_independent_set(&graph, None);
 
             assert!(sol.len() == n);
@@ -324,9 +322,7 @@ mod tests {
     #[test]
     fn clique() {
         for n in 1..10 {
-            let seed = [1; 32];
-            let mut rng = StdRng::from_seed(seed);
-            let graph = random_hashmap_graph(n, 1., &mut rng);
+            let graph = random_hashmap_graph(n, 1., Some(n as u64));
             let sol = dp_max_independent_set(&graph, None);
 
             assert!(sol.len() == 1);
@@ -338,9 +334,12 @@ mod tests {
         let seed = [1; 32];
         let mut rng = StdRng::from_seed(seed);
 
-        for _ in 0..30 {
-            let graph =
-                random_hashmap_graph(rng.gen_range(1..15), rng.gen_range(0.05..0.1), &mut rng);
+        for i in 0..30 {
+            let graph = random_hashmap_graph(
+                rng.gen_range(1..15),
+                rng.gen_range(0.05..0.1),
+                Some(i as u64),
+            );
             let sol = dp_max_independent_set(&graph, None);
 
             assert!(is_independent_set(&graph, &sol), "{:?} {:?}", graph, sol);

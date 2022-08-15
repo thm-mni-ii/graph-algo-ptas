@@ -477,15 +477,17 @@ mod tests {
 
     #[test]
     fn random() {
-        let seed = [1; 32];
-        let mut rng = StdRng::from_seed(seed);
+        let mut rng = StdRng::seed_from_u64(1);
 
-        for _ in 0..100 {
-            let graph =
-                random_hashmap_graph(rng.gen_range(1..30), rng.gen_range(0.05..0.1), &mut rng);
+        for i in 0..100 {
+            let graph = random_hashmap_graph(
+                rng.gen_range(1..30),
+                rng.gen_range(0.05..0.1),
+                Some(i as u64),
+            );
             let td = Solver::default().solve(&graph);
             let nice_td = NiceTreeDecomposition::new(td);
-            assert!(nice_td.td.verify(&graph).is_ok(), "seed: {:?}", seed);
+            assert!(nice_td.td.verify(&graph).is_ok());
         }
     }
 

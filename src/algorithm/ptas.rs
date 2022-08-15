@@ -131,7 +131,11 @@ mod tests {
 
         let mut i = 0;
         while i < 100 {
-            let graph = random_graph(rng.gen_range(1..100), rng.gen_range(0.1..1.0), &mut rng);
+            let graph = random_graph(
+                rng.gen_range(1..100),
+                rng.gen_range(0.1..1.0),
+                Some(i as u64),
+            );
 
             if kosaraju_scc(&graph).len() != 1 {
                 continue;

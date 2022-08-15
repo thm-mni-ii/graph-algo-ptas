@@ -36,15 +36,12 @@ impl
 
 #[cfg(test)]
 mod tests {
-    use petgraph::{stable_graph::StableGraph, Undirected};
-
+    use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::{
         embeding::{index::Embeding, maximal_planar::index::MaximalPlanar},
         generation::planar::generate,
         utils::convert::UndirectedGraph,
     };
-
-    use crate::data_structure::graph_dcel::GraphDCEL;
 
     fn test_embend(graph: UndirectedGraph) {
         let dcel = MaximalPlanar::embed(graph.clone());
