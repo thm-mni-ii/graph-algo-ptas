@@ -30,13 +30,29 @@ impl Leveling<LinkVertex> {
     fn size(&self) -> usize {
         self.levels.len()
     }
+
+    pub fn rings(&self, k: usize) -> Vec<HashSet<LinkVertex>> {
+        let mut result = vec![];
+        for c in self
+            .levels
+            .chunks(k)
+            .collect::<Vec<&[HashSet<LinkVertex>]>>()
+        {
+            let mut union: HashSet<LinkVertex> = HashSet::new();
+            for set in c {
+                union.extend(set.clone());
+            }
+            result.push(union);
+        }
+        result
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::algorithm::leveling::Leveling;
     use crate::algorithm::spantree::Span;
-    use crate::data_structure::link_graph::LinkGraph;
+    use crate::data_structure::link_graph::{LinkGraph, LinkVertex};
     use std::collections::HashSet;
 
     #[test]
@@ -96,12 +112,15 @@ mod tests {
         let span = Span::compute(&lg, lv1.clone());
 
         let leveling = Leveling::compute(span);
+        let cs = 2;
         println!("[RESULT]: {:?}", leveling.levels);
-        assert_eq!(leveling.size(), 2);
+        assert_eq!(leveling.size(), cs);
         assert_eq!(
             leveling.levels,
             vec![HashSet::from([lv1]), HashSet::from([lv0, lv2])]
-        )
+        );
+
+        test_rings(leveling, cs);
     }
 
     #[test]
@@ -197,16 +216,19 @@ mod tests {
         let span = Span::compute(&lg, lv1.clone());
 
         let leveling = Leveling::compute(span);
+        let cs = 3;
         println!("[RESULT]: {:?}", leveling.levels);
-        assert_eq!(leveling.size(), 3);
+        assert_eq!(leveling.size(), cs);
         assert_eq!(
             leveling.levels,
             vec![
                 HashSet::from([lv1]),
                 HashSet::from([lv0, lv2]),
-                HashSet::from([lv3])
+                HashSet::from([lv3]),
             ]
-        )
+        );
+
+        test_rings(leveling, cs);
     }
 
     #[test]
@@ -337,16 +359,19 @@ mod tests {
         let span = Span::compute(&lg, lv1.clone());
 
         let leveling = Leveling::compute(span);
+        let cs = 3;
         println!("[RESULT]: {:?}", leveling.levels);
-        assert_eq!(leveling.size(), 3);
+        assert_eq!(leveling.size(), cs);
         assert_eq!(
             leveling.levels,
             vec![
                 HashSet::from([lv1]),
                 HashSet::from([lv0, lv2]),
-                HashSet::from([lv3, lv4])
+                HashSet::from([lv3, lv4]),
             ]
-        )
+        );
+
+        test_rings(leveling, cs);
     }
 
     #[test]
@@ -420,8 +445,9 @@ mod tests {
         let span = Span::compute(&lg, lv1.clone());
 
         let leveling = Leveling::compute(span);
+        let cs = 4;
         println!("[RESULT]: {:?}", leveling.levels);
-        assert_eq!(leveling.size(), 4);
+        assert_eq!(leveling.size(), cs);
         assert_eq!(
             leveling.levels,
             vec![
@@ -430,6 +456,26 @@ mod tests {
                 HashSet::from([lv3]),
                 HashSet::from([lv4]),
             ]
-        )
+        );
+
+        test_rings(leveling, cs);
+    }
+
+    #[test]
+    fn rings() {
+        let mut lg = LinkGraph::new();
+        let leveling: Vec<HashSet<LinkVertex>> = vec![
+            HashSet::from([lg.new_vertex(), lg.new_vertex(), lg.new_vertex()]),
+            HashSet::from([lg.new_vertex()]),
+            HashSet::from([lg.new_vertex(), lg.new_vertex()]),
+        ];
+        test_rings(Leveling { levels: leveling }, 3);
+    }
+
+    fn test_rings(leveling: Leveling<LinkVertex>, size: usize) {
+        for k in 1..size + 1 {
+            let rings = leveling.rings(k);
+            assert_eq!(rings.len(), (size as f64 / k as f64).ceil() as usize);
+        }
     }
 }
