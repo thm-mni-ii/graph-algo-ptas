@@ -110,8 +110,7 @@ fn get_ring_decompositions(graph: &mut UndirectedGraph, eps: f64) -> Vec<RingDec
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-
+    use super::get_ring_decompositions;
     use crate::{
         algorithm::ptas::ptas_max_independent_set,
         generation::planar::generate,
@@ -123,8 +122,7 @@ mod tests {
     };
     use petgraph::algo::kosaraju_scc;
     use rand::{rngs::StdRng, Rng, SeedableRng};
-
-    use super::get_ring_decompositions;
+    use std::collections::HashSet;
 
     #[test]
     fn approximation_ratio() {
