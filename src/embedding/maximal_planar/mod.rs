@@ -1,4 +1,4 @@
-//! Implements the maximal planar embeding algorithm from [A simple linear time algorithm for
+//! Implements the maximal planar embedding algorithm from [A simple linear time algorithm for
 //! embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
 pub mod index;

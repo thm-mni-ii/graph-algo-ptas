@@ -1,4 +1,4 @@
-//! This modules contains embeding functions
+//! This modules contains embedding functions
 
 pub mod index;
 #[allow(dead_code)]

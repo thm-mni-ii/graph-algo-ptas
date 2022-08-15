@@ -1,23 +1,17 @@
+use super::stack_item::StackItem;
+use crate::utils::convert::UndirectedGraph;
+use petgraph::graph::NodeIndex;
+use petgraph::visit::EdgeRef;
 use std::collections::BTreeSet;
 
-use petgraph::graph::NodeIndex;
-use petgraph::stable_graph::StableGraph;
-use petgraph::visit::EdgeRef;
-use petgraph::Undirected;
-
-use super::stack_item::StackItem;
-
 pub struct Phase1<'a> {
-    graph: &'a mut StableGraph<u32, (), Undirected>,
+    graph: &'a mut UndirectedGraph,
     stack: &'a mut Vec<StackItem>,
     reducible: BTreeSet<NodeIndex>,
 }
 
 impl Phase1<'_> {
-    pub fn new<'a>(
-        graph: &'a mut StableGraph<u32, (), Undirected>,
-        stack: &'a mut Vec<StackItem>,
-    ) -> Phase1<'a> {
+    pub fn new<'a>(graph: &'a mut UndirectedGraph, stack: &'a mut Vec<StackItem>) -> Phase1<'a> {
         let mut phase1 = Phase1 {
             graph,
             stack,
@@ -84,14 +78,14 @@ impl Phase1<'_> {
 
     fn is_reducible(&mut self, node_idx: NodeIndex) -> bool {
         let count = self.graph.edges(node_idx).count();
-        let small_neighbore_count = self.get_small_meighbor_count(node_idx);
+        let small_neighbor_count = self.get_small_neighbor_count(node_idx);
 
         count <= 3
-            || count == 4 && small_neighbore_count >= 2
-            || count == 5 && small_neighbore_count >= 4
+            || count == 4 && small_neighbor_count >= 2
+            || count == 5 && small_neighbor_count >= 4
     }
 
-    fn get_small_meighbor_count(&mut self, node_idx: NodeIndex) -> usize {
+    fn get_small_neighbor_count(&mut self, node_idx: NodeIndex) -> usize {
         self.graph
             .neighbors(node_idx)
             .into_iter()
@@ -147,11 +141,11 @@ impl Phase1<'_> {
 
 #[cfg(test)]
 mod tests {
-    use petgraph::{stable_graph::StableGraph, Undirected};
+    use petgraph::stable_graph::StableGraph;
 
-    use crate::embeding::maximal_planar::phase1::Phase1;
+    use crate::{embedding::maximal_planar::phase1::Phase1, utils::convert::UndirectedGraph};
 
-    fn other_graph() -> StableGraph<u32, (), Undirected> {
+    fn other_graph() -> UndirectedGraph {
         StableGraph::from_edges([
             (0, 1),
             (1, 2),

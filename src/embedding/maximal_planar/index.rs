@@ -1,20 +1,17 @@
-//! Contains the implementation of the maximal planar embeding algorithm
-
-use petgraph::stable_graph::StableGraph;
-use petgraph::Undirected;
-
-use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkGraphIter, LinkVertex};
-use crate::embeding::index::Embeding;
+//! Contains the implementation of the maximal planar embedding algorithm
 
 use super::phase1::Phase1;
 use super::phase2::Phase2;
 use super::phase3::Phase3;
+use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkGraphIter, LinkVertex};
+use crate::embedding::index::Embedding;
+use crate::utils::convert::UndirectedGraph;
 
-/// Contains the implementation of the maximal planar embeding algorithm
+/// Contains the implementation of the maximal planar embedding algorithm
 pub struct MaximalPlanar {}
 
 impl
-    Embeding<
+    Embedding<
         LinkVertex,
         LinkDart,
         LinkFace,
@@ -24,7 +21,7 @@ impl
         LinkGraph,
     > for MaximalPlanar
 {
-    fn embed(mut graph: StableGraph<u32, (), Undirected>) -> LinkGraph {
+    fn embed(mut graph: UndirectedGraph) -> LinkGraph {
         let graph_copy = graph.clone();
         let mut stack = Vec::new();
         let mut dcel = LinkGraph::new();
@@ -39,16 +36,14 @@ impl
 
 #[cfg(test)]
 mod tests {
-    use petgraph::{stable_graph::StableGraph, Undirected};
-
+    use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::{
-        embeding::{index::Embeding, maximal_planar::index::MaximalPlanar},
+        embedding::{index::Embedding, maximal_planar::index::MaximalPlanar},
         generation::planar::generate,
+        utils::convert::UndirectedGraph,
     };
 
-    use crate::data_structure::graph_dcel::GraphDCEL;
-
-    fn test_embend(graph: StableGraph<u32, (), Undirected>) {
+    fn test_embed(graph: UndirectedGraph) {
         let dcel = MaximalPlanar::embed(graph.clone());
 
         dcel.validate();
@@ -69,32 +64,32 @@ mod tests {
     }
 
     #[test]
-    fn embend_k4_graph() {
+    fn embed_k4_graph() {
         let graph = generate(4, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_min_graph() {
+    fn embed_min_graph() {
         let graph = generate(5, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_small_graph() {
+    fn embed_small_graph() {
         let graph = generate(10, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_medium_graph() {
+    fn embed_medium_graph() {
         let graph = generate(50, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_large_graph() {
+    fn embed_large_graph() {
         let graph = generate(100, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 }
