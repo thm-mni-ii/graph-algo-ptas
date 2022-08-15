@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use graph_algo_ptas::embeding::index::Embeding;
 use graph_algo_ptas::embeding::maximal_planar::index::MaximalPlanar;
 use graph_algo_ptas::generation::planar::generate;

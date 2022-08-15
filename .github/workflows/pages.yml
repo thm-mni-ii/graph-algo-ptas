@@ -1,4 +1,4 @@
-name: Docs
+name: Pages
 
 on:
   push:
@@ -12,8 +12,8 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 jobs:
-  docs:
-    name: Publish docs
+  pages:
+    name: Publish pages
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -25,14 +25,21 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - name: Doc
+      - name: Build Docs
         run: cargo doc --no-deps
+      - name: Run Benchmark
+        run: cargo bench
+      - name: Build Pages
+        run: |
+          mkdir pages
+          cp -R target/doc/* pages
+          cp -R target/criterion pages/benchmark
       - name: Setup Pages
         uses: actions/configure-pages@v1
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './target/doc'
+          path: './pages'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@main

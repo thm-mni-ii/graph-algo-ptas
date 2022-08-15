@@ -19,7 +19,7 @@ debug_graph_generation = []
 debug_link_graph_panic_on_double_edges = []
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = {version = "0.3", features = ["html_reports"]}
 
 [[bench]]
 name = "embeding_benchmark"
