@@ -343,6 +343,20 @@ mod test {
         assert_eq!(segmented.edge_count(), 8);
         assert_eq!(start_vertex, inner_vertex);
         assert!(inner_vertex.is_some());
+    }
+
+    #[test]
+    fn test_ring_two_inner_darts() {
+        let (graph, start_vertex, rings) = get_ring_graph();
+        let (segmented, start_vertex, _inner_vertex) = ring_segment(&graph, start_vertex, rings, 1);
+        let inner_dart = segmented.dart_vertex(&start_vertex.unwrap());
+        ensure_is_ring_of_length(&segmented, inner_dart, 3);
+    }
+
+    #[test]
+    fn test_ring_two_outer_darts() {
+        let (graph, start_vertex, rings) = get_ring_graph();
+        let (segmented, start_vertex, _inner_vertex) = ring_segment(&graph, start_vertex, rings, 1);
         let dart_on_outer_face =
             segmented.twin(&segmented.next(&segmented.dart_vertex(&start_vertex.unwrap())));
         ensure_is_ring_of_length(&segmented, dart_on_outer_face, 4);
@@ -356,6 +370,23 @@ mod test {
         assert_eq!(segmented.edge_count(), 20);
         assert_eq!(start_vertex, inner_vertex);
         assert!(inner_vertex.is_some());
+        let dart_on_outer_face =
+            segmented.twin(&segmented.next(&segmented.dart_vertex(&start_vertex.unwrap())));
+        ensure_is_ring_of_length(&segmented, dart_on_outer_face, 8);
+    }
+
+    #[test]
+    fn test_ring_three_inner_darts() {
+        let (graph, start_vertex, rings) = get_ring_graph();
+        let (segmented, start_vertex, _inner_vertex) = ring_segment(&graph, start_vertex, rings, 2);
+        let dart_on_inner_face = segmented.next(&segmented.dart_vertex(&start_vertex.unwrap()));
+        ensure_is_ring_of_length(&segmented, dart_on_inner_face, 3);
+    }
+
+    #[test]
+    fn test_ring_three_outer_darts() {
+        let (graph, start_vertex, rings) = get_ring_graph();
+        let (segmented, start_vertex, _inner_vertex) = ring_segment(&graph, start_vertex, rings, 2);
         let dart_on_outer_face =
             segmented.twin(&segmented.next(&segmented.dart_vertex(&start_vertex.unwrap())));
         ensure_is_ring_of_length(&segmented, dart_on_outer_face, 8);
