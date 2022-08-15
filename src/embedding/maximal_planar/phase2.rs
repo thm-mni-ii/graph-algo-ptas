@@ -67,8 +67,6 @@ impl Phase2<'_> {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
-
     use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::data_structure::link_graph::LinkGraph;
     use crate::embedding::maximal_planar::phase2::Phase2;
@@ -90,9 +88,6 @@ mod tests {
         let mut dcel = LinkGraph::new();
 
         Phase2::new(&mut dcel).triangle_embedding();
-
-        let mut o = io::stdout();
-        dot::render(&dcel, &mut o).unwrap();
 
         dcel.validate();
         assert_eq!(dcel.get_vertexes().count(), 3);
