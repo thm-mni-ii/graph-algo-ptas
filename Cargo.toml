@@ -2,6 +2,7 @@
 name = "graph-algo-ptas"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/thm-mni-ii/graph-algo-ptas"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -14,8 +15,9 @@ itertools = "0.10.3"
 rand = "0.8.5"
 petgraph = "0.6.2"
 clap = {version = "3.2.16", features = ["derive"], optional = true}
+graphviz_parser = {git = "https://github.com/saresend/dotfile-parser", rev = "2df14b311f16a72a2d13bc777c2754aac79f97b0", optional = true}
 
 [features]
-cli = ["dep:clap"]
+cli = ["dep:clap", "dep:graphviz_parser"]
 debug_graph_generation = []
 debug_link_graph_panic_on_double_edges = []

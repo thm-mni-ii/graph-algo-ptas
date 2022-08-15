@@ -6,6 +6,8 @@ use clap::Parser;
 #[cfg(feature = "cli")]
 use clap::Subcommand;
 #[cfg(feature = "cli")]
+use graph_algo_ptas::data_structure::dot_reader::read_graph;
+#[cfg(feature = "cli")]
 use graph_algo_ptas::data_structure::graph_dcel::GraphDCEL;
 #[cfg(feature = "cli")]
 use graph_algo_ptas::embeding::{index::Embeding, maximal_planar::index::MaximalPlanar};
@@ -47,13 +49,19 @@ enum Commands {
 
 #[cfg(feature = "cli")]
 fn main() {
+    use std::fs;
+
     let cli = Cli::parse();
     let mut generated = false;
     let mut input_graph: Option<_> = None;
 
-    if cli.input.is_some() {
+    if let Some(file) = cli.input {
         println!("[ptas] read input graph");
-        // TODO read from file
+        let file_input = fs::read_to_string(file);
+        match file_input {
+            Ok(graph_text) => input_graph = read_graph(graph_text),
+            Err(_) => eprintln!("[ptas] Invalid input file"),
+        }
     }
 
     if cli.generate.is_some() {
