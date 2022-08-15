@@ -172,7 +172,6 @@ mod tests {
 
         Phase1::new(&mut graph, &mut stack).execute();
 
-        print!("{:?}", stack);
         // TODO: test
     }
 }
