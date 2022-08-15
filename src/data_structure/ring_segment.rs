@@ -142,6 +142,9 @@ impl<
             let target_vertex_option = self.get_vertex(input_target_vertex);
 
             if let Some(target_vertex) = target_vertex_option {
+                if target_vertex == current_vertex {
+                    return;
+                }
                 let (input_prev, prev_skipped) =
                     self.get_first_dart_in_ring(current_dart, Mode::Prev);
                 let (input_next, next_skipped) =
@@ -352,7 +355,7 @@ mod test {
         let (graph, start_vertex, rings) = get_ring_graph();
         let (segmented, start_vertex, inner_vertex) = ring_segment(&graph, start_vertex, rings, 2);
         assert_eq!(segmented.vertex_count(), 9);
-        assert_eq!(segmented.edge_count(), 28);
+        assert_eq!(segmented.edge_count(), 20);
         assert_eq!(start_vertex, inner_vertex);
         assert!(inner_vertex.is_some());
         let dart_on_outer_face =
@@ -365,6 +368,7 @@ mod test {
         let (graph, start_vertex, rings) = get_ring_graph();
         let (segmented, start_vertex, inner_vertex) = ring_segment(&graph, start_vertex, rings, 3);
         assert_eq!(segmented.vertex_count(), 1);
+        assert_eq!(segmented.edge_count(), 0);
         assert_eq!(start_vertex, inner_vertex);
         assert!(inner_vertex.is_some());
     }
