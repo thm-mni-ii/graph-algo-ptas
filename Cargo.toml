@@ -13,3 +13,7 @@ bitvec = "1.0.1"
 itertools = "0.10.3"
 rand = "0.8.5"
 petgraph = "0.6.2"
+
+[features]
+debug_graph_generation = []
+debug_link_graph_panic_on_double_edges = []
