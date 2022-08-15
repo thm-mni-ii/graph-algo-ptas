@@ -5,9 +5,8 @@ use crate::{
     utils::convert::UndirectedGraph,
 };
 
-/// The Embeding trait is implemented by all embeding algorithms
-
-pub trait Embeding<
+/// The Embedding trait is implemented by all embeding algorithms
+pub trait Embedding<
     V: Vertex,
     D: Dart,
     F: Face,

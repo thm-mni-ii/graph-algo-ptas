@@ -57,7 +57,7 @@ impl Phase2<'_> {
 mod tests {
     use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::data_structure::link_graph::LinkGraph;
-    use crate::embeding::maximal_planar::phase2::Phase2;
+    use crate::embedding::maximal_planar::phase2::Phase2;
 
     #[test]
     fn phase_2() {

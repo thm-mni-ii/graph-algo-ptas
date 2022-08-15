@@ -143,7 +143,7 @@ impl Phase1<'_> {
 mod tests {
     use petgraph::stable_graph::StableGraph;
 
-    use crate::{embeding::maximal_planar::phase1::Phase1, utils::convert::UndirectedGraph};
+    use crate::{embedding::maximal_planar::phase1::Phase1, utils::convert::UndirectedGraph};
 
     fn other_graph() -> UndirectedGraph {
         StableGraph::from_edges([

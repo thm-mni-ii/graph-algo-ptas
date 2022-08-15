@@ -8,6 +8,6 @@ extern crate core;
 mod algorithm;
 pub mod data_structure;
 mod debug;
-pub mod embeding;
-pub mod generation;
+mod embedding;
+mod generation;
 mod utils;

@@ -4,14 +4,14 @@ use super::phase1::Phase1;
 use super::phase2::Phase2;
 use super::phase3::Phase3;
 use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkGraphIter, LinkVertex};
-use crate::embeding::index::Embeding;
+use crate::embedding::index::Embedding;
 use crate::utils::convert::UndirectedGraph;
 
 /// Contains the implementation of the maximal planar embeding algorithm
 pub struct MaximalPlanar {}
 
 impl
-    Embeding<
+    Embedding<
         LinkVertex,
         LinkDart,
         LinkFace,
@@ -38,7 +38,7 @@ impl
 mod tests {
     use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::{
-        embeding::{index::Embeding, maximal_planar::index::MaximalPlanar},
+        embedding::{index::Embedding, maximal_planar::index::MaximalPlanar},
         generation::planar::generate,
         utils::convert::UndirectedGraph,
     };
