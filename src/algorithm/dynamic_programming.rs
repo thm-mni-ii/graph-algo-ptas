@@ -1,4 +1,4 @@
-use super::nice_tree_decomposition::{get_child_bag_ids, NiceTdNodeType, NiceTreeDecomposition};
+use super::nice_tree_decomposition::{get_children, NiceTdNodeType, NiceTreeDecomposition};
 use arboretum_td::{
     graph::{BaseGraph, HashMapGraph, MutableGraph},
     solver::Solver,
@@ -60,6 +60,7 @@ impl DynamicProgrammingTableEntry {
     }
 }
 
+// the result is a graph isomorphic to the input graph but with vertex IDs 0..n-1.
 fn remap_vertices(graph: &HashMapGraph) -> (HashMapGraph, HashMap<usize, usize>) {
     let mut remapped_graph = HashMapGraph::new();
     let mut forward_mapping = HashMap::new();
@@ -99,7 +100,7 @@ pub fn dp_max_independent_set(
         &nice_td.td,
         &graph,
         root,
-        &nice_td.td.bags()[root].neighbors.clone(),
+        usize::max_value(),
         &nice_td.mapping,
         &mut tables,
     );
@@ -117,19 +118,14 @@ fn dp_max_independent_set_rec(
     td: &TreeDecomposition,
     graph: &HashMapGraph,
     id: usize,
-    children: &FxHashSet<usize>,
+    parent_id: usize,
     mapping: &[NiceTdNodeType],
     tables: &mut Vec<DynamicProgrammingTable>,
 ) {
-    for child_id in children {
-        dp_max_independent_set_rec(
-            td,
-            graph,
-            *child_id,
-            &get_child_bag_ids(td, *child_id, id),
-            mapping,
-            tables,
-        );
+    let children = get_children(td, id, parent_id);
+
+    for child_id in &children {
+        dp_max_independent_set_rec(td, graph, *child_id, id, mapping, tables);
     }
 
     match mapping[id] {
@@ -146,47 +142,53 @@ fn dp_max_independent_set_rec(
         }
         NiceTdNodeType::Join => {
             let vertex_set = &td.bags()[id].vertex_set;
-            let mut it = children.iter();
-            let left_id = it.next().unwrap();
-            let right_id = it.next().unwrap();
 
-            for subset in powerset(vertex_set, graph.order()) {
+            let mut children_it = children.iter();
+            let left_id = children_it.next().unwrap();
+            let right_id = children_it.next().unwrap();
+
+            for subset_vec in vertex_set.iter().powerset() {
+                let subset = to_bit_vec(subset_vec.iter().copied(), graph.order());
                 let left_val = tables[*left_id].get(&subset).unwrap().val;
                 let right_val = tables[*right_id].get(&subset).unwrap().val;
-                let val = left_val
-                    .checked_add(right_val)
-                    .and_then(|x| x.checked_sub(subset.count_ones() as i32))
-                    .unwrap_or(i32::min_value());
+                let new_val = if left_val == i32::min_value() || right_val == i32::min_value() {
+                    i32::min_value()
+                } else {
+                    left_val + right_val - subset_vec.len() as i32
+                };
+
+                // left_val
+                //     .checked_add(right_val)
+                //     .and_then(|x| x.checked_sub(subset.count_ones() as i32))
+                //     .unwrap_or(i32::min_value());
 
                 tables[id].insert(
                     subset.clone(),
-                    DynamicProgrammingTableEntry::new_join(val, *left_id, *right_id, subset),
+                    DynamicProgrammingTableEntry::new_join(new_val, *left_id, *right_id, subset),
                 );
             }
         }
         NiceTdNodeType::Forget(v) => {
             let vertex_set = &td.bags()[id].vertex_set;
-            let mut it = children.iter();
-            let child_id = *it.next().unwrap();
+            let child_id = *children.iter().next().unwrap();
 
             for subset in powerset(vertex_set, graph.order()) {
                 let val = tables[child_id].get(&subset).unwrap().val;
                 let subset_with_v = subset_with(&subset, v);
                 let val_with_v = tables[child_id].get(&subset_with_v).unwrap().val;
-                let (max_val, subset_used) = if val > val_with_v {
+                let (new_val, subset_used) = if val > val_with_v {
                     (val, subset.clone())
                 } else {
                     (val_with_v, subset_with_v)
                 };
                 tables[id].insert(
                     subset,
-                    DynamicProgrammingTableEntry::new_forget(max_val, child_id, subset_used),
+                    DynamicProgrammingTableEntry::new_forget(new_val, child_id, subset_used),
                 );
             }
         }
         NiceTdNodeType::Introduce(v) => {
-            let mut it = children.iter();
-            let child_id = *it.next().unwrap();
+            let child_id = *children.iter().next().unwrap();
             let child_vertex_set: &FxHashSet<usize> = &td.bags()[child_id].vertex_set;
 
             for subset_vec in child_vertex_set.iter().powerset() {
@@ -197,15 +199,15 @@ fn dp_max_independent_set_rec(
                     DynamicProgrammingTableEntry::new_intro(val, child_id, subset.clone(), None),
                 );
 
-                let mut has_edge = false;
-                for w in subset_vec {
-                    if graph.has_edge(v, *w) {
-                        has_edge = true;
-                        break;
-                    }
-                }
+                let has_edge = subset_vec.iter().any(|w| graph.has_edge(v, **w));
+                //  for w in subset_vec {
+                //      if graph.has_edge(v, *w) {
+                //          has_edge = true;
+                //          break;
+                //      }
+                //  }
 
-                let (val, node_used) = if has_edge {
+                let (new_val, node_used) = if has_edge {
                     (i32::min_value(), None)
                 } else {
                     (val + 1, Some(v))
@@ -214,7 +216,7 @@ fn dp_max_independent_set_rec(
                 let subset_with_v = subset_with(&subset, v);
                 tables[id].insert(
                     subset_with_v,
-                    DynamicProgrammingTableEntry::new_intro(val, child_id, subset, node_used),
+                    DynamicProgrammingTableEntry::new_intro(new_val, child_id, subset, node_used),
                 );
             }
         }
@@ -244,6 +246,191 @@ fn read_max_independent_set_solution_rec(
 
     for (v, subset) in &entry.children {
         read_max_independent_set_solution_rec(tables, tables[*v].get(subset).unwrap(), sol);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+/// vertex covert
+//////////////////////////////////////////////////////////////
+
+pub fn dp_min_vertex_cover(graph: &HashMapGraph, td: Option<TreeDecomposition>) -> HashSet<usize> {
+    let (graph, mapping) = remap_vertices(graph);
+    let td = td.unwrap_or_else(|| Solver::default_exact().solve(&graph));
+
+    let nice_td = NiceTreeDecomposition::new(td);
+    println!(
+        "TW: {}, node_count: {}",
+        nice_td.td.max_bag_size - 1,
+        nice_td.td.bags().len()
+    );
+
+    assert!(nice_td.td.verify(&graph).is_ok());
+
+    let mut tables: Vec<_> = vec![DynamicProgrammingTable::new(); nice_td.td.bags().len()];
+    let root = nice_td.td.root.unwrap();
+
+    dp_min_vertex_cover_rec(
+        &nice_td.td,
+        &graph,
+        root,
+        usize::max_value(),
+        &nice_td.mapping,
+        &mut tables,
+    );
+
+    let mut sol = HashSet::new();
+    read_min_vertex_cover_solution(&tables, root, &mut sol);
+
+    sol.iter()
+        .map(|v| mapping.get(v).unwrap())
+        .copied()
+        .collect()
+}
+
+fn dp_min_vertex_cover_rec(
+    td: &TreeDecomposition,
+    graph: &HashMapGraph,
+    id: usize,
+    parent_id: usize,
+    mapping: &[NiceTdNodeType],
+    tables: &mut Vec<DynamicProgrammingTable>,
+) {
+    let children = get_children(td, id, parent_id);
+
+    for child_id in &children {
+        dp_min_vertex_cover_rec(td, graph, *child_id, id, mapping, tables);
+    }
+
+    match mapping[id] {
+        NiceTdNodeType::Leaf => {
+            tables[id].insert(
+                make_bit_vec(graph.order()),
+                DynamicProgrammingTableEntry::new_leaf(0, None),
+            );
+            let v = *td.bags()[id].vertex_set.iter().next().unwrap();
+            tables[id].insert(
+                subset_with(&make_bit_vec(graph.order()), v),
+                DynamicProgrammingTableEntry::new_leaf(1, Some(v)),
+            );
+        }
+        NiceTdNodeType::Join => {
+            let vertex_set = &td.bags()[id].vertex_set;
+            let mut it = children.iter();
+            let left_id = it.next().unwrap();
+            let right_id = it.next().unwrap();
+
+            for subset in powerset(vertex_set, graph.order()) {
+                let left_val = tables[*left_id].get(&subset).unwrap().val;
+                let right_val = tables[*right_id].get(&subset).unwrap().val;
+                let val = left_val
+                    .checked_add(right_val)
+                    .and_then(|x| x.checked_sub(subset.count_ones() as i32))
+                    .unwrap_or(i32::max_value());
+
+                tables[id].insert(
+                    subset.clone(),
+                    DynamicProgrammingTableEntry::new_join(val, *left_id, *right_id, subset),
+                );
+            }
+        }
+        NiceTdNodeType::Forget(v) => {
+            let vertex_set = &td.bags()[id].vertex_set;
+            let mut it = children.iter();
+            let child_id = *it.next().unwrap();
+
+            for subset in powerset(vertex_set, graph.order()) {
+                let val = tables[child_id].get(&subset).unwrap().val;
+                let subset_with_v = subset_with(&subset, v);
+                let val_with_v = tables[child_id].get(&subset_with_v).unwrap().val;
+                let (min_val, subset_used) = if val < val_with_v {
+                    (val, subset.clone())
+                } else {
+                    (val_with_v, subset_with_v)
+                };
+                tables[id].insert(
+                    subset,
+                    DynamicProgrammingTableEntry::new_forget(min_val, child_id, subset_used),
+                );
+            }
+        }
+        NiceTdNodeType::Introduce(v) => {
+            let mut it = children.iter();
+            let child_id = *it.next().unwrap();
+            let child_vertex_set: &FxHashSet<usize> = &td.bags()[child_id].vertex_set;
+
+            for subset_vec in child_vertex_set.iter().powerset() {
+                let subset = to_bit_vec(subset_vec.iter().copied(), graph.order());
+                let neighbors = graph
+                    .neighborhood_set(v)
+                    .iter()
+                    .filter(|w| child_vertex_set.contains(w));
+
+                let mut is_covered = true;
+                for w in neighbors {
+                    if !subset_vec.contains(&w) {
+                        is_covered = false;
+                        break;
+                    }
+                }
+
+                let val = if is_covered {
+                    tables[child_id].get(&subset).unwrap().val
+                } else {
+                    i32::max_value()
+                };
+                let mut children = HashSet::new();
+                children.insert((child_id, subset.clone()));
+                tables[id].insert(
+                    subset.clone(),
+                    DynamicProgrammingTableEntry {
+                        val,
+                        children: children.clone(),
+                        node_used: None,
+                    },
+                );
+
+                let child_val = tables[child_id].get(&subset).unwrap().val;
+                let val = if child_val < i32::max_value() {
+                    child_val + 1
+                } else {
+                    child_val
+                };
+                tables[id].insert(
+                    subset_with(&subset, v),
+                    DynamicProgrammingTableEntry {
+                        val,
+                        children,
+                        node_used: Some(v),
+                    },
+                );
+            }
+        }
+    }
+}
+
+fn read_min_vertex_cover_solution(
+    tables: &[DynamicProgrammingTable],
+    root: usize,
+    sol: &mut HashSet<usize>,
+) {
+    let root_entry = tables[root]
+        .values()
+        .min_by(|e1, e2| e1.val.cmp(&e2.val))
+        .unwrap();
+    read_max_independent_set_solution_rec(tables, root_entry, sol);
+}
+
+fn read_min_vertex_cover_solution_rec(
+    tables: &[DynamicProgrammingTable],
+    entry: &DynamicProgrammingTableEntry,
+    sol: &mut HashSet<usize>,
+) {
+    if let Some(v) = entry.node_used {
+        sol.insert(v);
+    }
+
+    for (v, subset) in &entry.children {
+        read_min_vertex_cover_solution_rec(tables, tables[*v].get(subset).unwrap(), sol);
     }
 }
 
@@ -280,8 +467,12 @@ fn subset_with(subset: &BitVec, v: usize) -> BitVec {
 mod tests {
     use super::{dp_max_independent_set, make_bit_vec, remap_vertices};
     use crate::{
+        algorithm::dynamic_programming::dp_min_vertex_cover,
         generation::erdos_renyi::generate_hashmap_graph,
-        utils::max_independent_set::{brute_force_max_independent_set, is_independent_set},
+        utils::{
+            max_independent_set::{brute_force_max_independent_set, is_independent_set},
+            min_vertex_cover::{brute_force_min_vertex_cover, is_vertex_cover},
+        },
     };
     use arboretum_td::graph::{BaseGraph, HashMapGraph, MutableGraph};
     use rand::{rngs::StdRng, Rng, SeedableRng};
@@ -345,6 +536,52 @@ mod tests {
             assert!(is_independent_set(&graph, &sol), "{:?} {:?}", graph, sol);
 
             let sol2 = brute_force_max_independent_set(&graph);
+            assert!(sol.len() == sol2.len());
+        }
+    }
+
+    #[test]
+    fn isolated_vertex_cover() {
+        for n in 1..10 {
+            let graph = generate_hashmap_graph(n, 0., Some(n as u64));
+            let sol = dp_min_vertex_cover(&graph, None);
+
+            assert!(sol.is_empty());
+        }
+    }
+
+    #[test]
+    fn clique_vertex_cover() {
+        for n in 1..10 {
+            let graph = generate_hashmap_graph(n, 1., Some(n as u64));
+            let sol = dp_min_vertex_cover(&graph, None);
+
+            assert!(sol.len() == graph.order() - 1);
+        }
+    }
+
+    #[test]
+    fn random_vertex_cover() {
+        let seed = [2; 32];
+        let mut rng = StdRng::from_seed(seed);
+
+        // let graph = generate_hashmap_graph(100, 0.01, Some(1));
+        // let sol = dp_min_vertex_cover(&graph, None);
+        // println!("{:?}", sol);
+        //
+        //       // assert!(is_vertex_cover(&graph, &sol));
+        //
+        for i in 0..30 {
+            let graph = generate_hashmap_graph(
+                rng.gen_range(1..15),
+                rng.gen_range(0.2..0.5),
+                Some(i as u64),
+            );
+            let sol = dp_min_vertex_cover(&graph, None);
+
+            assert!(is_vertex_cover(&graph, &sol));
+
+            let sol2 = brute_force_min_vertex_cover(&graph);
             assert!(sol.len() == sol2.len());
         }
     }
