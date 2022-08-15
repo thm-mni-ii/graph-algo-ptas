@@ -1,7 +1,7 @@
 use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHashSet;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum NiceTdNodeType {
     Join,
     Introduce(usize),
