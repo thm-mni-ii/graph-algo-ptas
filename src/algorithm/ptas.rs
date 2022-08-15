@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn ptas_random() {
         for n in 2..30 {
-            let graph = generate(n).to_pet_graph();
+            let graph: UndirectedGraph = generate(n, Some(n as u64)).to_pet_graph();
             let eps = 0.5;
             let sol = ptas_max_independent_set(&graph, eps);
 
