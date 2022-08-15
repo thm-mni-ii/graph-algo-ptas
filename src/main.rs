@@ -40,7 +40,7 @@ fn main() {
             return;
         }
 
-        let graph = generate(n).to_pet_graph();
+        let graph = generate(n, None).to_pet_graph();
         println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
         // TODO
 
