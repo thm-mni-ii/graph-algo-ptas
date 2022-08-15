@@ -17,3 +17,10 @@ petgraph = "0.6.2"
 [features]
 debug_graph_generation = []
 debug_link_graph_panic_on_double_edges = []
+
+[dev-dependencies]
+criterion = {version = "0.3", features = ["html_reports"]}
+
+[[bench]]
+name = "embeding_benchmark"
+harness = false

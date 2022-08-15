@@ -1,7 +1,25 @@
+//! Contains an algorithm to generate planar graphs derived from [A simple linear time algorithm for
+//! embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+//!
+//! ```rust
+//! use graph_algo_ptas::generation::planar::generate;
+//!
+//! // Generates a random graph with 10 nodes.
+//! let rg = generate(10, None).to_pet_graph();
+//! assert_eq!(rg.node_count(), 10);
+//! assert_eq!(rg.edge_count(), 3 * 10 - 6);
+//! // Generates a graph with 100 nodes the same graph is generated for every call with the same seed.
+//! let dg = generate(100, Some(44)).to_pet_graph();
+//! assert_eq!(dg.node_count(), 100);
+//! assert_eq!(dg.edge_count(), 3 * 100 - 6);
+//! ```
+
 use crate::data_structure::list_graph::ListGraph;
 use rand::rngs::StdRng;
 use rand::{seq::SliceRandom, Rng, SeedableRng};
 
+/// Returns a randomly generated Graph with degree `n`.
+/// If `seed` is not `None` the rng is seeded with the value of `seed`.
 pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
     #[cfg(feature = "debug_graph_generation")]
     let mut counter = 0;
