@@ -55,7 +55,6 @@ mod tests {
         utils::convert::UndirectedGraph,
     };
 
-    #[cfg_attr(coverage, no_coverage)]
     fn test_embed(graph: UndirectedGraph) {
         let dcel = MaximalPlanar::embed(graph.clone());
 
