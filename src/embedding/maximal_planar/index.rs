@@ -1,4 +1,4 @@
-//! Contains the implementation of the maximal planar embeding algorithm
+//! Contains the implementation of the maximal planar embedding algorithm
 
 use super::phase1::Phase1;
 use super::phase2::Phase2;
@@ -7,7 +7,7 @@ use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkGraph
 use crate::embedding::index::Embedding;
 use crate::utils::convert::UndirectedGraph;
 
-/// Contains the implementation of the maximal planar embeding algorithm
+/// Contains the implementation of the maximal planar embedding algorithm
 pub struct MaximalPlanar {}
 
 impl

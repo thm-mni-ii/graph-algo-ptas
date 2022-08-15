@@ -1,11 +1,11 @@
-//! This module is the main entry point for embeding
+//! This module is the main entry point for embedding
 
 use crate::{
     data_structure::graph_dcel::{Dart, Face, GraphDCEL, Vertex},
     utils::convert::UndirectedGraph,
 };
 
-/// The Embedding trait is implemented by all embeding algorithms
+/// The Embedding trait is implemented by all embedding algorithms
 pub trait Embedding<
     V: Vertex,
     D: Dart,
@@ -16,6 +16,6 @@ pub trait Embedding<
     T: GraphDCEL<V, D, F, VI, DI, FI>,
 >
 {
-    /// Receives a graph as an Argument an returns the embeding
+    /// Receives a graph as an Argument an returns the embedding
     fn embed(graph: UndirectedGraph) -> T;
 }
