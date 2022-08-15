@@ -1,23 +1,17 @@
+use super::stack_item::StackItem;
+use crate::utils::convert::UndirectedGraph;
+use petgraph::graph::NodeIndex;
+use petgraph::visit::EdgeRef;
 use std::collections::BTreeSet;
 
-use petgraph::graph::NodeIndex;
-use petgraph::stable_graph::StableGraph;
-use petgraph::visit::EdgeRef;
-use petgraph::Undirected;
-
-use super::stack_item::StackItem;
-
 pub struct Phase1<'a> {
-    graph: &'a mut StableGraph<u32, (), Undirected>,
+    graph: &'a mut UndirectedGraph,
     stack: &'a mut Vec<StackItem>,
     reducible: BTreeSet<NodeIndex>,
 }
 
 impl Phase1<'_> {
-    pub fn new<'a>(
-        graph: &'a mut StableGraph<u32, (), Undirected>,
-        stack: &'a mut Vec<StackItem>,
-    ) -> Phase1<'a> {
+    pub fn new<'a>(graph: &'a mut UndirectedGraph, stack: &'a mut Vec<StackItem>) -> Phase1<'a> {
         let mut phase1 = Phase1 {
             graph,
             stack,
@@ -147,11 +141,11 @@ impl Phase1<'_> {
 
 #[cfg(test)]
 mod tests {
-    use petgraph::{stable_graph::StableGraph, Undirected};
+    use petgraph::stable_graph::StableGraph;
 
-    use crate::embeding::maximal_planar::phase1::Phase1;
+    use crate::{embeding::maximal_planar::phase1::Phase1, utils::convert::UndirectedGraph};
 
-    fn other_graph() -> StableGraph<u32, (), Undirected> {
+    fn other_graph() -> UndirectedGraph {
         StableGraph::from_edges([
             (0, 1),
             (1, 2),
