@@ -81,6 +81,7 @@ pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
 #[cfg(feature = "debug_graph_generation")]
 use crate::data_structure::list_graph::{EdgeId, NodeId};
 #[cfg(feature = "debug_graph_generation")]
+#[allow(clippy::too_many_arguments)]
 fn debug_graph(
     graph: &ListGraph,
     vertex: NodeId,
@@ -99,7 +100,7 @@ fn debug_graph(
     edge_color.insert(edge, "green".to_string());
     edge_color.insert(current_edge, "blue".to_string());
     edge_color.insert(new_edge, "red".to_string());
-    crate::debug::list_graph::write_as_files(&graph, &node_color, &edge_color, counter);
+    crate::debug::list_graph::write_as_files(graph, &node_color, &edge_color, counter);
 }
 
 #[cfg(test)]
