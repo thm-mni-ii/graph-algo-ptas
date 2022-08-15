@@ -113,7 +113,7 @@ mod tests {
     use super::get_ring_decompositions;
     use crate::{
         algorithm::ptas::ptas_max_independent_set,
-        generation::{planar::generate, erdos_renyi::generate_petgraph},
+        generation::{erdos_renyi::generate_petgraph, planar::generate},
         utils::{
             convert::{petgraph_to_hash_map_graph, UndirectedGraph},
             max_independent_set::{brute_force_max_independent_set, is_independent_set},

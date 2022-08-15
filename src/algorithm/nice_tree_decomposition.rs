@@ -376,7 +376,10 @@ pub fn get_child_bag_ids(td: &TreeDecomposition, id: usize, parent_id: usize) ->
 #[cfg(test)]
 mod tests {
     use super::NiceTreeDecomposition;
-    use crate::{algorithm::nice_tree_decomposition::get_child_bag_ids, generation::erdos_renyi::generate_hashmap_graph};
+    use crate::{
+        algorithm::nice_tree_decomposition::get_child_bag_ids,
+        generation::erdos_renyi::generate_hashmap_graph,
+    };
     use arboretum_td::{solver::Solver, tree_decomposition::TreeDecomposition};
     use fxhash::FxHashSet;
     use rand::{rngs::StdRng, Rng, SeedableRng};
