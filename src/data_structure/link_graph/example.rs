@@ -69,16 +69,14 @@ pub fn three_ring_graph() -> (LinkGraph, Vec<LinkVertex>, Vec<LinkDart>) {
     ];
     let mut edges: Vec<LinkDart> = Vec::with_capacity(edge_definition.len());
     for (from, to, prev, twin) in edge_definition {
-        edges.push(
-            g.new_dart(
-                vertexes[from-1].clone(),
-                vertexes[to-1].clone(),
-                prev.map(|p| edges[p-1].clone()),
-                None,
-                twin.map(|t| edges[t-1].clone()),
-                None
-            )
-        );
+        edges.push(g.new_dart(
+            vertexes[from - 1].clone(),
+            vertexes[to - 1].clone(),
+            prev.map(|p| edges[p - 1].clone()),
+            None,
+            twin.map(|t| edges[t - 1].clone()),
+            None,
+        ));
     }
     g.auto_face();
     (g, vertexes, edges)
