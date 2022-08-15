@@ -116,18 +116,18 @@ type IntroduceNodeHandler = fn(
     introduced_vertex: usize,
 );
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Objective {
     Minimize,
     Maximize,
 }
 
 pub struct DynamicProgrammingProblem {
-    objective: Objective,
-    handle_leaf_node: LeafNodeHandler,
-    handle_join_node: JoinNodeHandler,
-    handle_forget_node: ForgetNodeHandler,
-    handle_introduce_node: IntroduceNodeHandler,
+    pub objective: Objective,
+    pub handle_leaf_node: LeafNodeHandler,
+    pub handle_join_node: JoinNodeHandler,
+    pub handle_forget_node: ForgetNodeHandler,
+    pub handle_introduce_node: IntroduceNodeHandler,
 }
 
 impl DynamicProgrammingProblem {

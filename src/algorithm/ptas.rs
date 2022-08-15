@@ -1,4 +1,4 @@
-use super::dynamic_programming::solve::{dp_solve, DynamicProgrammingProblem};
+use super::dynamic_programming::solve::{dp_solve, DynamicProgrammingProblem, Objective};
 use crate::utils::convert::UndirectedGraph;
 use arboretum_td::graph::{HashMapGraph, MutableGraph};
 use petgraph::{algo::kosaraju_scc, stable_graph::NodeIndex, visit::EdgeRef};
@@ -14,13 +14,30 @@ pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64)
             sol = sol.union(&dp_solve(&ring, None, prob)).copied().collect();
         }
 
+        if prob.objective == Objective::Minimize {
+            let vertices_deleted = &ring_decomposition
+                .vertices_deleted
+                .iter()
+                .map(|v| v.index())
+                .collect();
+            sol = sol.union(vertices_deleted).copied().collect();
+        }
+
         sols.push(sol);
     }
 
-    sols.iter()
-        .max_by(|s1, s2| s1.len().cmp(&s2.len()))
-        .unwrap()
-        .clone()
+    match prob.objective {
+        Objective::Minimize => sols
+            .iter()
+            .min_by(|s1, s2| s1.len().cmp(&s2.len()))
+            .unwrap()
+            .clone(),
+        Objective::Maximize => sols
+            .iter()
+            .max_by(|s1, s2| s1.len().cmp(&s2.len()))
+            .unwrap()
+            .clone(),
+    }
 }
 
 fn get_component_graphs(graph: &UndirectedGraph) -> Vec<HashMapGraph> {
@@ -114,6 +131,7 @@ mod tests {
         utils::{
             convert::{petgraph_to_hash_map_graph, UndirectedGraph},
             max_independent_set::{brute_force_max_independent_set, is_independent_set},
+            min_vertex_cover::{brute_force_min_vertex_cover, is_vertex_cover},
         },
     };
     use petgraph::algo::kosaraju_scc;
@@ -158,7 +176,7 @@ mod tests {
     }
 
     #[test]
-    fn ptas_single_vertex() {
+    fn max_independent_set_single_vertex() {
         let mut graph = UndirectedGraph::default();
         let v0 = graph.add_node(());
         let sol = ptas(
@@ -172,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn ptas_single_edge() {
+    fn max_independent_set_single_edge() {
         let mut graph = UndirectedGraph::default();
         let v0 = graph.add_node(());
         let v1 = graph.add_node(());
@@ -187,7 +205,7 @@ mod tests {
     }
 
     #[test]
-    fn ptas_random() {
+    fn max_independent_set_random() {
         for n in 2..30 {
             let graph: UndirectedGraph = generate(n, Some(n as u64)).to_pet_graph();
             let eps = 0.5;
@@ -207,6 +225,44 @@ mod tests {
                 let sol2 = brute_force_max_independent_set(&petgraph_to_hash_map_graph(&graph));
 
                 assert!(sol.len() as f64 >= (1.0 - eps) * sol2.len() as f64);
+            }
+        }
+    }
+
+    #[test]
+    fn min_vertex_cover_single_vertex() {
+        let mut graph = UndirectedGraph::default();
+        graph.add_node(());
+        let sol = ptas(&graph, &DynamicProgrammingProblem::min_vertex_cover(), 0.5);
+
+        assert!(sol.is_empty());
+    }
+
+    #[test]
+    fn min_vertex_cover_single_edge() {
+        let mut graph = UndirectedGraph::default();
+        let v0 = graph.add_node(());
+        let v1 = graph.add_node(());
+        graph.add_edge(v0, v1, ());
+        let sol = ptas(&graph, &DynamicProgrammingProblem::min_vertex_cover(), 0.5);
+        assert!(sol.len() == 1);
+        assert!(sol.contains(&v0.index()) || sol.contains(&v1.index()));
+    }
+
+    #[test]
+    fn min_vertex_cover_random() {
+        for n in 2..30 {
+            let graph: UndirectedGraph = generate(n, Some(n as u64)).to_pet_graph();
+            let eps = 0.5;
+            let sol = ptas(&graph, &DynamicProgrammingProblem::min_vertex_cover(), eps);
+
+            assert!(is_vertex_cover(&petgraph_to_hash_map_graph(&graph), &sol));
+
+            // if n > 15 the brute force algorithm takes too long
+            if n <= 15 {
+                let sol2 = brute_force_min_vertex_cover(&petgraph_to_hash_map_graph(&graph));
+
+                assert!(sol.len() as f64 <= (1.0 + 0.5 * eps) * sol2.len() as f64);
             }
         }
     }
