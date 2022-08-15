@@ -252,9 +252,7 @@ enum Mode {
     Prev,
 }
 
-/// The first element of the return tuple is the new graph containing the nodes of ring i and the nodes less then i combined in a single node.
-/// The second element is start_vertex in the segmented graph.
-/// The third element is the combined node.
+/// Returns a tuple which contains new graph containing the nodes of ring `i` and the nodes less then `i` combined in a single node and the combined node.
 pub fn ring_segment<
     V: Vertex + Eq + Hash + Clone + Debug,
     D: Dart + Eq + Hash + Clone + Debug,
