@@ -57,7 +57,6 @@ pub trait GraphDCEL<
     /// Returns the previous dart in the dart order
     fn prev(&self, current: &D) -> D;
 
-
     /// Adds a new vertex
     fn add_vertex(&mut self) -> V;
     /// Adds a new dart
