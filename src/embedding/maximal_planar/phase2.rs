@@ -29,6 +29,18 @@ impl Phase2<'_> {
         self.create_face(v2, v3, v1, Some(d5), Some(d1), Some(d4));
     }
 
+    pub fn triangle_embedding(&mut self) {
+        let v0 = self.dcel.new_vertex();
+        let v1 = self.dcel.new_vertex();
+        let v2 = self.dcel.new_vertex();
+
+        // Face 0
+        let (d0, d1, d2) = self.create_face(v0.clone(), v1.clone(), v2.clone(), None, None, None);
+
+        // Face 1
+        self.create_face(v0, v2, v1, Some(d2), Some(d1), Some(d0));
+    }
+
     fn create_face(
         &mut self,
         v0: LinkVertex,
@@ -55,6 +67,8 @@ impl Phase2<'_> {
 
 #[cfg(test)]
 mod tests {
+    use std::io;
+
     use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::data_structure::link_graph::LinkGraph;
     use crate::embedding::maximal_planar::phase2::Phase2;
@@ -69,5 +83,20 @@ mod tests {
         assert_eq!(dcel.get_vertexes().count(), 4);
         assert_eq!(dcel.edge_count(), 6);
         assert_eq!(dcel.get_faces().count(), 4);
+    }
+
+    #[test]
+    fn triangle_embedding() {
+        let mut dcel = LinkGraph::new();
+
+        Phase2::new(&mut dcel).triangle_embedding();
+
+        let mut o = io::stdout();
+        dot::render(&dcel, &mut o).unwrap();
+
+        dcel.validate();
+        assert_eq!(dcel.get_vertexes().count(), 3);
+        assert_eq!(dcel.edge_count(), 3);
+        assert_eq!(dcel.get_faces().count(), 2);
     }
 }
