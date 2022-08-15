@@ -70,9 +70,9 @@ fn brute_force_max_independent_set_rec(
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{
-        max_independent_set::{brute_force_max_independent_set, is_independent_set},
-        random_graph::random_hashmap_graph,
+    use crate::{
+        generation::erdos_renyi::generate_hashmap_graph,
+        utils::max_independent_set::{brute_force_max_independent_set, is_independent_set},
     };
     use arboretum_td::graph::{HashMapGraph, MutableGraph};
     use std::collections::HashSet;
@@ -82,7 +82,7 @@ mod tests {
         let sol = HashSet::new();
 
         for n in 1..10 {
-            let graph = random_hashmap_graph(n, 0.3, Some(n as u64));
+            let graph = generate_hashmap_graph(n, 0.3, Some(n as u64));
 
             assert!(is_independent_set(&graph, &sol));
             assert!(is_independent_set(
@@ -97,7 +97,7 @@ mod tests {
         let mut sol = HashSet::new();
 
         for n in 1..10 {
-            let graph = random_hashmap_graph(n, 0., Some(n as u64));
+            let graph = generate_hashmap_graph(n, 0., Some(n as u64));
             sol.insert(n - 1);
 
             assert!(is_independent_set(&graph, &sol));
@@ -134,7 +134,7 @@ mod tests {
         sol.insert(0);
 
         for n in 2..15 {
-            let graph = random_hashmap_graph(n, 1., Some(n as u64));
+            let graph = generate_hashmap_graph(n, 1., Some(n as u64));
 
             let v = n - 1;
 

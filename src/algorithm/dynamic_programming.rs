@@ -279,9 +279,9 @@ fn subset_with(subset: &BitVec, v: usize) -> BitVec {
 #[cfg(test)]
 mod tests {
     use super::{dp_max_independent_set, make_bit_vec, remap_vertices};
-    use crate::utils::{
-        max_independent_set::{brute_force_max_independent_set, is_independent_set},
-        random_graph::random_hashmap_graph,
+    use crate::{
+        generation::erdos_renyi::generate_hashmap_graph,
+        utils::max_independent_set::{brute_force_max_independent_set, is_independent_set},
     };
     use arboretum_td::graph::{BaseGraph, HashMapGraph, MutableGraph};
     use rand::{rngs::StdRng, Rng, SeedableRng};
@@ -312,7 +312,7 @@ mod tests {
     #[test]
     fn isolated() {
         for n in 1..10 {
-            let graph = random_hashmap_graph(n, 0., Some(n as u64));
+            let graph = generate_hashmap_graph(n, 0., Some(n as u64));
             let sol = dp_max_independent_set(&graph, None);
 
             assert!(sol.len() == n);
@@ -322,7 +322,7 @@ mod tests {
     #[test]
     fn clique() {
         for n in 1..10 {
-            let graph = random_hashmap_graph(n, 1., Some(n as u64));
+            let graph = generate_hashmap_graph(n, 1., Some(n as u64));
             let sol = dp_max_independent_set(&graph, None);
 
             assert!(sol.len() == 1);
@@ -335,7 +335,7 @@ mod tests {
         let mut rng = StdRng::from_seed(seed);
 
         for i in 0..30 {
-            let graph = random_hashmap_graph(
+            let graph = generate_hashmap_graph(
                 rng.gen_range(1..15),
                 rng.gen_range(0.05..0.1),
                 Some(i as u64),

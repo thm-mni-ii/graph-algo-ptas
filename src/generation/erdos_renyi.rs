@@ -1,9 +1,12 @@
-use super::convert::{petgraph_to_hash_map_graph, UndirectedGraph};
+//! Contains algorithms for generating graphs based on the Erdos-Renyi model
+
+use crate::utils::convert::{petgraph_to_hash_map_graph, UndirectedGraph};
 use arboretum_td::graph::HashMapGraph;
 use petgraph::stable_graph::NodeIndex;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
-pub fn random_graph(n: usize, p: f64, seed: Option<u64>) -> UndirectedGraph {
+/// Generates a random graph of type [UndirectedGraph]
+pub fn generate_petgraph(n: usize, p: f64, seed: Option<u64>) -> UndirectedGraph {
     let mut graph = UndirectedGraph::default();
     let mut rng = match seed {
         Some(seed) => StdRng::seed_from_u64(seed),
@@ -25,6 +28,7 @@ pub fn random_graph(n: usize, p: f64, seed: Option<u64>) -> UndirectedGraph {
     graph
 }
 
-pub fn random_hashmap_graph(n: usize, p: f64, seed: Option<u64>) -> HashMapGraph {
-    petgraph_to_hash_map_graph(&random_graph(n, p, seed))
+/// Generates a random graph of type [HashMapGraph]
+pub fn generate_hashmap_graph(n: usize, p: f64, seed: Option<u64>) -> HashMapGraph {
+    petgraph_to_hash_map_graph(&generate_petgraph(n, p, seed))
 }

@@ -113,11 +113,10 @@ mod tests {
     use super::get_ring_decompositions;
     use crate::{
         algorithm::ptas::ptas_max_independent_set,
-        generation::planar::generate,
+        generation::{planar::generate, erdos_renyi::generate_petgraph},
         utils::{
             convert::{petgraph_to_hash_map_graph, UndirectedGraph},
             max_independent_set::{brute_force_max_independent_set, is_independent_set},
-            random_graph::random_graph,
         },
     };
     use petgraph::algo::kosaraju_scc;
@@ -131,7 +130,7 @@ mod tests {
 
         let mut i = 0;
         while i < 100 {
-            let graph = random_graph(
+            let graph = generate_petgraph(
                 rng.gen_range(1..100),
                 rng.gen_range(0.1..1.0),
                 Some(i as u64),
