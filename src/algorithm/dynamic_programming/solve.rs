@@ -1,19 +1,25 @@
+//! Contains data structures and algorithms for dynamic programming on tree decompositions.
+
 use super::{max_independent_set, min_vertex_cover};
-use crate::algorithm::nice_tree_decomposition::{
-    get_children, NiceTdNodeType, NiceTreeDecomposition,
+use crate::algorithm::{
+    dynamic_programming::utils::remap_vertices,
+    nice_tree_decomposition::{get_children, NiceTdNodeType, NiceTreeDecomposition},
 };
-use arboretum_td::{
-    graph::{BaseGraph, HashMapGraph, MutableGraph},
-    solver::Solver,
-    tree_decomposition::TreeDecomposition,
-};
+use arboretum_td::{graph::HashMapGraph, solver::Solver, tree_decomposition::TreeDecomposition};
 use bitvec::vec::BitVec;
 use fxhash::FxHashSet;
 use std::collections::{HashMap, HashSet};
 
-// The BitVec key represents the subset to which the table entry belongs
+/// For each bag in the tree decomposition a table is calculated.
+/// Such a table is represented by `HashMap`.
+/// 
+/// The `BitVec` key represents the subset to which the table entry belongs
 pub type DynamicProgrammingTable = HashMap<BitVec, DynamicProgrammingTableEntry>;
 
+/// Represents a single entry in a dynamic programming table.
+/// 
+/// Contains the value of the entry and additional information needed for
+/// retrieving the actual solution at the end of the algorithm.
 #[derive(Debug, Clone)]
 pub struct DynamicProgrammingTableEntry {
     pub val: i32,
@@ -62,29 +68,6 @@ impl DynamicProgrammingTableEntry {
     }
 }
 
-// the result is a graph isomorphic to the input graph but is guaranteed to have vertex IDs 0..n-1.
-fn remap_vertices(graph: &HashMapGraph) -> (HashMapGraph, HashMap<usize, usize>) {
-    let mut remapped_graph = HashMapGraph::new();
-    let mut forward_mapping = HashMap::new();
-    let mut backward_mapping = HashMap::new();
-
-    for (i, v) in graph.vertices().enumerate() {
-        remapped_graph.add_vertex(i);
-        forward_mapping.insert(v, i);
-        backward_mapping.insert(i, v);
-    }
-
-    for u in graph.vertices() {
-        for v in graph.neighborhood(u) {
-            let remapped_u = forward_mapping.get(&u).unwrap();
-            let remapped_v = forward_mapping.get(&v).unwrap();
-            remapped_graph.add_edge(*remapped_u, *remapped_v);
-        }
-    }
-
-    (remapped_graph, backward_mapping)
-}
-
 type LeafNodeHandler =
     fn(graph: &HashMapGraph, id: usize, tables: &mut Vec<DynamicProgrammingTable>, vertex: usize);
 
@@ -122,6 +105,8 @@ pub enum Objective {
     Maximize,
 }
 
+/// Contains the neccessary information for solving a (hard) problem
+/// using dynamic programming on tree decompositions.
 pub struct DynamicProgrammingProblem {
     pub objective: Objective,
     pub handle_leaf_node: LeafNodeHandler,
@@ -131,6 +116,7 @@ pub struct DynamicProgrammingProblem {
 }
 
 impl DynamicProgrammingProblem {
+    /// Return a `DynamicProgrammingProblem` instance for maximum independent set.
     pub fn max_independent_set() -> DynamicProgrammingProblem {
         DynamicProgrammingProblem {
             objective: Objective::Maximize,
@@ -141,6 +127,7 @@ impl DynamicProgrammingProblem {
         }
     }
 
+    /// Return a `DynamicProgrammingProblem` instance for minimum vertex cover.
     pub fn min_vertex_cover() -> DynamicProgrammingProblem {
         DynamicProgrammingProblem {
             objective: Objective::Minimize,
@@ -152,6 +139,14 @@ impl DynamicProgrammingProblem {
     }
 }
 
+/// Solves the given problem on the input graph using dynamic programming.
+///
+/// When `td` is `None`, an optimal tree decomposition is calculated and used
+/// for the algorithm.
+///
+/// The `prob` parameter specifies whether the problem is a minimization
+/// or maximization problem and contains the "recipe" for how to calculate
+/// the dynamic programming tables in order to arrive at the solution.
 pub fn dp_solve(
     graph: &HashMapGraph,
     td: Option<TreeDecomposition>,

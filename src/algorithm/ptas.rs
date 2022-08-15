@@ -1,9 +1,14 @@
+//! Contains the main algorithm implementing the PTAS for planar graphs.
+
 use super::dynamic_programming::solve::{dp_solve, DynamicProgrammingProblem, Objective};
 use crate::utils::convert::UndirectedGraph;
 use arboretum_td::graph::{HashMapGraph, MutableGraph};
 use petgraph::{algo::kosaraju_scc, stable_graph::NodeIndex, visit::EdgeRef};
 use std::collections::{HashSet, VecDeque};
 
+/// Calculates an approximate solution for the given problem on the graph.
+/// The solution is guaranteed to be (1 - eps) optimal for maximization problems
+/// and (1 + eps) optimal for minimization problems.
 pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64) -> HashSet<usize> {
     let mut sols: Vec<HashSet<usize>> = vec![];
 
