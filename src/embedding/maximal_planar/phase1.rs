@@ -78,14 +78,14 @@ impl Phase1<'_> {
 
     fn is_reducible(&mut self, node_idx: NodeIndex) -> bool {
         let count = self.graph.edges(node_idx).count();
-        let small_neighbore_count = self.get_small_meighbor_count(node_idx);
+        let small_neighbor_count = self.get_small_neighbor_count(node_idx);
 
         count <= 3
-            || count == 4 && small_neighbore_count >= 2
-            || count == 5 && small_neighbore_count >= 4
+            || count == 4 && small_neighbor_count >= 2
+            || count == 5 && small_neighbor_count >= 4
     }
 
-    fn get_small_meighbor_count(&mut self, node_idx: NodeIndex) -> usize {
+    fn get_small_neighbor_count(&mut self, node_idx: NodeIndex) -> usize {
         self.graph
             .neighbors(node_idx)
             .into_iter()

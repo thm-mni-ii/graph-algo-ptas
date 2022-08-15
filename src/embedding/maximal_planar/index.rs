@@ -43,7 +43,7 @@ mod tests {
         utils::convert::UndirectedGraph,
     };
 
-    fn test_embend(graph: UndirectedGraph) {
+    fn test_embed(graph: UndirectedGraph) {
         let dcel = MaximalPlanar::embed(graph.clone());
 
         dcel.validate();
@@ -64,32 +64,32 @@ mod tests {
     }
 
     #[test]
-    fn embend_k4_graph() {
+    fn embed_k4_graph() {
         let graph = generate(4, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_min_graph() {
+    fn embed_min_graph() {
         let graph = generate(5, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_small_graph() {
+    fn embed_small_graph() {
         let graph = generate(10, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_medium_graph() {
+    fn embed_medium_graph() {
         let graph = generate(50, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 
     #[test]
-    fn embend_large_graph() {
+    fn embed_large_graph() {
         let graph = generate(100, Some(0)).to_pet_graph();
-        test_embend(graph)
+        test_embed(graph)
     }
 }
