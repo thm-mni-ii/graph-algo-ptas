@@ -138,8 +138,9 @@ impl Phase3<'_> {
     fn get_dart_in_face(&self, hs: Vec<LinkVertex>) -> LinkDart {
         let dart = self.dcel.get_dart(&hs[0], &hs[1]).unwrap();
         let target = self.dcel.dart_target(&dart);
+        let next_target = self.dcel.dart_target(&self.dcel.next(&dart));
 
-        if target != hs[0] && hs.contains(&self.dcel.dart_target(&dart)) {
+        if hs.contains(&target) && hs.contains(&next_target) {
             return dart;
         }
 
