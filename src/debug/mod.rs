@@ -1,3 +1,3 @@
-#[cfg(debug_graph_generation)]
+#[cfg(feature = "debug_graph_generation")]
 #[allow(dead_code)]
 pub mod list_graph;

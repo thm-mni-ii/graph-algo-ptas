@@ -17,3 +17,5 @@ clap = {version = "3.2.16", features = ["derive"], optional = true}
 
 [features]
 cli = ["dep:clap"]
+debug_graph_generation = []
+debug_link_graph_panic_on_double_edges = []

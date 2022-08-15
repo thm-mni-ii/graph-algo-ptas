@@ -2,17 +2,21 @@
 //! Based on [A simple linear time algorithm for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
 use crate::data_structure::list_graph::ListGraph;
-use rand::{seq::SliceRandom, thread_rng, Rng};
+use rand::rngs::StdRng;
+use rand::{seq::SliceRandom, Rng, SeedableRng};
 
 /// generate a maximally planar graph with n vertices
-pub fn generate(mut n: usize) -> ListGraph {
-    #[cfg(debug_graph_generation)]
+pub fn generate(mut n: usize, seed: Option<u64>) -> ListGraph {
+    #[cfg(feature = "debug_graph_generation")]
     let mut counter = 0;
     let max_edges = 5 * n;
     let mut graph = ListGraph::k4();
     let mut urn = Vec::with_capacity(max_edges);
     let mut active = vec![false; max_edges];
-    let mut rng = thread_rng();
+    let mut rng = match seed {
+        Some(seed) => StdRng::seed_from_u64(seed),
+        None => StdRng::from_entropy(),
+    };
 
     for edge in graph.edge_indexes() {
         urn.push(edge);
@@ -52,7 +56,7 @@ pub fn generate(mut n: usize) -> ListGraph {
         let mut current_vertex = vertex;
         while {
             let new_edge = graph.add_edge(new_vertex, current_vertex, None, Some(current_edge));
-            #[cfg(debug_graph_generation)]
+            #[cfg(feature = "debug_graph_generation")]
             debug_graph(
                 &graph,
                 vertex,
@@ -78,9 +82,10 @@ pub fn generate(mut n: usize) -> ListGraph {
     graph
 }
 
-#[cfg(debug_graph_generation)]
+#[cfg(feature = "debug_graph_generation")]
 use crate::data_structure::list_graph::{EdgeId, NodeId};
-#[cfg(debug_graph_generation)]
+#[cfg(feature = "debug_graph_generation")]
+#[allow(clippy::too_many_arguments)]
 fn debug_graph(
     graph: &ListGraph,
     vertex: NodeId,
@@ -99,7 +104,7 @@ fn debug_graph(
     edge_color.insert(edge, "green".to_string());
     edge_color.insert(current_edge, "blue".to_string());
     edge_color.insert(new_edge, "red".to_string());
-    crate::debug::list_graph::write_as_files(&graph, &node_color, &edge_color, counter);
+    crate::debug::list_graph::write_as_files(graph, &node_color, &edge_color, counter);
 }
 
 #[cfg(test)]
@@ -108,35 +113,35 @@ mod tests {
 
     #[test]
     fn test_graph_generation_base() {
-        let graph = generate(4);
+        let graph = generate(4, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 4);
     }
 
     #[test]
     fn test_graph_generation_min() {
-        let graph = generate(5);
+        let graph = generate(5, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 5);
     }
 
     #[test]
     fn test_graph_generation_small() {
-        let graph = generate(10);
+        let graph = generate(10, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 10);
     }
 
     #[test]
     fn test_graph_generation_medium() {
-        let graph = generate(50);
+        let graph = generate(50, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 50);
     }
 
     #[test]
     fn test_graph_generation_large() {
-        let graph = generate(100);
+        let graph = generate(100, Some(0));
 
         assert_eq!(graph.node_indexes().count(), 100);
     }

@@ -271,8 +271,8 @@ impl ListGraph {
         new_len - 1
     }
 
-    /// Returns the graph as a petgraph StableGraph
-    pub fn to_pet_graph(&self) -> StableGraph<usize, usize, Undirected, DefaultIx> {
+    /// Returns the current List Graph as as an Petgraph instance
+    pub fn to_pet_graph(&self) -> StableGraph<u32, (), Undirected, DefaultIx> {
         StableGraph::from_edges(
             self.all_edges()
                 .iter()

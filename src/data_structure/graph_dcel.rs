@@ -40,6 +40,8 @@ pub trait GraphDCEL<
     /// Returns a vector of neighbors of the given vertex
     fn neighbors(&self, vertex: &V) -> Vec<V>;
 
+    /// Returns the dart between to vertexes
+    fn get_dart(&self, vertex: &V, target: &V) -> Option<D>;
     /// Returns the dart linked to the given vertex
     fn dart_vertex(&self, vertex: &V) -> D;
     /// Returns the the dart linked to the given face

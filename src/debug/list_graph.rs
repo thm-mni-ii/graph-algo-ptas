@@ -1,5 +1,6 @@
 use crate::data_structure::list_graph::{EdgeId, ListGraph, NodeId};
 use std::collections::HashMap;
+use std::fs;
 use std::io::Write;
 
 pub fn write_as_files(
@@ -8,6 +9,7 @@ pub fn write_as_files(
     edge_color_map: &HashMap<EdgeId, String>,
     counter: &mut usize,
 ) {
+    let _ = fs::create_dir("graph");
     let mut dot_file = std::fs::File::create(format!("graph/{:04}.dot", counter)).unwrap();
     let mut tup_file = std::fs::File::create(format!("graph/{:04}.tup", counter)).unwrap();
     *counter += 1;
