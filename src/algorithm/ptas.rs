@@ -1,20 +1,17 @@
-use super::dynamic_programming::dp_max_independent_set;
+use super::dynamic_programming::solve::{dp_solve, DynamicProgrammingProblem};
 use crate::utils::convert::UndirectedGraph;
 use arboretum_td::graph::{HashMapGraph, MutableGraph};
 use petgraph::{algo::kosaraju_scc, stable_graph::NodeIndex, visit::EdgeRef};
 use std::collections::{HashSet, VecDeque};
 
-pub fn ptas_max_independent_set(graph: &UndirectedGraph, eps: f64) -> HashSet<usize> {
+pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64) -> HashSet<usize> {
     let mut sols: Vec<HashSet<usize>> = vec![];
 
     for ring_decomposition in get_ring_decompositions(&mut graph.clone(), eps) {
         let mut sol: HashSet<usize> = HashSet::new();
 
         for ring in get_component_graphs(&ring_decomposition.rings) {
-            sol = sol
-                .union(&dp_max_independent_set(&ring, None))
-                .copied()
-                .collect();
+            sol = sol.union(&dp_solve(&ring, None, prob)).copied().collect();
         }
 
         sols.push(sol);
@@ -112,7 +109,7 @@ fn get_ring_decompositions(graph: &mut UndirectedGraph, eps: f64) -> Vec<RingDec
 mod tests {
     use super::get_ring_decompositions;
     use crate::{
-        algorithm::ptas::ptas_max_independent_set,
+        algorithm::{dynamic_programming::solve::DynamicProgrammingProblem, ptas::ptas},
         generation::{erdos_renyi::generate_petgraph, planar::generate},
         utils::{
             convert::{petgraph_to_hash_map_graph, UndirectedGraph},
@@ -164,7 +161,11 @@ mod tests {
     fn ptas_single_vertex() {
         let mut graph = UndirectedGraph::default();
         let v0 = graph.add_node(());
-        let sol = ptas_max_independent_set(&graph, 0.5);
+        let sol = ptas(
+            &graph,
+            &DynamicProgrammingProblem::max_independent_set(),
+            0.5,
+        );
 
         assert!(sol.len() == 1);
         assert!(sol.contains(&v0.index()));
@@ -176,8 +177,11 @@ mod tests {
         let v0 = graph.add_node(());
         let v1 = graph.add_node(());
         graph.add_edge(v0, v1, ());
-        let sol = ptas_max_independent_set(&graph, 0.5);
-
+        let sol = ptas(
+            &graph,
+            &DynamicProgrammingProblem::max_independent_set(),
+            0.5,
+        );
         assert!(sol.len() == 1);
         assert!(sol.contains(&v0.index()) || sol.contains(&v1.index()));
     }
@@ -187,7 +191,11 @@ mod tests {
         for n in 2..30 {
             let graph: UndirectedGraph = generate(n, Some(n as u64)).to_pet_graph();
             let eps = 0.5;
-            let sol = ptas_max_independent_set(&graph, eps);
+            let sol = ptas(
+                &graph,
+                &DynamicProgrammingProblem::max_independent_set(),
+                eps,
+            );
 
             assert!(is_independent_set(
                 &petgraph_to_hash_map_graph(&graph),
