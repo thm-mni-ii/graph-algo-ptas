@@ -25,6 +25,16 @@ impl
         let graph_copy = graph.clone();
         let mut stack = Vec::new();
         let mut dcel = LinkGraph::new();
+        let node_count = graph.node_count();
+
+        if node_count < 3 {
+            panic!("For embedding, a graph with at least 3 nodes is required")
+        }
+
+        if node_count == 3 {
+            Phase2::new(&mut dcel).triangle_embedding();
+            return dcel;
+        }
 
         Phase1::new(&mut graph, &mut stack).execute();
         Phase2::new(&mut dcel).execute();
@@ -36,6 +46,8 @@ impl
 
 #[cfg(test)]
 mod tests {
+    use petgraph::stable_graph::StableGraph;
+
     use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::{
         embedding::{index::Embedding, maximal_planar::index::MaximalPlanar},
@@ -43,6 +55,7 @@ mod tests {
         utils::convert::UndirectedGraph,
     };
 
+    #[cfg_attr(coverage, no_coverage)]
     fn test_embed(graph: UndirectedGraph) {
         let dcel = MaximalPlanar::embed(graph.clone());
 
@@ -61,6 +74,19 @@ mod tests {
             graph.edge_count(),
             dcel.edge_count(),
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn embedd_to_small() {
+        let graph: UndirectedGraph = StableGraph::from_edges(&[(0, 1)]);
+        MaximalPlanar::embed(graph);
+    }
+
+    #[test]
+    fn embedd_triangle_graph() {
+        let graph: UndirectedGraph = StableGraph::from_edges(&[(0, 1), (0, 2), (1, 2)]);
+        test_embed(graph);
     }
 
     #[test]
