@@ -61,7 +61,7 @@ fn main() {
         let n = cli.generate.unwrap();
 
         if n < 4 {
-            println!("generation reqires n >= 4");
+            eprintln!("generation reqires n >= 4");
             return;
         }
 
@@ -70,7 +70,7 @@ fn main() {
     }
 
     if input_graph.is_none() {
-        return println!("Invalid usage, see --help for help");
+        return eprintln!("Invalid usage, see --help for help");
     }
 
     match cli.mode {
@@ -85,7 +85,10 @@ fn main() {
 #[cfg(feature = "cli")]
 fn print_graph(graph: &StableGraph<u32, (), Undirected, DefaultIx>) {
     println!("[ptas] graph in dot format:");
-    println!("{:?}", Dot::with_config(graph, &[Config::EdgeNoLabel]));
+    println!(
+        "{:?}",
+        Dot::with_config(graph, &[Config::EdgeNoLabel, Config::NodeIndexLabel])
+    );
 }
 
 #[cfg(feature = "cli")]
