@@ -12,12 +12,12 @@ use std::collections::{HashMap, HashSet};
 
 /// For each bag in the tree decomposition a table is calculated.
 /// Such a table is represented by `HashMap`.
-/// 
+///
 /// The `BitVec` key represents the subset to which the table entry belongs
 pub type DynamicProgrammingTable = HashMap<BitVec, DynamicProgrammingTableEntry>;
 
 /// Represents a single entry in a dynamic programming table.
-/// 
+///
 /// Contains the value of the entry and additional information needed for
 /// retrieving the actual solution at the end of the algorithm.
 #[derive(Debug, Clone)]
@@ -235,15 +235,10 @@ fn dp_read_solution_from_table(
     sol: &mut HashSet<usize>,
 ) {
     let root_entry = match objective {
-        Objective::Maximize => tables[root]
-            .values()
-            .max_by(|e1, e2| e1.val.cmp(&e2.val))
-            .unwrap(),
-        Objective::Minimize => tables[root]
-            .values()
-            .min_by(|e1, e2| e1.val.cmp(&e2.val))
-            .unwrap(),
-    };
+        Objective::Maximize => tables[root].values().max_by(|e1, e2| e1.val.cmp(&e2.val)),
+        Objective::Minimize => tables[root].values().min_by(|e1, e2| e1.val.cmp(&e2.val)),
+    }
+    .unwrap();
     dp_read_solution_from_table_rec(tables, root_entry, sol);
 }
 

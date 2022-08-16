@@ -6,7 +6,9 @@ use arboretum_td::graph::{HashMapGraph, MutableGraph};
 use petgraph::{algo::kosaraju_scc, stable_graph::NodeIndex, visit::EdgeRef};
 use std::collections::{HashSet, VecDeque};
 
-/// Calculates an approximate solution for the given problem on the graph.
+/// Calculates an approximate solution for the given problem on the input graph.
+/// The input graph is expected to be planar.
+///
 /// The solution is guaranteed to be (1 - eps) optimal for maximization problems
 /// and (1 + eps) optimal for minimization problems.
 pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64) -> HashSet<usize> {
@@ -31,18 +33,12 @@ pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64)
         sols.push(sol);
     }
 
-    match prob.objective {
-        Objective::Minimize => sols
-            .iter()
-            .min_by(|s1, s2| s1.len().cmp(&s2.len()))
-            .unwrap()
-            .clone(),
-        Objective::Maximize => sols
-            .iter()
-            .max_by(|s1, s2| s1.len().cmp(&s2.len()))
-            .unwrap()
-            .clone(),
-    }
+    let best_sol = match prob.objective {
+        Objective::Minimize => sols.iter().min_by(|s1, s2| s1.len().cmp(&s2.len())),
+        Objective::Maximize => sols.iter().max_by(|s1, s2| s1.len().cmp(&s2.len())),
+    };
+
+    best_sol.unwrap().clone()
 }
 
 fn get_component_graphs(graph: &UndirectedGraph) -> Vec<HashMapGraph> {
