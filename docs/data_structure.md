@@ -16,6 +16,8 @@ Um mit Graphen zu arbeiten, ist es notwendig, diese als Datenstrukturen repräse
 **resources:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/data_structure/index.html)
+- [Benchmarks Planar Generation](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/Planar%20Generation/report/index.html)
+- [Benchmarks Erdos Renyi Generation](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/Erdos%20Renyi%20Generation/report/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/data_structure)
 
 ## Embedding
@@ -25,7 +27,7 @@ Um die Planare Einbettung für den Input Graphen zu generieren wurde der Algorit
 **resources:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/embedding/index.html)  
-- [Benchmarks](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/embed/report/index.html)
+- [Benchmarks](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/MaximalPlanar%20embedding/report/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/embedding)
 - [Pseudocode](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
