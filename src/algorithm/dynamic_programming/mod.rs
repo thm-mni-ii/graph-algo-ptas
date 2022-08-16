@@ -1,3 +1,5 @@
+//! Contains functions and data structures for dynamic programming on tree decompositions.
+
 #[allow(dead_code)]
 mod max_independent_set;
 #[allow(dead_code)]

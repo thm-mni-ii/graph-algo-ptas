@@ -34,48 +34,55 @@ pub type DpTable = HashMap<BitVec, DpTableEntry>;
 /// retrieving the actual solution at the end of the algorithm.
 #[derive(Debug, Clone)]
 pub struct DpTableEntry {
+    /// Value of the table entry. Its meaning depends on the problem to be solved.
     pub val: i32,
+    /// References to table entries of child nodes.
     pub children: HashSet<(usize, BitVec)>,
-    pub node_used: Option<usize>,
+    /// The vertex which is used for calculating the table entry.
+    pub vertex_used: Option<usize>,
 }
 
 impl DpTableEntry {
-    pub fn new_leaf(val: i32, node_used: Option<usize>) -> Self {
+    /// Create a table entry for a Leaf node.
+    pub fn new_leaf(val: i32, vertex_used: Option<usize>) -> Self {
         Self {
             val,
             children: HashSet::new(),
-            node_used,
+            vertex_used,
         }
     }
 
+    /// Create a table entry for a Forget node.
     pub fn new_forget(val: i32, child_id: usize, child_subset: BitVec) -> Self {
         Self {
             val,
             children: vec![(child_id, child_subset)].into_iter().collect(),
-            node_used: None,
+            vertex_used: None,
         }
     }
 
+    /// Create a table entry for an Introduce node.
     pub fn new_intro(
         val: i32,
         child_id: usize,
         child_subset: BitVec,
-        node_used: Option<usize>,
+        vertex_used: Option<usize>,
     ) -> Self {
         Self {
             val,
             children: vec![(child_id, child_subset)].into_iter().collect(),
-            node_used,
+            vertex_used,
         }
     }
 
+    /// Create a table entry for a Join node.
     pub fn new_join(val: i32, left_id: usize, right_id: usize, subset: BitVec) -> Self {
         Self {
             val,
             children: vec![(left_id, subset.clone()), (right_id, subset)]
                 .into_iter()
                 .collect(),
-            node_used: None,
+            vertex_used: None,
         }
     }
 }
@@ -111,19 +118,27 @@ type IntroduceNodeHandler = fn(
     introduced_vertex: usize,
 );
 
+/// Used for differentiating between minimization and maximization problems.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DpObjective {
+    /// Minimization problem
     Minimize,
+    /// Maximization problem
     Maximize,
 }
 
 /// Contains the neccessary information for solving a (hard) problem
 /// using dynamic programming on tree decompositions.
 pub struct DpProblem {
+    /// Indicates whether the problem is a maximization or minimization problem.
     pub objective: DpObjective,
+    /// Function for calculating the the table entries at a Leaf node.
     pub handle_leaf_node: LeafNodeHandler,
+    /// Function for calculating the the table entries at a Join node.
     pub handle_join_node: JoinNodeHandler,
+    /// Function for calculating the the table entries at a Forget node.
     pub handle_forget_node: ForgetNodeHandler,
+    /// Function for calculating the the table entries at a Introduce node.
     pub handle_introduce_node: IntroduceNodeHandler,
 }
 
@@ -268,7 +283,7 @@ fn dp_read_solution_from_table_rec(
     entry: &DpTableEntry,
     sol: &mut HashSet<usize>,
 ) {
-    if let Some(v) = entry.node_used {
+    if let Some(v) = entry.vertex_used {
         sol.insert(v);
     }
 

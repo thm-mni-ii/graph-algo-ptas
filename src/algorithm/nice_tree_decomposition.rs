@@ -1,11 +1,18 @@
+//! Contains a data structure for nice tree decompositions and an algorithm to generate them.
+
 use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHashSet;
 
+/// Represents one of the four possible node types of a nice tree decomposition.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum NiceTdNodeType {
+    /// Join node
     Join,
+    /// Introduce node (with introduced vertex)
     Introduce(usize),
+    /// Forget node (with forgotten vertex)
     Forget(usize),
+    /// Leaf
     Leaf,
 }
 
@@ -345,6 +352,7 @@ impl NiceTreeDecomposition {
     }
 }
 
+/// Return the children of a bag (children = neighbors \ {parent_id}).
 pub fn get_children(td: &TreeDecomposition, id: usize, parent_id: usize) -> FxHashSet<usize> {
     let mut children = td.bags()[id].neighbors.clone();
     children.remove(&parent_id);

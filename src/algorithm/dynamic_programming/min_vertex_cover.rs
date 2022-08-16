@@ -101,7 +101,7 @@ pub fn handle_introduce_node(
             DpTableEntry {
                 val,
                 children: children.clone(),
-                node_used: None,
+                vertex_used: None,
             },
         );
 
@@ -116,7 +116,7 @@ pub fn handle_introduce_node(
             DpTableEntry {
                 val,
                 children,
-                node_used: Some(introduced_vertex),
+                vertex_used: Some(introduced_vertex),
             },
         );
     }
