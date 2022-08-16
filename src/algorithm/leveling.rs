@@ -1,4 +1,3 @@
-//! Contains implementation of graph leveling
 //! Contains the implementation of Leveling
 use crate::algorithm::spantree::Span;
 use crate::data_structure::link_graph::LinkVertex;
