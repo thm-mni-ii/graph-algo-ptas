@@ -2,7 +2,7 @@
 
 Die Aufgaben dieser Gruppe beinhalteten die Bereitstellung der verschiedenen Algorithmen, die mit planaren Graphen
 arbeiten.
-Dazu zählt die Berechnung einer [Baumzerlegung](#tree_decomposition), ...
+Dazu zählt die Berechnung einer [Baumzerlegung](#tree-decomposition), ...
 
 **Entwickler:**
 
