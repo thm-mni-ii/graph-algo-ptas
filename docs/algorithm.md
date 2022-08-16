@@ -19,8 +19,8 @@ Der Graph muss außerdem zusammenhängend sein, damit er vollständig triangulie
 
 **Materialien:**
 
-- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
-- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
+- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/triangulation/index.html)
+- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm/triangulation.rs)
 
 ## Span Tree
 
@@ -29,8 +29,8 @@ bildet.
 
 **Materialien:**
 
-- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
-- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
+- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/spantree/index.html)
+- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm/spantree.rs)
 
 ## Dual Graph (Face Tree)
 
@@ -43,8 +43,8 @@ Mit dem dualen Graphen/Facettenbaum kann u. A. eine Baumzerlegung effizient bere
 
 **Materialien:**
 
-- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
-- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
+- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/dualgraph/index.html)
+- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm/dualgraph.rs)
 
 ## Tree Decomposition
 
@@ -57,8 +57,8 @@ Die Baumweite dieser Baumzerlegung wird durch die Höhe des Spannbaums (Durchmes
 
 **Materialien:**
 
-- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
-- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
+- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/tree_decomposition/index.html)
+- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm/tree_decomposition.rs)
 
 ## Leveling
 
@@ -74,8 +74,8 @@ Level nicht (restlos) durch _k_ teilbar ist.
 
 **Materialien:**
 
-- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
-- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
+- [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/leveling/index.html)
+- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm/leveling.rs)
 
 ## Nice Tree Decomposition
 
