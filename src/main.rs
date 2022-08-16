@@ -30,7 +30,7 @@ struct Cli {
     #[clap(short, long, value_parser, value_name = "n")]
     generate: Option<usize>,
 
-    /// File in dot format to read input graph
+    /// File in dot format to read input graph from
     #[clap(short, long, value_parser, value_name = "FILE")]
     input: Option<PathBuf>,
 
