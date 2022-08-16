@@ -39,6 +39,8 @@ pub trait GraphDCEL<
     fn neighbors_count(&self, vertex: &V) -> usize;
     /// Returns a vector of neighbors of the given vertex
     fn neighbors(&self, vertex: &V) -> Vec<V>;
+    /// Returns a vertex specified by this id
+    fn vertex_by_id(&self, id: usize) -> Option<V>;
 
     /// Returns the dart between to vertexes
     fn get_dart(&self, vertex: &V, target: &V) -> Option<D>;

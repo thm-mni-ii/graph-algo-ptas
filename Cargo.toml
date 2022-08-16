@@ -1,8 +1,14 @@
 [package]
 name = "graph-algo-ptas"
+description = "PTAS on planars and other graph classes"
 version = "0.1.0"
 edition = "2021"
+authors = ["Dominik Kröll", "David Martschenko", "Jonas-Ian Kuche", "Max Stephan", "Pia-Doreen Ritzke", "Timon Pellekoorne"]
+readme = "README.md"
 repository = "https://github.com/thm-mni-ii/graph-algo-ptas"
+documentation = "https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas"
+license = "MIT"
+exclude = [".github", ".vscode", "docs"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -27,6 +33,18 @@ criterion = {version = "0.3", features = ["html_reports"]}
 
 [[bench]]
 name = "embedding_benchmark"
+harness = false
+
+[[bench]]
+name = "generation_benchmark"
+harness = false
+
+[[bench]]
+name = "max_independent_set_benchmark"
+harness = false
+
+[[bench]]
+name = "min_vertex_cover_benchmark"
 harness = false
 
 [[bin]]

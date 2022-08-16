@@ -1,8 +1,12 @@
+//! Contains the triangulate function
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
+use std::collections::HashSet;
 
+/// Returns the edges of a graph that need to be added to be fully triangulated.
+/// The graph needs to be connected.
 pub fn triangulate(
     graph: &impl GraphDCEL<
         LinkVertex,
@@ -12,16 +16,17 @@ pub fn triangulate(
         LinkGraphIter<LinkDart>,
         LinkGraphIter<LinkFace>,
     >,
-) -> Vec<(LinkVertex, LinkVertex)> {
-    let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];
+) -> HashSet<(LinkVertex, LinkVertex)> {
+    let mut edges: HashSet<(LinkVertex, LinkVertex)> = HashSet::new();
 
     for face in graph.get_faces() {
-        edges.append(&mut triangulate_face(graph, &face));
+        edges.extend(triangulate_face(graph, &face));
     }
 
     edges
 }
 
+/// Returns the edges of a face that need to be added to be fully triangulated.
 fn triangulate_face(
     graph: &impl GraphDCEL<
         LinkVertex,
@@ -32,8 +37,8 @@ fn triangulate_face(
         LinkGraphIter<LinkFace>,
     >,
     face: &LinkFace,
-) -> Vec<(LinkVertex, LinkVertex)> {
-    let mut edges: Vec<(LinkVertex, LinkVertex)> = vec![];
+) -> HashSet<(LinkVertex, LinkVertex)> {
+    let mut edges: HashSet<(LinkVertex, LinkVertex)> = HashSet::new();
 
     let mut current = graph.dart_face(face);
 
@@ -56,7 +61,7 @@ fn triangulate_face(
 
         let from = graph.dart_target(&next);
 
-        edges.push((from, start_vertex.clone()));
+        edges.insert((from, start_vertex.clone()));
         current = next;
     }
 
@@ -87,7 +92,7 @@ mod tests {
         );
 
         let edges = triangulate(&lg);
-        assert_eq!(edges, vec![])
+        assert!(edges.is_empty())
     }
 
     #[test]
@@ -99,11 +104,6 @@ mod tests {
 
             assert_eq!(edges.len(), (x - 3) * 2)
         }
-    }
-
-    #[test]
-    fn two_face() {
-        //TODO
     }
 
     #[test]
@@ -170,9 +170,69 @@ mod tests {
 
         let edges = triangulate(&lg);
         println!("\n[RESULT]: {:?}", edges);
-        assert_ne!(edges, vec![]);
+        assert!(!edges.is_empty());
         assert_eq!(edges.len(), 2);
         assert!(edges.contains(&(lv2.clone(), lv4.clone())));
         assert!(edges.contains(&(lv1, lv4)) || edges.contains(&(lv2, lv3)));
+    }
+
+    #[test]
+    fn three_edges() {
+        let mut lg = LinkGraph::new();
+        let lv0 = lg.new_vertex();
+        let lv1 = lg.new_vertex();
+        let lv2 = lg.new_vertex();
+        let lv3 = lg.new_vertex();
+
+        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
+        let lof = lg.new_face(ld0.clone());
+        let ld1 = lg.new_dart(
+            lv1.clone(),
+            lv2.clone(),
+            Some(ld0.clone()),
+            None,
+            None,
+            Some(lof.clone()),
+        );
+        let ld2 = lg.new_dart(
+            lv2.clone(),
+            lv3.clone(),
+            Some(ld1.clone()),
+            None,
+            None,
+            Some(lof.clone()),
+        );
+
+        let lt2 = lg.new_dart(
+            lv3.clone(),
+            lv2.clone(),
+            Some(ld2.clone()),
+            None,
+            Some(ld2),
+            Some(lof.clone()),
+        );
+        let lt1 = lg.new_dart(
+            lv2.clone(),
+            lv1.clone(),
+            Some(lt2),
+            None,
+            Some(ld1),
+            Some(lof.clone()),
+        );
+        lg.new_dart(
+            lv1,
+            lv0.clone(),
+            Some(lt1),
+            Some(ld0.clone()),
+            Some(ld0),
+            Some(lof),
+        );
+
+        let edges = triangulate(&lg);
+        println!("\n[RESULT]: {:?}", edges);
+        assert!(!edges.is_empty());
+        assert_eq!(edges.len(), 2);
+        assert!(edges.contains(&(lv0.clone(), lv2.clone())) || edges.contains(&(lv2, lv0.clone())));
+        assert!(edges.contains(&(lv0.clone(), lv3.clone())) || edges.contains(&(lv3, lv0)));
     }
 }
