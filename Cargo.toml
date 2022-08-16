@@ -21,3 +21,10 @@ graphviz_parser = {git = "https://github.com/saresend/dotfile-parser", rev = "2d
 cli = ["dep:clap", "dep:graphviz_parser"]
 debug_graph_generation = []
 debug_link_graph_panic_on_double_edges = []
+
+[dev-dependencies]
+criterion = {version = "0.3", features = ["html_reports"]}
+
+[[bench]]
+name = "embedding_benchmark"
+harness = false

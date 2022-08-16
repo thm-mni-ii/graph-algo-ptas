@@ -1,17 +1,14 @@
-use std::collections::HashMap;
-
-use petgraph::graph::NodeIndex;
-use petgraph::stable_graph::StableGraph;
-use petgraph::Undirected;
-
 use crate::data_structure::graph_dcel::GraphDCEL;
 use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkVertex};
+use crate::utils::convert::UndirectedGraph;
+use petgraph::graph::NodeIndex;
+use std::collections::HashMap;
 
 use super::stack_item::StackItem;
 
 pub struct Phase3<'a> {
-    graph: StableGraph<u32, (), Undirected>,
-    graph_copy: StableGraph<u32, (), Undirected>,
+    graph: UndirectedGraph,
+    graph_copy: UndirectedGraph,
     stack: &'a mut Vec<StackItem>,
     dcel: &'a mut LinkGraph,
     node_id_mapper: HashMap<NodeIndex, LinkVertex>,
@@ -19,8 +16,8 @@ pub struct Phase3<'a> {
 
 impl Phase3<'_> {
     pub fn new<'a>(
-        graph: StableGraph<u32, (), Undirected>,
-        graph_copy: StableGraph<u32, (), Undirected>,
+        graph: UndirectedGraph,
+        graph_copy: UndirectedGraph,
         stack: &'a mut Vec<StackItem>,
         dcel: &'a mut LinkGraph,
     ) -> Phase3<'a> {

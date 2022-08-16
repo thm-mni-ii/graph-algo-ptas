@@ -8,3 +8,5 @@ pub mod graph_dcel;
 pub mod link_graph;
 #[allow(dead_code)]
 pub mod list_graph;
+#[allow(dead_code)]
+pub mod ring_segment;

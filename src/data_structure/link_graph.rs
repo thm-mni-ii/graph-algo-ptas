@@ -357,6 +357,30 @@ impl
     fn prev(&self, current: &LinkDart) -> LinkDart {
         current.0.borrow().prev.clone().unwrap()
     }
+
+    fn add_vertex(&mut self) -> LinkVertex {
+        self.new_vertex()
+    }
+
+    fn add_dart(
+        &mut self,
+        from: LinkVertex,
+        to: LinkVertex,
+        prev: Option<LinkDart>,
+        next: Option<LinkDart>,
+        twin: Option<LinkDart>,
+        face: Option<LinkFace>,
+    ) -> LinkDart {
+        self.new_dart(from, to, prev, next, twin, face)
+    }
+
+    fn add_face(&mut self, dart: LinkDart) -> LinkFace {
+        self.new_face(dart)
+    }
+
+    fn set_face(&self, dart: &LinkDart, face: LinkFace) {
+        dart.0.borrow_mut().face = Some(face);
+    }
 }
 
 impl LinkGraph {
@@ -376,6 +400,7 @@ impl LinkGraph {
         self.id_counter += 1;
         id
     }
+
     /// Adds a new vertex to this LinkGraph
     pub fn new_vertex(&mut self) -> LinkVertex {
         let lv = LinkVertex::new(self.next_id());

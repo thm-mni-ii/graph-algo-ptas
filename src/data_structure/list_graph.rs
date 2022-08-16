@@ -1,8 +1,9 @@
 //! Contains an implementation of the data structure described in [A simple linear time algorithm
 //! for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
-use petgraph::stable_graph::{DefaultIx, StableGraph};
-use petgraph::Undirected;
+use petgraph::stable_graph::StableGraph;
+
+use crate::utils::convert::UndirectedGraph;
 
 /// The type of the edge id
 pub type EdgeId = usize;
@@ -271,8 +272,8 @@ impl ListGraph {
         new_len - 1
     }
 
-    /// Returns the current List Graph as as an Petgraph instance
-    pub fn to_pet_graph(&self) -> StableGraph<u32, (), Undirected, DefaultIx> {
+    /// Returns the graph as a petgraph StableGraph
+    pub fn to_pet_graph(&self) -> UndirectedGraph {
         StableGraph::from_edges(
             self.all_edges()
                 .iter()
