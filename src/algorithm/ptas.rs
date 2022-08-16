@@ -1,6 +1,8 @@
 //! Contains the main algorithm implementing the PTAS for planar graphs.
 
-use super::dynamic_programming::solve::{dp_solve, DynamicProgrammingProblem, Objective};
+use super::dynamic_programming::solve::{
+    dp_solve_hashmap_graph, DynamicProgrammingProblem, Objective,
+};
 use crate::utils::convert::UndirectedGraph;
 use arboretum_td::graph::{HashMapGraph, MutableGraph};
 use petgraph::{algo::kosaraju_scc, stable_graph::NodeIndex, visit::EdgeRef};
@@ -18,7 +20,7 @@ pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64)
         let mut sol: HashSet<usize> = HashSet::new();
 
         for ring in get_component_graphs(&ring_decomposition.rings) {
-            let ring_sol = dp_solve(&ring, None, prob);
+            let ring_sol = dp_solve_hashmap_graph(&ring, None, prob);
             sol.extend(ring_sol.iter());
         }
 

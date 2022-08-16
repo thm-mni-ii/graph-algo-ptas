@@ -1,9 +1,12 @@
 //! Contains data structures and algorithms for dynamic programming on tree decompositions.
 
 use super::{max_independent_set, min_vertex_cover};
-use crate::algorithm::{
-    dynamic_programming::utils::remap_vertices,
-    nice_tree_decomposition::{get_children, NiceTdNodeType, NiceTreeDecomposition},
+use crate::{
+    algorithm::{
+        dynamic_programming::utils::remap_vertices,
+        nice_tree_decomposition::{get_children, NiceTdNodeType, NiceTreeDecomposition},
+    },
+    utils::convert::{petgraph_to_hash_map_graph, UndirectedGraph},
 };
 use arboretum_td::{graph::HashMapGraph, solver::Solver, tree_decomposition::TreeDecomposition};
 use bitvec::vec::BitVec;
@@ -148,12 +151,21 @@ impl DynamicProgrammingProblem {
 /// or maximization problem and contains the "recipe" for how to calculate
 /// the dynamic programming tables in order to arrive at the solution.
 pub fn dp_solve(
+    graph: &UndirectedGraph,
+    td: Option<TreeDecomposition>,
+    prob: &DynamicProgrammingProblem,
+) -> HashSet<usize> {
+    dp_solve_hashmap_graph(&petgraph_to_hash_map_graph(graph), td, prob)
+}
+
+/// For convenience.
+pub fn dp_solve_hashmap_graph(
     graph: &HashMapGraph,
     td: Option<TreeDecomposition>,
     prob: &DynamicProgrammingProblem,
 ) -> HashSet<usize> {
     let (graph, mapping) = remap_vertices(graph);
-    let td = td.unwrap_or_else(|| Solver::default_exact().solve(&graph));
+    let td = td.unwrap_or_else(|| Solver::auto(&graph).solve(&graph));
     let nice_td = NiceTreeDecomposition::new(td);
 
     assert!(nice_td.td.verify(&graph).is_ok());
@@ -258,9 +270,10 @@ fn dp_read_solution_from_table_rec(
 
 #[cfg(test)]
 mod tests {
+    use super::dp_solve_hashmap_graph;
     use crate::{
         algorithm::dynamic_programming::{
-            solve::{dp_solve, remap_vertices, DynamicProgrammingProblem},
+            solve::{remap_vertices, DynamicProgrammingProblem},
             utils::init_bit_vec,
         },
         generation::erdos_renyi::generate_hashmap_graph,
@@ -274,7 +287,7 @@ mod tests {
     use std::collections::HashSet;
 
     fn solve_max_independent_set(graph: &HashMapGraph) -> HashSet<usize> {
-        dp_solve(
+        dp_solve_hashmap_graph(
             graph,
             None,
             &DynamicProgrammingProblem::max_independent_set(),
@@ -282,7 +295,7 @@ mod tests {
     }
 
     fn solve_min_vertex_cover(graph: &HashMapGraph) -> HashSet<usize> {
-        dp_solve(graph, None, &DynamicProgrammingProblem::min_vertex_cover())
+        dp_solve_hashmap_graph(graph, None, &DynamicProgrammingProblem::min_vertex_cover())
     }
 
     #[test]
