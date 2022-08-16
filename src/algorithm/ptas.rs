@@ -18,16 +18,16 @@ pub fn ptas(graph: &UndirectedGraph, prob: &DynamicProgrammingProblem, eps: f64)
         let mut sol: HashSet<usize> = HashSet::new();
 
         for ring in get_component_graphs(&ring_decomposition.rings) {
-            sol = sol.union(&dp_solve(&ring, None, prob)).copied().collect();
+            let ring_sol = dp_solve(&ring, None, prob);
+            sol.extend(ring_sol.iter());
         }
 
         if prob.objective == Objective::Minimize {
-            let vertices_deleted = &ring_decomposition
+            let vertices_deleted = ring_decomposition
                 .vertices_deleted
                 .iter()
-                .map(|v| v.index())
-                .collect();
-            sol = sol.union(vertices_deleted).copied().collect();
+                .map(|v| v.index());
+            sol.extend(vertices_deleted);
         }
 
         sols.push(sol);
@@ -163,10 +163,7 @@ mod tests {
             let mut vertices = HashSet::new();
 
             for ring_decomposition in &ring_decompositions {
-                vertices = vertices
-                    .union(&ring_decomposition.vertices_deleted)
-                    .copied()
-                    .collect();
+                vertices.extend(ring_decomposition.vertices_deleted.iter());
             }
 
             assert!(vertices == graph.node_indices().collect());
