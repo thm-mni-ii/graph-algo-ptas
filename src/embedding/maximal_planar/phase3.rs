@@ -1,3 +1,6 @@
+//! Implements the third phase of the algorithm.
+//! In this phase, the reductions made in phase one are undone to obtain a complete planar embedding of the original graph.
+
 use crate::data_structure::graph_dcel::GraphDCEL;
 use crate::data_structure::link_graph::{LinkDart, LinkFace, LinkGraph, LinkVertex};
 use crate::utils::convert::UndirectedGraph;

@@ -1,3 +1,6 @@
+//! Implements the second phase of the algorithm.
+//! Here, a planar embedding is created for the K-4 graph left over from the first phase.
+
 use crate::data_structure::link_graph::{LinkDart, LinkGraph, LinkVertex};
 
 pub struct Phase2<'a> {

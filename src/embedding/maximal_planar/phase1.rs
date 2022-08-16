@@ -1,3 +1,7 @@
+//! Implements the first phase of the algorithm.
+//! Three different reductions are applied to the graph until it has only four nodes and therefore corresponds to the K4 graph.
+//! The reductions are stored on a stack.
+
 use super::stack_item::StackItem;
 use crate::utils::convert::UndirectedGraph;
 use petgraph::graph::NodeIndex;
