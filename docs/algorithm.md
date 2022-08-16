@@ -10,11 +10,11 @@ Diese Gruppe hat sich mit der Implementierung des PTAS sowie den dafür notwendi
 
 ## Triangulation
 
-Für verschiedene Algorithmen (bspw. Berechnung einer Baumzerlegung) kann es notwendig werden einen planaren Graphen so
+Für verschiedene Algorithmen (bspw. Berechnung einer Baumzerlegung) kann es notwendig werden, einen planaren Graphen so
 zu erweitern (triangulieren), dass dieser maximal planar bzw. chordal wird.
-Der implementierte Algorithmus zur Triangulation eines planaren Graphen berechnet lediglich welche Kanten eingefügt
+Der implementierte Algorithmus zur Triangulation eines planaren Graphen berechnet lediglich, welche Kanten eingefügt
 werden müssten, damit dies gilt.
-Ein bereits maximal planarer graph kann nicht weiter trianguliert werden.
+Ein bereits maximal planarer Graph kann nicht weiter trianguliert werden.
 Der Graph muss außerdem zusammenhängend sein, damit er vollständig trianguliert werden kann.
 
 **Materialien:**
@@ -48,7 +48,7 @@ Mit dem dualen Graphen/Facettenbaum kann u. A. eine Baumzerlegung effizient bere
 
 ## Tree Decomposition
 
-Mithilfe des dualen Graphen (Facettenbaum) und des dazugehörigen Spannbaums ist es möglich eine Baumzerlegung in
+Mithilfe des dualen Graphen (Facettenbaum) und des dazugehörigen Spannbaums ist es möglich, eine Baumzerlegung in
 linearer Zeit für einen triangulierten Graphen zu berechnen.
 Dazu bilden alle drei Knoten einer Facette im Facettenbaum den jeweiligen Bag der Baumzerlegung.
 Zusätzlich werden alle Knoten diesem Bag hinzugefügt, für die es von den Knoten der Facette aus entlang des Spannbaums
@@ -62,7 +62,7 @@ Die Baumweite dieser Baumzerlegung wird durch die Höhe des Spannbaums (Durchmes
 
 ## Leveling
 
-Beim Leveling wird ein planaren Graphen ausgehend von einem Startknoten in verschiedene Level eingeteilt.
+Beim Leveling wird ein planarer Graphen ausgehend von einem Startknoten in verschiedene Level eingeteilt.
 Dazu wird der Spannbaum genutzt, dessen Wurzel der Startknoten ist.
 Dieser bildet das Level 0.
 Jeder Knoten _v_ in einem Level _n_ ist _n_ Knoten von dem Startknoten _s_ entfernt.
@@ -79,7 +79,7 @@ Level nicht (restlos) durch _k_ teilbar ist.
 
 ## Nice Tree Decomposition
 
-Der Algorithmus für die dynamische Programmierung setzt voraus, dass es sich bei der verwendeten Baumzerlegung um eine "schöne" Baumzerlegung handelt (engl.: *Nice Tree Decomposition*), deren Knoten entweder *Leafs*, *Join*-Knoten, *Introduce*-Knoten oder *Forget*-Knoten sind. Eine gewöhnliche Baumzerlegung lässt sich in Linearzeit in eine schöne Baumzerlegung transformieren.
+Der Algorithmus für die dynamische Programmierung setzt voraus, dass es sich bei der verwendeten Baumzerlegung um eine "schöne" Baumzerlegung handelt (engl.: *Nice Tree Decomposition*), deren Knoten entweder *Leafs*, *Join*-Knoten, *Introduce*-Knoten oder *Forget*-Knoten sind. Eine gewöhnliche Baumzerlegung lässt sich in linearer Zeit in eine schöne Baumzerlegung transformieren.
 
 **Materialien:**
 
@@ -103,7 +103,7 @@ Der im Code implementierte Algorithmus (`dp_solve`) ist generisch bezüglich des
 
 Der Hauptalgorithmus für das PTAS wird durch die `ptas`-Funktion umgesetzt, die (ähnlich wie `dp_solve`) generisch bezüglich des zu lösenden Problems ist. Neben der Probleminstanz nimmt die Funktion einen `eps`-Wert als Parameter an, über den sich die Approximationsgenauigkeit steuern lässt.
 
-Der Algorithmus erstellt zunächst `k = 1 / eps` Subgraphen, indem bei einer Breitensuche jeweils mit einem Level Versatz  jedes k-te Level gelöscht wird. Die Subgraphen bestehen somit jeweils aus höchstens (k - 1)-außenplanaren Ringen. Die (approximative) Lösung für einen Subgraph wird berechnet, indem für jeden seiner Ringe mit Hilfe von `dp_solve` die optimale Lösung berechnet wird[^1] und anschließend die Vereinigungsmenge gebildet wird (bei Minimierungsproblemem müssen zuätzlich noch die im ersten Schritt rausgelöschten Knoten mit in die Lösung aufgenommen werden). Bei mindestens einem der k Subgraphen wurden höchstens $1/k * n$ Knoten rausgelöscht, die Lösung dieses Graphen ist somit $(1 - eps)$-optimal (bei Minimierungsproblemen $(1 + eps)$-optimal) und wird von der Funktion zurückgegeben.
+Der Algorithmus erstellt zunächst `k = 1 / eps` Subgraphen, indem bei einer Breitensuche jeweils mit einem Level Versatz jedes $k$-te Level gelöscht wird. Die Subgraphen bestehen somit jeweils aus höchstens $(k - 1)$-außenplanaren Ringen. Die (approximative) Lösung für einen Subgraph wird berechnet, indem für jeden seiner Ringe mit Hilfe von `dp_solve` die optimale Lösung berechnet wird[^1] und anschließend die Vereinigungsmenge gebildet wird (bei Minimierungsproblemem müssen zuätzlich noch die im ersten Schritt rausgelöschten Knoten mit in die Lösung aufgenommen werden). Bei mindestens einem der k Subgraphen wurden höchstens $1/k * n$ Knoten rausgelöscht, die Lösung dieses Graphen ist somit $(1 - eps)$-optimal (bei Minimierungsproblemen $(1 + eps)$-optimal) und wird von der Funktion zurückgegeben.
 
 [^1] Bei diesem Schritt sollte eigentlich ein Algorithmus verwendet werden, der die $k$-Außenplanarität des Graphen nutzt, um in Linearzeit eine Baumzerlegung mit Weite höchstens $3k - 1$ zu berechnen. Da wir zwar die einzelnen Schritte dieses Algorithmus weitestgehend implementiert haben, aber nicht zu einem korrekten Gesamtalgorithmus zusammenfügen konnten, nutzen wir für die Erstellung der Baumzerlegung die `arboretum-td`-Bibliothek. Da hierdurch eine exponentielle Laufzeitabhängigkeit bezüglich `n` entsteht, implementiert die `ptas`-Funktion im strikten theoretischen Sinne kein richtiges PTAS.
 
