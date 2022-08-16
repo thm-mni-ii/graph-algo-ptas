@@ -19,8 +19,12 @@ Eine Technik zum Entwurf von PTAS für verschiedene schwere Probleme auf planare
 2. Berechnung der optimalen Lösung auf jedem Ring mit Hilfe von Baumzerlegungen und dynamischer Programmierung
 3. Kombinieren der optimalen Teillösungen zu approximativer Gesamtlösung
 
-## Das Projekt
+## Projektbeschreibung
 
 Im Rahmen dieses Projekts wurde Bakers Ansatz implementiert. [Hier](docs/data_structure.md) wird auf die verwendeten Datenstrukturen und Algorithmen zum Umgang mit planaren Graphen und planaren Einbettungen eingegangen. [Hier](docs/algorithm) werden die die Algorithmen für die einzelnen Schritte des PTAS beschrieben.
 
 [^1]: BAKER, BRENDA S. 1994. Appoximation Algorithms for NP-Complete Problems on Planar Graphs, J. *ACM 41, January 1994, pp 153-180*
+
+## Das CLI-Tool
+
+TODO
