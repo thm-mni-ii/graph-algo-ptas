@@ -9,12 +9,18 @@ pub enum NiceTdNodeType {
     Leaf,
 }
 
+/// Represents a nice tree decomposition.
+///
+/// In a nice tree decomposition, each node is either a Leaf, Join, Forget or Introduce node.
 pub struct NiceTreeDecomposition {
+    /// Is guaranteed to have the properties of a nice tree decomposition.
     pub td: TreeDecomposition,
+    /// Maps nodes to their `NiceTdNodeType`.
     pub mapping: Vec<NiceTdNodeType>,
 }
 
 impl NiceTreeDecomposition {
+    /// Create a nice tree decomposition.
     pub fn new(mut td: TreeDecomposition) -> Self {
         let root = td.root.unwrap_or(0);
         td.root = Some(root);
