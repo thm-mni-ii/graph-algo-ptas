@@ -381,6 +381,10 @@ impl
     fn set_face(&self, dart: &LinkDart, face: LinkFace) {
         dart.0.borrow_mut().face = Some(face);
     }
+
+    fn vertex_by_id(&self, id: usize) -> Option<LinkVertex> {
+        self.vertexes.iter().find(|v| v.get_id() == id).cloned()
+    }
 }
 
 impl LinkGraph {

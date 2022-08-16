@@ -3,6 +3,8 @@ pub mod dualgraph;
 #[allow(dead_code)]
 pub mod dynamic_programming;
 #[allow(dead_code)]
+pub mod leveling;
+#[allow(dead_code)]
 pub mod nice_tree_decomposition;
 #[allow(dead_code)]
 pub mod ptas;

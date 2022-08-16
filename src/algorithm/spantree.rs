@@ -1,53 +1,77 @@
+//! Contains implementation of a span tree
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 
-pub fn span(
-    g: &impl GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    >,
-    v: LinkVertex,
-) -> HashMap<LinkVertex, LinkVertex> {
-    if g.get_vertexes().count() <= 1 {
-        return HashMap::new();
-    }
-    let mut queue = VecDeque::new();
-    let mut result = HashMap::new();
-    let mut visited = HashSet::new();
-    queue.push_back(v);
+/// The structure containing the span tree (downwards from root to leaves and upwards from leaf to root)
+pub struct Span<T> {
+    pub root: T,
+    pub downwards: HashMap<T, HashSet<T>>,
+    pub upwards: HashMap<T, T>,
+}
 
-    while !queue.is_empty() {
-        let v = queue.pop_front().unwrap();
-        visited.insert(v.clone());
-        for n in g.neighbors(&v) {
-            if visited.insert(n.clone()) {
-                queue.push_back(n.clone());
-                result.insert(n, v.clone());
+impl Span<LinkVertex> {
+    /// Returns a span tree beginning with root
+    pub fn compute(
+        g: &impl GraphDCEL<
+            LinkVertex,
+            LinkDart,
+            LinkFace,
+            LinkGraphIter<LinkVertex>,
+            LinkGraphIter<LinkDart>,
+            LinkGraphIter<LinkFace>,
+        >,
+        root: LinkVertex,
+    ) -> Self {
+        assert!(g.get_vertexes().count() > 1);
+        let mut queue = VecDeque::new();
+        let mut upwards = HashMap::new();
+        let mut downwards = HashMap::new();
+        let mut visited = HashSet::new();
+        downwards.insert(root.clone(), HashSet::new());
+        queue.push_back(root.clone());
+
+        while !queue.is_empty() {
+            let u = queue.pop_front().unwrap();
+            visited.insert(u.clone());
+            for n in g.neighbors(&u) {
+                if visited.insert(n.clone()) {
+                    queue.push_back(n.clone());
+                    upwards.insert(n.clone(), u.clone());
+                    if downwards.get(&u).is_none() {
+                        downwards.insert(u.clone(), HashSet::new());
+                    }
+                    downwards.get_mut(&u).unwrap().insert(n);
+                }
             }
         }
+        Span {
+            root,
+            downwards,
+            upwards,
+        }
     }
-    result
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::spantree::span;
+    use crate::algorithm::spantree::Span;
+    use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::data_structure::link_graph::LinkGraph;
+    use crate::embedding::{index::Embedding, maximal_planar::index::MaximalPlanar};
+    use crate::utils::convert::UndirectedGraph;
+    use petgraph::stable_graph::StableGraph;
     use std::collections::HashMap;
 
     #[test]
+    #[should_panic]
     fn single_vertex() {
         let mut lg = LinkGraph::new();
         let lv1 = lg.new_vertex();
 
-        let edges = span(&lg, lv1);
+        let edges = Span::compute(&lg, lv1).upwards;
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges, HashMap::new());
@@ -70,7 +94,7 @@ mod tests {
             Some(lf),
         );
 
-        let edges = span(&lg, lv1.clone());
+        let edges = Span::compute(&lg, lv1.clone()).upwards;
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges.len(), 1);
@@ -79,54 +103,40 @@ mod tests {
 
     #[test]
     fn triangle() {
-        let mut lg = LinkGraph::new();
-        let lv0 = lg.new_vertex();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
+        let sg: UndirectedGraph = StableGraph::from_edges(&[(0, 1), (1, 2), (2, 0)]);
 
-        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
-        let lf = lg.new_face(ld0.clone());
-        let ld1 = lg.new_dart(
-            lv1.clone(),
-            lv2.clone(),
-            Some(ld0.clone()),
-            None,
-            None,
-            Some(lf.clone()),
-        );
-        let ld2 = lg.new_dart(
-            lv2.clone(),
-            lv0.clone(),
-            Some(ld1.clone()),
-            Some(ld0.clone()),
-            None,
-            Some(lf),
-        );
+        let lg = MaximalPlanar::embed(sg);
+        assert_eq!(lg.vertex_count(), 3);
+        let lv0 = lg.vertex_by_id(0).unwrap();
+        let lv1 = lg.vertex_by_id(1).unwrap();
+        let lv2 = lg.vertex_by_id(2).unwrap();
 
-        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);
-        let lof = lg.new_face(lt0.clone());
-        let lt2 = lg.new_dart(
-            lv0.clone(),
-            lv2.clone(),
-            Some(lt0.clone()),
-            None,
-            Some(ld2),
-            Some(lof.clone()),
-        );
-        lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
-            Some(lt2),
-            Some(lt0),
-            Some(ld1),
-            Some(lof),
-        );
-
-        let edges = span(&lg, lv1.clone());
+        let edges = Span::compute(&lg, lv1.clone()).upwards;
 
         println!("[RESULT]: {:?}", edges);
         assert_eq!(edges.len(), 2);
         assert_eq!(edges.get(&lv2), Some(&lv1));
         assert_eq!(edges.get(&lv0), Some(&lv1));
+    }
+
+    #[test]
+    fn quad() {
+        let sg: UndirectedGraph =
+            StableGraph::from_edges(&[(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)]);
+
+        let lg = MaximalPlanar::embed(sg);
+        assert_eq!(lg.vertex_count(), 4);
+        let lv0 = lg.vertex_by_id(0).unwrap();
+        let lv1 = lg.vertex_by_id(1).unwrap();
+        let lv2 = lg.vertex_by_id(2).unwrap();
+        let lv3 = lg.vertex_by_id(3).unwrap();
+
+        let edges = Span::compute(&lg, lv0.clone()).upwards;
+
+        println!("[RESULT]: {:?}", edges);
+        assert_eq!(edges.len(), 3);
+        assert_eq!(edges.get(&lv2), Some(&lv0));
+        assert_eq!(edges.get(&lv1), Some(&lv0));
+        assert_eq!(edges.get(&lv3), Some(&lv0));
     }
 }
