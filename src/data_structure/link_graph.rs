@@ -242,14 +242,14 @@ impl<T: Clone> Iterator for LinkGraphIter<T> {
 }
 
 impl
-GraphDCEL<
-    LinkVertex,
-    LinkDart,
-    LinkFace,
-    LinkGraphIter<LinkVertex>,
-    LinkGraphIter<LinkDart>,
-    LinkGraphIter<LinkFace>,
-> for LinkGraph
+    GraphDCEL<
+        LinkVertex,
+        LinkDart,
+        LinkFace,
+        LinkGraphIter<LinkVertex>,
+        LinkGraphIter<LinkDart>,
+        LinkGraphIter<LinkFace>,
+    > for LinkGraph
 {
     fn get_vertexes(&self) -> LinkGraphIter<LinkVertex> {
         LinkGraphIter::new(self.vertexes.clone())

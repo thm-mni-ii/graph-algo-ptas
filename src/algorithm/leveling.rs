@@ -6,7 +6,7 @@ use std::collections::HashSet;
 
 /// The structure containing the levels of a graph
 pub struct Leveling<T> {
-    pub levels: Vec<HashSet<T>>
+    pub levels: Vec<HashSet<T>>,
 }
 
 impl Leveling<LinkVertex> {
