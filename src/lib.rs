@@ -5,7 +5,7 @@
 
 extern crate core;
 
-mod algorithm;
+pub mod algorithm;
 pub mod data_structure;
 mod debug;
 pub mod embedding;
