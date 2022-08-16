@@ -35,3 +35,11 @@ harness = false
 [[bench]]
 name = "generation_benchmark"
 harness = false
+
+[[bench]]
+name = "max_independent_set_benchmark"
+harness = false
+
+[[bench]]
+name = "min_vertex_cover_benchmark"
+harness = false

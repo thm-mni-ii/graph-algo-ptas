@@ -3,7 +3,7 @@ use petgraph::{stable_graph::StableGraph, visit::EdgeRef, Undirected};
 
 pub type UndirectedGraph = StableGraph<(), (), Undirected>;
 
-pub fn petgraph_to_hash_map_graph(petgraph: &UndirectedGraph) -> HashMapGraph {
+pub fn to_hash_map_graph(petgraph: &UndirectedGraph) -> HashMapGraph {
     let mut hash_map_graph = HashMapGraph::new();
 
     for v in petgraph.node_indices() {
@@ -21,7 +21,7 @@ pub fn petgraph_to_hash_map_graph(petgraph: &UndirectedGraph) -> HashMapGraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::convert::{petgraph_to_hash_map_graph, UndirectedGraph};
+    use crate::utils::convert::{to_hash_map_graph, UndirectedGraph};
     use arboretum_td::graph::BaseGraph;
 
     #[test]
@@ -31,7 +31,7 @@ mod tests {
         let v = petgraph.add_node(());
         let w = petgraph.add_node(());
 
-        let hash_map_graph = petgraph_to_hash_map_graph(&petgraph);
+        let hash_map_graph = to_hash_map_graph(&petgraph);
         assert!(hash_map_graph.order() == petgraph.node_count());
         assert!(hash_map_graph.has_vertex(u.index()));
         assert!(hash_map_graph.has_vertex(v.index()));
@@ -45,7 +45,7 @@ mod tests {
         let v = petgraph.add_node(());
         petgraph.add_edge(u, v, ());
 
-        let hash_map_graph = petgraph_to_hash_map_graph(&petgraph);
+        let hash_map_graph = to_hash_map_graph(&petgraph);
         assert!(hash_map_graph.order() == petgraph.node_count());
         assert!(hash_map_graph.has_edge(u.index(), v.index()));
     }
@@ -60,7 +60,7 @@ mod tests {
         petgraph.add_edge(v, w, ());
         petgraph.add_edge(w, u, ());
 
-        let hash_map_graph = petgraph_to_hash_map_graph(&petgraph);
+        let hash_map_graph = to_hash_map_graph(&petgraph);
         assert!(hash_map_graph.order() == petgraph.node_count());
         assert!(hash_map_graph.has_edge(u.index(), v.index()));
         assert!(hash_map_graph.has_edge(v.index(), w.index()));
@@ -79,7 +79,7 @@ mod tests {
         petgraph.add_edge(v, w, ());
         petgraph.add_edge(w, t, ());
 
-        let hash_map_graph = petgraph_to_hash_map_graph(&petgraph);
+        let hash_map_graph = to_hash_map_graph(&petgraph);
         assert!(hash_map_graph.order() == petgraph.node_count());
         assert!(hash_map_graph.has_edge(t.index(), u.index()));
         assert!(hash_map_graph.has_edge(u.index(), v.index()));

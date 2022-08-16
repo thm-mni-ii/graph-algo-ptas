@@ -1,3 +1,5 @@
+//! Contains algorithms required for the PTAS.
+
 #[allow(dead_code)]
 pub mod dualgraph;
 #[allow(dead_code)]
