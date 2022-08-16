@@ -40,3 +40,12 @@ Um das Testen der erstellten Algorithmen und Datenstrukturen zu vereinfachen wur
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/generation/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/generation)
 - [Pseudocode](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+
+## Command Line Interface (CLI)
+
+Zum vereinfachten Testen der verschiedenen Funktionen wurde des Weiteren noch ein `Command Line Interface` hinzugefügt welches die Ausführung des Programms oder nur teile des Programms ermöglicht. Eine Anleitung der CLI Befehle und Argumente befindet sich in der [README](../README.md).
+
+**resources:**
+
+- [Verwendung](../README.md)
+- [Code](https://github.com/thm-mni-ii/graph-algo-ptas/blob/i50-Add-a-command-line-interface/src/main.rs)
