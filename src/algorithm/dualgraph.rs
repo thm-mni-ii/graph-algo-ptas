@@ -1,9 +1,12 @@
+//! Contains the dual_graph function
+use crate::algorithm::spantree::Span;
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
 use std::collections::{HashMap, HashSet};
 
+/// Returns the dual graph that doesn't cross the edges of the span (face tree)
 pub fn dual_graph(
     g: &impl GraphDCEL<
         LinkVertex,
@@ -13,7 +16,7 @@ pub fn dual_graph(
         LinkGraphIter<LinkDart>,
         LinkGraphIter<LinkFace>,
     >,
-    span: &HashMap<LinkVertex, LinkVertex>,
+    span: &Span<LinkVertex>,
 ) -> HashMap<LinkFace, HashSet<LinkFace>> {
     let mut result = HashMap::new();
     let mut visited = HashSet::new();
@@ -36,9 +39,9 @@ pub fn dual_graph(
             let next_face = g.face(&g.twin(&current_dart));
 
             if visited.insert(next_face.clone())
-                && (span.get(&g.dart_target(&current_dart))
+                && (span.upwards.get(&g.dart_target(&current_dart))
                     == Some(&g.dart_target(&g.twin(&current_dart)))
-                    || span.get(&g.dart_target(&g.twin(&current_dart)))
+                    || span.upwards.get(&g.dart_target(&g.twin(&current_dart)))
                         == Some(&g.dart_target(&current_dart)))
             {
                 match result.get_mut(&face) {
@@ -76,8 +79,12 @@ fn dart_as_tuple(
 #[cfg(test)]
 mod tests {
     use crate::algorithm::dualgraph::dual_graph;
-    use crate::algorithm::spantree::span;
+    use crate::algorithm::spantree::Span;
+    use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::data_structure::link_graph::LinkGraph;
+    use crate::embedding::{index::Embedding, maximal_planar::index::MaximalPlanar};
+    use crate::utils::convert::UndirectedGraph;
+    use petgraph::stable_graph::StableGraph;
     use std::collections::HashSet;
 
     #[test]
@@ -97,7 +104,7 @@ mod tests {
             Some(lf.clone()),
         );
 
-        let span = span(&lg, lv1);
+        let span = Span::compute(&lg, lv1);
         let dual = dual_graph(&lg, &span);
 
         println!("[RESULT]: {:?}", dual);
@@ -107,59 +114,17 @@ mod tests {
 
     #[test]
     fn triangle() {
-        let mut lg = LinkGraph::new();
-        let lv0 = lg.new_vertex();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
+        let sg: UndirectedGraph = StableGraph::from_edges(&[(0, 1), (1, 2), (2, 0)]);
 
-        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, None, None);
-        let lof = lg.new_face(lt0.clone()); // Outer Face first
+        let lg = MaximalPlanar::embed(sg);
+        assert_eq!(lg.vertex_count(), 3);
+        let lv0 = lg.vertex_by_id(0).unwrap();
+        let lv1 = lg.vertex_by_id(1).unwrap();
+        let ld1 = lg.get_dart(&lv1, &lv0).unwrap();
+        let lf = lg.face(&ld1);
+        let lof = lg.face(&lg.twin(&ld1));
 
-        let ld0 = lg.new_dart(
-            lv0.clone(),
-            lv1.clone(),
-            None,
-            None,
-            Some(lt0.clone()),
-            None,
-        );
-        let lf = lg.new_face(ld0.clone());
-
-        let ld1 = lg.new_dart(
-            lv1.clone(),
-            lv2.clone(),
-            Some(ld0.clone()),
-            None,
-            None,
-            Some(lf.clone()),
-        );
-        let ld2 = lg.new_dart(
-            lv2.clone(),
-            lv0.clone(),
-            Some(ld1.clone()),
-            Some(ld0),
-            None,
-            Some(lf.clone()),
-        );
-
-        let lt2 = lg.new_dart(
-            lv0,
-            lv2.clone(),
-            Some(lt0.clone()),
-            None,
-            Some(ld2),
-            Some(lof.clone()),
-        );
-        lg.new_dart(
-            lv2,
-            lv1.clone(),
-            Some(lt2),
-            Some(lt0),
-            Some(ld1),
-            Some(lof.clone()),
-        );
-
-        let span = span(&lg, lv1);
+        let span = Span::compute(&lg, lv1);
         let dual = dual_graph(&lg, &span);
 
         println!("[RESULT]: {:?}", dual);
