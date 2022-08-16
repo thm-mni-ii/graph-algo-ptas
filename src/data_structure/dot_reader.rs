@@ -1,10 +1,10 @@
 //! Creates a Pedgraph instance from the Dot Format
 //! ```
 //! use std::fs::File;
-//! use graph_algo_ptas::dot_reader::read_graph;
+//! use graph_algo_ptas::data_structure::dot_reader::read_graph;
 //!
-//! let g = "graph g { 0 -- 1 }" // the input in dot format
-//! let g = read_graph(input); // create Pedgraph instance
+//! let input = "graph g { 0 -- 1 }"; // the input in dot format
+//! let g = read_graph(input.to_string()); // create Pedgraph instance
 //! ```
 
 use graphviz_parser::ast_nodes::Statement::{Edge, Node};
