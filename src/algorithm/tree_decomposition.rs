@@ -1,6 +1,4 @@
 //! Contains the tree_decomposition function
-
-//! Contains the tree_decomposition function
 use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHashSet;
 
