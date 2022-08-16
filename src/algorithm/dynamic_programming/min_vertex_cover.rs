@@ -1,5 +1,5 @@
 use super::{
-    solve::{DynamicProgrammingTable, DynamicProgrammingTableEntry},
+    solve::{DpTable, DpTableEntry},
     utils::{bit_vec_powerset, immutable_bit_vec_update, init_bit_vec, to_bit_vec},
 };
 use arboretum_td::graph::{BaseGraph, HashMapGraph};
@@ -7,19 +7,11 @@ use fxhash::FxHashSet;
 use itertools::Itertools;
 use std::collections::HashSet;
 
-pub fn handle_leaf_node(
-    graph: &HashMapGraph,
-    id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
-    vertex: usize,
-) {
-    tables[id].insert(
-        init_bit_vec(graph.order()),
-        DynamicProgrammingTableEntry::new_leaf(0, None),
-    );
+pub fn handle_leaf_node(graph: &HashMapGraph, id: usize, tables: &mut Vec<DpTable>, vertex: usize) {
+    tables[id].insert(init_bit_vec(graph.order()), DpTableEntry::new_leaf(0, None));
     tables[id].insert(
         immutable_bit_vec_update(&init_bit_vec(graph.order()), vertex),
-        DynamicProgrammingTableEntry::new_leaf(1, Some(vertex)),
+        DpTableEntry::new_leaf(1, Some(vertex)),
     );
 }
 
@@ -28,7 +20,7 @@ pub fn handle_join_node(
     id: usize,
     left_child_id: usize,
     right_child_id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
     vertex_set: &FxHashSet<usize>,
 ) {
     for subset_vec in vertex_set.iter().powerset() {
@@ -44,7 +36,7 @@ pub fn handle_join_node(
 
         tables[id].insert(
             subset.clone(),
-            DynamicProgrammingTableEntry::new_join(new_val, left_child_id, right_child_id, subset),
+            DpTableEntry::new_join(new_val, left_child_id, right_child_id, subset),
         );
     }
 }
@@ -53,7 +45,7 @@ pub fn handle_forget_node(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
     vertex_set: &FxHashSet<usize>,
     forgotten_vertex: usize,
 ) {
@@ -68,7 +60,7 @@ pub fn handle_forget_node(
         };
         tables[id].insert(
             subset,
-            DynamicProgrammingTableEntry::new_forget(min_val, child_id, subset_used),
+            DpTableEntry::new_forget(min_val, child_id, subset_used),
         );
     }
 }
@@ -77,7 +69,7 @@ pub fn handle_introduce_node(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
     _: &FxHashSet<usize>,
     child_vertex_set: &FxHashSet<usize>,
     introduced_vertex: usize,
@@ -106,7 +98,7 @@ pub fn handle_introduce_node(
         children.insert((child_id, subset.clone()));
         tables[id].insert(
             subset.clone(),
-            DynamicProgrammingTableEntry {
+            DpTableEntry {
                 val,
                 children: children.clone(),
                 node_used: None,
@@ -121,7 +113,7 @@ pub fn handle_introduce_node(
         };
         tables[id].insert(
             immutable_bit_vec_update(&subset, introduced_vertex),
-            DynamicProgrammingTableEntry {
+            DpTableEntry {
                 val,
                 children,
                 node_used: Some(introduced_vertex),

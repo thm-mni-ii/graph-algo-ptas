@@ -17,20 +17,20 @@ use std::collections::{HashMap, HashSet};
 /// Such a table is represented by `HashMap`.
 ///
 /// The `BitVec` key represents the subset to which the table entry belongs
-pub type DynamicProgrammingTable = HashMap<BitVec, DynamicProgrammingTableEntry>;
+pub type DpTable = HashMap<BitVec, DpTableEntry>;
 
 /// Represents a single entry in a dynamic programming table.
 ///
 /// Contains the value of the entry and additional information needed for
 /// retrieving the actual solution at the end of the algorithm.
 #[derive(Debug, Clone)]
-pub struct DynamicProgrammingTableEntry {
+pub struct DpTableEntry {
     pub val: i32,
     pub children: HashSet<(usize, BitVec)>,
     pub node_used: Option<usize>,
 }
 
-impl DynamicProgrammingTableEntry {
+impl DpTableEntry {
     pub fn new_leaf(val: i32, node_used: Option<usize>) -> Self {
         Self {
             val,
@@ -72,14 +72,14 @@ impl DynamicProgrammingTableEntry {
 }
 
 type LeafNodeHandler =
-    fn(graph: &HashMapGraph, id: usize, tables: &mut Vec<DynamicProgrammingTable>, vertex: usize);
+    fn(graph: &HashMapGraph, id: usize, tables: &mut Vec<DpTable>, vertex: usize);
 
 type JoinNodeHandler = fn(
     graph: &HashMapGraph,
     id: usize,
     left_child_id: usize,
     right_child_id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
     vertex_set: &FxHashSet<usize>,
 );
 
@@ -87,7 +87,7 @@ type ForgetNodeHandler = fn(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
     vertex_set: &FxHashSet<usize>,
     forgotten_vertex: usize,
 );
@@ -96,33 +96,33 @@ type IntroduceNodeHandler = fn(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
     vertex_set: &FxHashSet<usize>,
     child_vertex_set: &FxHashSet<usize>,
     introduced_vertex: usize,
 );
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Objective {
+pub enum DpObjective {
     Minimize,
     Maximize,
 }
 
 /// Contains the neccessary information for solving a (hard) problem
 /// using dynamic programming on tree decompositions.
-pub struct DynamicProgrammingProblem {
-    pub objective: Objective,
+pub struct DpProblem {
+    pub objective: DpObjective,
     pub handle_leaf_node: LeafNodeHandler,
     pub handle_join_node: JoinNodeHandler,
     pub handle_forget_node: ForgetNodeHandler,
     pub handle_introduce_node: IntroduceNodeHandler,
 }
 
-impl DynamicProgrammingProblem {
-    /// Return a `DynamicProgrammingProblem` instance for maximum independent set.
-    pub fn max_independent_set() -> DynamicProgrammingProblem {
-        DynamicProgrammingProblem {
-            objective: Objective::Maximize,
+impl DpProblem {
+    /// Return a `DpProblem` instance for maximum independent set.
+    pub fn max_independent_set() -> DpProblem {
+        DpProblem {
+            objective: DpObjective::Maximize,
             handle_leaf_node: max_independent_set::handle_leaf_node,
             handle_join_node: max_independent_set::handle_join_node,
             handle_forget_node: max_independent_set::handle_forget_node,
@@ -130,10 +130,10 @@ impl DynamicProgrammingProblem {
         }
     }
 
-    /// Return a `DynamicProgrammingProblem` instance for minimum vertex cover.
-    pub fn min_vertex_cover() -> DynamicProgrammingProblem {
-        DynamicProgrammingProblem {
-            objective: Objective::Minimize,
+    /// Return a `DpProblem` instance for minimum vertex cover.
+    pub fn min_vertex_cover() -> DpProblem {
+        DpProblem {
+            objective: DpObjective::Minimize,
             handle_leaf_node: min_vertex_cover::handle_leaf_node,
             handle_join_node: min_vertex_cover::handle_join_node,
             handle_forget_node: min_vertex_cover::handle_forget_node,
@@ -153,7 +153,7 @@ impl DynamicProgrammingProblem {
 pub fn dp_solve(
     graph: &UndirectedGraph,
     td: Option<TreeDecomposition>,
-    prob: &DynamicProgrammingProblem,
+    prob: &DpProblem,
 ) -> HashSet<usize> {
     dp_solve_hashmap_graph(&petgraph_to_hash_map_graph(graph), td, prob)
 }
@@ -162,7 +162,7 @@ pub fn dp_solve(
 pub fn dp_solve_hashmap_graph(
     graph: &HashMapGraph,
     td: Option<TreeDecomposition>,
-    prob: &DynamicProgrammingProblem,
+    prob: &DpProblem,
 ) -> HashSet<usize> {
     let (graph, mapping) = remap_vertices(graph);
     let td = td.unwrap_or_else(|| Solver::auto(&graph).solve(&graph));
@@ -170,7 +170,7 @@ pub fn dp_solve_hashmap_graph(
 
     assert!(nice_td.td.verify(&graph).is_ok());
 
-    let mut tables: Vec<_> = vec![DynamicProgrammingTable::new(); nice_td.td.bags().len()];
+    let mut tables: Vec<_> = vec![DpTable::new(); nice_td.td.bags().len()];
     let root = nice_td.td.root.unwrap();
 
     dp_solve_rec(
@@ -195,11 +195,11 @@ pub fn dp_solve_hashmap_graph(
 fn dp_solve_rec(
     td: &TreeDecomposition,
     graph: &HashMapGraph,
-    prob: &DynamicProgrammingProblem,
+    prob: &DpProblem,
     id: usize,
     parent_id: usize,
     mapping: &[NiceTdNodeType],
-    tables: &mut Vec<DynamicProgrammingTable>,
+    tables: &mut Vec<DpTable>,
 ) {
     let children = get_children(td, id, parent_id);
 
@@ -241,22 +241,22 @@ fn dp_solve_rec(
 }
 
 fn dp_read_solution_from_table(
-    objective: Objective,
-    tables: &[DynamicProgrammingTable],
+    objective: DpObjective,
+    tables: &[DpTable],
     root: usize,
     sol: &mut HashSet<usize>,
 ) {
     let root_entry = match objective {
-        Objective::Maximize => tables[root].values().max_by(|e1, e2| e1.val.cmp(&e2.val)),
-        Objective::Minimize => tables[root].values().min_by(|e1, e2| e1.val.cmp(&e2.val)),
+        DpObjective::Maximize => tables[root].values().max_by(|e1, e2| e1.val.cmp(&e2.val)),
+        DpObjective::Minimize => tables[root].values().min_by(|e1, e2| e1.val.cmp(&e2.val)),
     }
     .unwrap();
     dp_read_solution_from_table_rec(tables, root_entry, sol);
 }
 
 fn dp_read_solution_from_table_rec(
-    tables: &[DynamicProgrammingTable],
-    entry: &DynamicProgrammingTableEntry,
+    tables: &[DpTable],
+    entry: &DpTableEntry,
     sol: &mut HashSet<usize>,
 ) {
     if let Some(v) = entry.node_used {
@@ -273,7 +273,7 @@ mod tests {
     use super::dp_solve_hashmap_graph;
     use crate::{
         algorithm::dynamic_programming::{
-            solve::{remap_vertices, DynamicProgrammingProblem},
+            solve::{remap_vertices, DpProblem},
             utils::init_bit_vec,
         },
         generation::erdos_renyi::generate_hashmap_graph,
@@ -287,15 +287,11 @@ mod tests {
     use std::collections::HashSet;
 
     fn solve_max_independent_set(graph: &HashMapGraph) -> HashSet<usize> {
-        dp_solve_hashmap_graph(
-            graph,
-            None,
-            &DynamicProgrammingProblem::max_independent_set(),
-        )
+        dp_solve_hashmap_graph(graph, None, &DpProblem::max_independent_set())
     }
 
     fn solve_min_vertex_cover(graph: &HashMapGraph) -> HashSet<usize> {
-        dp_solve_hashmap_graph(graph, None, &DynamicProgrammingProblem::min_vertex_cover())
+        dp_solve_hashmap_graph(graph, None, &DpProblem::min_vertex_cover())
     }
 
     #[test]

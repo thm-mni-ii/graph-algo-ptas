@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
-use graph_algo_ptas::algorithm::dynamic_programming::solve::{dp_solve, DynamicProgrammingProblem};
+use graph_algo_ptas::algorithm::dynamic_programming::solve::{dp_solve, DpProblem};
 use graph_algo_ptas::algorithm::ptas::ptas;
 use graph_algo_ptas::generation::planar::generate;
 
@@ -14,7 +14,7 @@ fn min_vertex_cover_ptas_1(c: &mut Criterion) {
                 i += 1;
                 ptas(
                     &generate(n as usize, Some(i)).to_pet_graph(),
-                    &DynamicProgrammingProblem::min_vertex_cover(),
+                    &DpProblem::min_vertex_cover(),
                     1.0 / 2.0,
                 )
             });
@@ -34,7 +34,7 @@ fn min_vertex_cover_ptas_2(c: &mut Criterion) {
                 i += 1;
                 ptas(
                     &generate(n as usize, Some(i)).to_pet_graph(),
-                    &DynamicProgrammingProblem::min_vertex_cover(),
+                    &DpProblem::min_vertex_cover(),
                     1.0 / 3.0,
                 )
             });
@@ -55,7 +55,7 @@ fn min_vertex_cover_dp(c: &mut Criterion) {
                 dp_solve(
                     &generate(n as usize, Some(i)).to_pet_graph(),
                     None,
-                    &DynamicProgrammingProblem::min_vertex_cover(),
+                    &DpProblem::min_vertex_cover(),
                 )
             });
         });
