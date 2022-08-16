@@ -31,3 +31,7 @@ criterion = {version = "0.3", features = ["html_reports"]}
 [[bench]]
 name = "embedding_benchmark"
 harness = false
+
+[[bench]]
+name = "generation_benchmark"
+harness = false
