@@ -10,7 +10,8 @@ die [zufällige Generierung von Test Daten](#random-generation).
 
 ## Data Structures
 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Um mit Graphen zu arbeiten, ist es notwendig, diese als Datenstrukturen repräsentiert werden. Dazu wurden zwei Datenstrukturen implementiert.
+`LinkGraph`, welche den Graphen mithilfe von `RC` als "Doubly connected edge list" (DCEL) speichert und `ListGraph` welche den Graphen als eine Liste von geordnet Adjacens-Listen speichert und implementiert somit die in [A simple linear time algorithm for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf) beschrieben Datenstruktur.
 
 **resources:**
 
