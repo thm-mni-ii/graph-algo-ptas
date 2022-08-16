@@ -1,7 +1,7 @@
 #[allow(dead_code)]
 pub mod dualgraph;
 #[allow(dead_code)]
-mod leveling;
+pub mod leveling;
 #[allow(dead_code)]
 pub mod spantree;
 #[allow(dead_code)]
