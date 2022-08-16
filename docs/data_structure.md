@@ -10,8 +10,9 @@ die [zufällige Generierung von Test Daten](#random-generation).
 
 ## Data Structures
 
-Um mit Graphen zu arbeiten, ist es notwendig, diese als Datenstrukturen repräsentiert werden. Dazu wurden zwei Datenstrukturen implementiert.
-`LinkGraph`, welche den Graphen mithilfe von `RC` als "Doubly connected edge list" (DCEL) speichert und `ListGraph` welche den Graphen als eine Liste von geordnet Adjacens-Listen speichert und implementiert somit die in [A simple linear time algorithm for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf) beschrieben Datenstruktur.
+Um mit Graphen zu arbeiten, ist es notwendig, dass diese als Datenstrukturen repräsentiert werden. Dazu wurden zwei Datenstrukturen implementiert.
+`LinkGraph`, welche den Graphen mithilfe von `RC` als "Doubly connected edge list" (DCEL) speichert und `ListGraph`, welche den Graphen als eine Liste von geordnet Adjacens-Listen speichert und somit die in [A simple linear time algorithm for embedding maximal planar graphs](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf) beschrieben Datenstruktur implementiert.
+Auch enthält dieses Moduls eine Methode zum Erstellen eines `LinkGraph` auf Grundlage eines Eingabe `LinkGraphs`, einer Liste von Ringen und Nummer eines Rings. Die Knoten des angegebenen Rings werden in den neuen Graphen übernommen. Die Knoten im vorherigen Ringen werden zu einem Knoten zusammengefasst und die Knoten aus folgenden Ringen werden verworfen.
 
 **resources:**
 
