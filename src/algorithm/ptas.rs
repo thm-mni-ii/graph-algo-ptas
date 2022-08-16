@@ -139,7 +139,7 @@ mod tests {
         algorithm::{dynamic_programming::solve::DpProblem, ptas::ptas},
         generation::{erdos_renyi::generate_petgraph, planar::generate},
         utils::{
-            convert::{petgraph_to_hash_map_graph, UndirectedGraph},
+            convert::{to_hash_map_graph, UndirectedGraph},
             max_independent_set::{brute_force_max_independent_set, is_independent_set},
             min_vertex_cover::{brute_force_min_vertex_cover, is_vertex_cover},
         },
@@ -210,14 +210,11 @@ mod tests {
             let eps = 0.5;
             let sol = ptas(&graph, &DpProblem::max_independent_set(), eps);
 
-            assert!(is_independent_set(
-                &petgraph_to_hash_map_graph(&graph),
-                &sol
-            ));
+            assert!(is_independent_set(&to_hash_map_graph(&graph), &sol));
 
             // if n > 15 the brute force algorithm takes too long
             if n <= 15 {
-                let sol2 = brute_force_max_independent_set(&petgraph_to_hash_map_graph(&graph));
+                let sol2 = brute_force_max_independent_set(&to_hash_map_graph(&graph));
 
                 assert!(sol.len() as f64 >= (1.0 - eps) * sol2.len() as f64);
             }
@@ -251,11 +248,11 @@ mod tests {
             let eps = 0.5;
             let sol = ptas(&graph, &DpProblem::min_vertex_cover(), eps);
 
-            assert!(is_vertex_cover(&petgraph_to_hash_map_graph(&graph), &sol));
+            assert!(is_vertex_cover(&to_hash_map_graph(&graph), &sol));
 
             // if n > 15 the brute force algorithm takes too long
             if n <= 15 {
-                let sol2 = brute_force_min_vertex_cover(&petgraph_to_hash_map_graph(&graph));
+                let sol2 = brute_force_min_vertex_cover(&to_hash_map_graph(&graph));
 
                 assert!(sol.len() as f64 <= (1.0 + 0.5 * eps) * sol2.len() as f64);
             }

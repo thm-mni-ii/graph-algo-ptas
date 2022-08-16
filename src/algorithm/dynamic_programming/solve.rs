@@ -15,7 +15,7 @@ use crate::{
         dynamic_programming::utils::remap_vertices,
         nice_tree_decomposition::{get_children, NiceTdNodeType, NiceTreeDecomposition},
     },
-    utils::convert::{petgraph_to_hash_map_graph, UndirectedGraph},
+    utils::convert::{to_hash_map_graph, UndirectedGraph},
 };
 use arboretum_td::{graph::HashMapGraph, solver::Solver, tree_decomposition::TreeDecomposition};
 use bitvec::vec::BitVec;
@@ -164,7 +164,7 @@ pub fn dp_solve(
     td: Option<TreeDecomposition>,
     prob: &DpProblem,
 ) -> HashSet<usize> {
-    dp_solve_hashmap_graph(&petgraph_to_hash_map_graph(graph), td, prob)
+    dp_solve_hashmap_graph(&to_hash_map_graph(graph), td, prob)
 }
 
 /// For convenience.
@@ -285,7 +285,7 @@ mod tests {
             solve::{remap_vertices, DpProblem},
             utils::init_bit_vec,
         },
-        generation::erdos_renyi::generate_hashmap_graph,
+        generation::erdos_renyi::generate_hash_map_graph,
         utils::{
             max_independent_set::{brute_force_max_independent_set, is_independent_set},
             min_vertex_cover::{brute_force_min_vertex_cover, is_vertex_cover},
@@ -329,7 +329,7 @@ mod tests {
     #[test]
     fn max_independent_set_isolated() {
         for n in 1..10 {
-            let graph = generate_hashmap_graph(n, 0., Some(n as u64));
+            let graph = generate_hash_map_graph(n, 0., Some(n as u64));
 
             let sol = solve_max_independent_set(&graph);
 
@@ -340,7 +340,7 @@ mod tests {
     #[test]
     fn max_independent_set_clique() {
         for n in 1..10 {
-            let graph = generate_hashmap_graph(n, 1., Some(n as u64));
+            let graph = generate_hash_map_graph(n, 1., Some(n as u64));
             let sol = solve_max_independent_set(&graph);
 
             assert!(sol.len() == 1);
@@ -353,7 +353,7 @@ mod tests {
         let mut rng = StdRng::from_seed(seed);
 
         for i in 0..30 {
-            let graph = generate_hashmap_graph(
+            let graph = generate_hash_map_graph(
                 rng.gen_range(1..15),
                 rng.gen_range(0.05..0.1),
                 Some(i as u64),
@@ -370,7 +370,7 @@ mod tests {
     #[test]
     fn min_vertex_cover_isolated() {
         for n in 1..10 {
-            let graph = generate_hashmap_graph(n, 0., Some(n as u64));
+            let graph = generate_hash_map_graph(n, 0., Some(n as u64));
             let sol = solve_min_vertex_cover(&graph);
 
             assert!(sol.is_empty());
@@ -380,7 +380,7 @@ mod tests {
     #[test]
     fn min_vertex_cover_clique() {
         for n in 1..10 {
-            let graph = generate_hashmap_graph(n, 1., Some(n as u64));
+            let graph = generate_hash_map_graph(n, 1., Some(n as u64));
             let sol = solve_min_vertex_cover(&graph);
 
             assert!(sol.len() == graph.order() - 1);
@@ -393,7 +393,7 @@ mod tests {
         let mut rng = StdRng::from_seed(seed);
 
         for i in 0..30 {
-            let graph = generate_hashmap_graph(
+            let graph = generate_hash_map_graph(
                 rng.gen_range(1..15),
                 rng.gen_range(0.2..0.5),
                 Some(i as u64),

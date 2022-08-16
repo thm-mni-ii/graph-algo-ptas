@@ -56,7 +56,7 @@ fn brute_force_min_vertex_cover_rec(
 #[cfg(test)]
 mod tests {
     use crate::{
-        generation::erdos_renyi::generate_hashmap_graph,
+        generation::erdos_renyi::generate_hash_map_graph,
         utils::min_vertex_cover::{brute_force_min_vertex_cover, is_vertex_cover},
     };
     use arboretum_td::graph::{HashMapGraph, MutableGraph};
@@ -67,7 +67,7 @@ mod tests {
         let sol = HashSet::new();
 
         for n in 1..10 {
-            let graph = generate_hashmap_graph(n, 0.0, Some(n as u64));
+            let graph = generate_hash_map_graph(n, 0.0, Some(n as u64));
 
             assert!(is_vertex_cover(&graph, &sol));
             assert!(is_vertex_cover(
@@ -106,7 +106,7 @@ mod tests {
         sol.insert(0);
 
         for n in 2..15 {
-            let graph = generate_hashmap_graph(n, 0.3, Some(n as u64));
+            let graph = generate_hash_map_graph(n, 0.3, Some(n as u64));
 
             assert!(is_vertex_cover(
                 &graph,
