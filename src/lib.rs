@@ -1,4 +1,4 @@
-//! Polynomial Time Approximation Scheme
+//! Algorithms and data structures for PTAS (Polynomial Time Approximation Scheme) on planar graphs
 
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_doc_code_examples)]
