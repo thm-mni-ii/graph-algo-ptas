@@ -118,4 +118,25 @@ mod tests {
         assert_eq!(edges.get(&lv2), Some(&lv1));
         assert_eq!(edges.get(&lv0), Some(&lv1));
     }
+
+    #[test]
+    fn quad() {
+        let sg: UndirectedGraph =
+            StableGraph::from_edges(&[(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)]);
+
+        let lg = MaximalPlanar::embed(sg);
+        assert_eq!(lg.vertex_count(), 4);
+        let lv0 = lg.vertex_by_id(0).unwrap();
+        let lv1 = lg.vertex_by_id(1).unwrap();
+        let lv2 = lg.vertex_by_id(2).unwrap();
+        let lv3 = lg.vertex_by_id(3).unwrap();
+
+        let edges = Span::compute(&lg, lv0.clone()).upwards;
+
+        println!("[RESULT]: {:?}", edges);
+        assert_eq!(edges.len(), 3);
+        assert_eq!(edges.get(&lv2), Some(&lv0));
+        assert_eq!(edges.get(&lv1), Some(&lv0));
+        assert_eq!(edges.get(&lv3), Some(&lv0));
+    }
 }
