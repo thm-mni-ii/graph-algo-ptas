@@ -21,7 +21,7 @@ Eine Technik zum Entwurf von PTAS für verschiedene schwere Probleme auf planare
 
 ## Projektbeschreibung
 
-Im Rahmen dieses Projekts wurde Bakers Ansatz implementiert. [Hier](docs/data_structure.md) wird auf die verwendeten Datenstrukturen und Algorithmen zum Umgang mit planaren Graphen und planaren Einbettungen eingegangen. [Hier](docs/algorithm.md) werden die die Algorithmen für die einzelnen Schritte des PTAS beschrieben.
+Im Rahmen dieses Projekts wurde Bakers Ansatz implementiert. [Hier](docs/data_structure.md) wird auf die verwendeten Datenstrukturen und Algorithmen zum Umgang mit planaren Graphen und planaren Einbettungen eingegangen. [Hier](docs/algorithm.md) werden die die Algorithmen für die einzelnen Schritte des PTAS beschrieben. Eine Übersicht über die durchgeführen Laufzeittests ist [hier](docs/benchmarks.md) zu finden.
 
 [^1]: BAKER, BRENDA S. 1994. Appoximation Algorithms for NP-Complete Problems on Planar Graphs, J. *ACM 41, January 1994, pp 153-180*
 

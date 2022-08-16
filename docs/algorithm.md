@@ -98,6 +98,7 @@ Der im Code implementierte Algorithmus (`dp_solve`) ist generisch bezüglich des
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/dynamic_programming/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/blob/main/src/algorithm/dynamic_programming/solve.rs)
 - [Reference](https://tcs.rwth-aachen.de/lehre/Graphentheorie/SS2018/oeljeklaus_report.pdf)
+- [Benchmarks](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/report/)
 
 ## PTAS
 
@@ -112,3 +113,4 @@ Der Algorithmus erstellt zunächst `k = 1 / eps` Subgraphen, indem bei einer Bre
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/ptas/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/blob/main/src/algorithm/ptas.rs)
 - [Reference](https://tcs.rwth-aachen.de/lehre/Graphentheorie/WS2013/Marius_Knabben.pdf)
+- [Benchmarks](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/report/)
