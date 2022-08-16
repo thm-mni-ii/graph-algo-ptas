@@ -5,4 +5,4 @@ mod min_vertex_cover;
 #[allow(dead_code)]
 pub mod solve;
 #[allow(dead_code)]
-pub mod utils;
+mod utils;
