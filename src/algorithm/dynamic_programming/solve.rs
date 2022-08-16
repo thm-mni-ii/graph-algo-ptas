@@ -87,15 +87,14 @@ impl DpTableEntry {
     }
 }
 
-type LeafNodeHandler =
-    fn(graph: &HashMapGraph, id: usize, tables: &mut Vec<DpTable>, vertex: usize);
+type LeafNodeHandler = fn(graph: &HashMapGraph, id: usize, tables: &mut [DpTable], vertex: usize);
 
 type JoinNodeHandler = fn(
     graph: &HashMapGraph,
     id: usize,
     left_child_id: usize,
     right_child_id: usize,
-    tables: &mut Vec<DpTable>,
+    tables: &mut [DpTable],
     vertex_set: &FxHashSet<usize>,
 );
 
@@ -103,7 +102,7 @@ type ForgetNodeHandler = fn(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DpTable>,
+    tables: &mut [DpTable],
     vertex_set: &FxHashSet<usize>,
     forgotten_vertex: usize,
 );
@@ -112,7 +111,7 @@ type IntroduceNodeHandler = fn(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DpTable>,
+    tables: &mut [DpTable],
     vertex_set: &FxHashSet<usize>,
     child_vertex_set: &FxHashSet<usize>,
     introduced_vertex: usize,

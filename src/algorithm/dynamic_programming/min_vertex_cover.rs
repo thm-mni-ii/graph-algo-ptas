@@ -7,7 +7,7 @@ use fxhash::FxHashSet;
 use itertools::Itertools;
 use std::collections::HashSet;
 
-pub fn handle_leaf_node(graph: &HashMapGraph, id: usize, tables: &mut Vec<DpTable>, vertex: usize) {
+pub fn handle_leaf_node(graph: &HashMapGraph, id: usize, tables: &mut [DpTable], vertex: usize) {
     tables[id].insert(init_bit_vec(graph.order()), DpTableEntry::new_leaf(0, None));
     tables[id].insert(
         immutable_bit_vec_update(&init_bit_vec(graph.order()), vertex),
@@ -20,7 +20,7 @@ pub fn handle_join_node(
     id: usize,
     left_child_id: usize,
     right_child_id: usize,
-    tables: &mut Vec<DpTable>,
+    tables: &mut [DpTable],
     vertex_set: &FxHashSet<usize>,
 ) {
     for subset_vec in vertex_set.iter().powerset() {
@@ -45,7 +45,7 @@ pub fn handle_forget_node(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DpTable>,
+    tables: &mut [DpTable],
     vertex_set: &FxHashSet<usize>,
     forgotten_vertex: usize,
 ) {
@@ -69,7 +69,7 @@ pub fn handle_introduce_node(
     graph: &HashMapGraph,
     id: usize,
     child_id: usize,
-    tables: &mut Vec<DpTable>,
+    tables: &mut [DpTable],
     _: &FxHashSet<usize>,
     child_vertex_set: &FxHashSet<usize>,
     introduced_vertex: usize,
