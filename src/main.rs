@@ -6,6 +6,10 @@ use clap::Parser;
 #[cfg(feature = "cli")]
 use clap::Subcommand;
 #[cfg(feature = "cli")]
+use graph_algo_ptas::algorithm::dynamic_programming::solve::DpProblem;
+#[cfg(feature = "cli")]
+use graph_algo_ptas::algorithm::ptas::ptas;
+#[cfg(feature = "cli")]
 use graph_algo_ptas::data_structure::dot_reader::read_graph;
 #[cfg(feature = "cli")]
 use graph_algo_ptas::data_structure::graph_dcel::GraphDCEL;
@@ -45,6 +49,10 @@ enum Commands {
     Print {},
     /// Generates an embeding for the graph
     Embed {},
+    /// Calculates Minimal Vertex Cover
+    VertexCover {},
+    /// Calculates Maximal Independent Set (Default)
+    IndependentSet {},
 }
 
 #[cfg(feature = "cli")]
@@ -86,7 +94,10 @@ fn main() {
             print_graph(&input_graph.unwrap());
         }
         Some(Commands::Embed {}) => embed_graph(&input_graph.unwrap(), generated),
-        None => embed_graph(&input_graph.unwrap(), generated),
+        Some(Commands::VertexCover {}) => run_ptas(&input_graph.unwrap(), generated, true),
+        Some(Commands::IndependentSet {}) | None => {
+            run_ptas(&input_graph.unwrap(), generated, false)
+        }
     }
 }
 
@@ -111,4 +122,24 @@ fn embed_graph(graph: &StableGraph<(), (), Undirected, DefaultIx>, generated: bo
     dcel.get_vertexes().for_each(|v| println!("{:?}", v));
     println!();
     dcel.get_darts().for_each(|d| println!("{:?}", d));
+}
+
+fn run_ptas(
+    graph: &StableGraph<(), (), Undirected, DefaultIx>,
+    generated: bool,
+    min_vertex_cover: bool,
+) {
+    let (prob, out_text) = if min_vertex_cover {
+        (DpProblem::min_vertex_cover(), "Minimal Vertex Cover")
+    } else {
+        (DpProblem::max_independent_set(), "Maximal Independent Set")
+    };
+    let sol = ptas(graph, &prob, 0.5);
+
+    if generated {
+        print_graph(graph);
+    }
+
+    println!("[ptas] {}:", out_text);
+    println!("{:?}", sol);
 }
