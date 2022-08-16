@@ -110,8 +110,12 @@ mod tests {
     use crate::algorithm::dualgraph::dual_graph;
     use crate::algorithm::spantree::span;
     use crate::algorithm::tree_decomposition::tree_decomposition;
+    use crate::data_structure::graph_dcel::GraphDCEL;
     use crate::data_structure::link_graph::LinkGraph;
+    use crate::embedding::{index::Embedding, maximal_planar::index::MaximalPlanar};
+    use crate::utils::convert::UndirectedGraph;
     use fxhash::FxHashSet;
+    use petgraph::stable_graph::StableGraph;
 
     #[test]
     fn single_edge() {
@@ -145,48 +149,14 @@ mod tests {
 
     #[test]
     fn triangle() {
-        let mut lg = LinkGraph::new();
-        let lv0 = lg.new_vertex();
-        let lv1 = lg.new_vertex();
-        let lv2 = lg.new_vertex();
+        let sg: UndirectedGraph = StableGraph::from_edges(&[(0, 1), (1, 2), (2, 0)]);
 
-        let ld0 = lg.new_dart(lv0.clone(), lv1.clone(), None, None, None, None);
-        let lf = lg.new_face(ld0.clone());
-        let ld1 = lg.new_dart(
-            lv1.clone(),
-            lv2.clone(),
-            Some(ld0.clone()),
-            None,
-            None,
-            Some(lf.clone()),
-        );
-        let ld2 = lg.new_dart(
-            lv2.clone(),
-            lv0.clone(),
-            Some(ld1.clone()),
-            Some(ld0.clone()),
-            None,
-            Some(lf),
-        );
-
-        let lt0 = lg.new_dart(lv1.clone(), lv0.clone(), None, None, Some(ld0), None);
-        let lof = lg.new_face(lt0.clone());
-        let lt2 = lg.new_dart(
-            lv0.clone(),
-            lv2.clone(),
-            Some(lt0.clone()),
-            None,
-            Some(ld2),
-            Some(lof.clone()),
-        );
-        lg.new_dart(
-            lv2.clone(),
-            lv1.clone(),
-            Some(lt2),
-            Some(lt0),
-            Some(ld1),
-            Some(lof.clone()),
-        );
+        let lg = MaximalPlanar::embed(sg);
+        assert_eq!(lg.vertex_count(), 3);
+        let lv0 = lg.vertex_by_id(0).unwrap();
+        let lv1 = lg.vertex_by_id(1).unwrap();
+        let lv2 = lg.vertex_by_id(2).unwrap();
+        let lof = lg.face(&lg.get_dart(&lv1, &lv0).unwrap());
 
         let span = span(&lg, lv1.clone());
         let td = tree_decomposition(&lg, dual_graph(&lg, &span), &span, lof);
