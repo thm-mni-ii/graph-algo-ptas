@@ -3,6 +3,11 @@
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_doc_code_examples)]
 
+extern crate core;
+
 mod algorithm;
-mod data_structure;
+pub mod data_structure;
+mod debug;
+pub mod embedding;
+pub mod generation;
 mod utils;

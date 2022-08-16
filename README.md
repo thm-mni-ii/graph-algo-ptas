@@ -4,6 +4,8 @@
 
 [![CI/CD](https://github.com/thm-mni-ii/graph-algo-ptas/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/thm-mni-ii/graph-algo-ptas/actions/workflows/ci-cd.yml) 
 [![Coverage Status](https://coveralls.io/repos/github/thm-mni-ii/graph-algo-ptas/badge.svg?branch=main)](https://coveralls.io/github/thm-mni-ii/graph-algo-ptas?branch=main)
+[![Docs](https://img.shields.io/github/workflow/status/thm-mni-ii/graph-algo-ptas/Pages/main?label=Docs&logo=Github)](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/)
+[![Benchmark](https://img.shields.io/github/workflow/status/thm-mni-ii/graph-algo-ptas/Pages/main?label=Benchmark&logo=Github)](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/report/)
 
 </div>
 
