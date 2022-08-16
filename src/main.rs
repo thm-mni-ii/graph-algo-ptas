@@ -33,7 +33,7 @@ mod cli {
     enum Commands {
         /// Prints the generated/input graph
         Print {},
-        /// Generates an embeding for the graph
+        /// Generates an embedding for the graph
         Embed {},
         /// Calculates Minimal Vertex Cover
         VertexCover {},
@@ -101,7 +101,7 @@ mod cli {
             print_graph(graph);
         }
 
-        println!("[ptas] embedet input graph:");
+        println!("[ptas] embedded input graph:");
         dcel.get_vertexes().for_each(|v| println!("{:?}", v));
         println!();
         dcel.get_darts().for_each(|d| println!("{:?}", d));
@@ -113,9 +113,9 @@ mod cli {
         min_vertex_cover: bool,
     ) {
         let (prob, out_text) = if min_vertex_cover {
-            (DpProblem::min_vertex_cover(), "Minimal Vertex Cover")
+            (DpProblem::min_vertex_cover(), "Minimum Vertex Cover")
         } else {
-            (DpProblem::max_independent_set(), "Maximal Independent Set")
+            (DpProblem::max_independent_set(), "Maximum Independent Set")
         };
         let sol = ptas(graph, &prob, 0.5);
 
