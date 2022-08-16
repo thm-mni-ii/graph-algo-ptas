@@ -1,8 +1,6 @@
-# Algorithm (Group B)
+# Algorithm (Gruppe B)
 
-Die Aufgaben dieser Gruppe beinhalteten die Bereitstellung der verschiedenen Algorithmen, die mit planaren Graphen
-arbeiten.
-Dazu zählt die Berechnung einer [Baumzerlegung](#tree_decomposition), ...
+Diese Gruppe hat sich mit der Implementierung des PTAS sowie den dafür notwendigen Algorithmen beschäftigt.
 
 **Entwickler:**
 
@@ -19,7 +17,7 @@ werden müssten, damit dies gilt.
 Ein bereits maximal planarer graph kann nicht weiter trianguliert werden.
 Der Graph muss außerdem zusammenhängend sein, damit er vollständig trianguliert werden kann.
 
-**resources:**
+**Materialien:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
@@ -29,7 +27,7 @@ Der Graph muss außerdem zusammenhängend sein, damit er vollständig triangulie
 Der Spannbaum eines Graphen wird ausgehend von einem spezifizierten Knoten errechnet, welcher die Wurzel des Baumes
 bildet.
 
-**resources:**
+**Materialien:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
@@ -43,7 +41,7 @@ der entstehende duale Graph keine Kreise hat.
 Daher wird der Spannbaum zur Berechnung des dualen Graphen benötigt.
 Mit dem dualen Graphen/Facettenbaum kann u. A. eine Baumzerlegung effizient berechnet werden.
 
-**resources:**
+**Materialien:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
@@ -57,7 +55,7 @@ Zusätzlich werden alle Knoten diesem Bag hinzugefügt, für die es von den Knot
 einen Pfad bis hin zu Wurzel des Spannbaums gibt.
 Die Baumweite dieser Baumzerlegung wird durch die Höhe des Spannbaums (Durchmesser des Graphen) beschränkt.
 
-**resources:**
+**Materialien:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
@@ -74,7 +72,7 @@ Zusätzlich können diese Level in Ringe der Dicke _k_ aufgeteilt werden.
 Die Aufteilung beginnt bei Level 0, sodass der letzte Ring weniger als _k_ Level hat, genau dann, wenn die Anzahl der
 Level nicht (restlos) durch _k_ teilbar ist.
 
-**resources:**
+**Materialien:**
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/algorithm/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/algorithm)
@@ -91,7 +89,7 @@ Der Algorithmus für die dynamische Programmierung setzt voraus, dass es sich be
 
 ## Dynamic Programming
 
-Viele schwere Probleme wie z.B. *Minimum Vertex Cover* oder *Maximum Independent Set* lassen sich mit Hilfe von dynamischer Programmierung in Polynomialzeit lösen, wenn eine (gute) Baumzerlegung des Eingabegraphen vorliegt. Der Algorithmus nimmt einen Graphen und eine schöne Baumzerlegung des Graphen als Parameter an und berechnet bei einem Post-Order-Traversal für jeden Knoten der Baumzerlegung eine Tabelle; aus der Tabelle des Wurzelknotens lässt sich letztlich die Lösung ablesen.
+Viele schwere Probleme wie z.B. *Minimum Vertex Cover* oder *Maximum Independent Set* lassen sich mit Hilfe von dynamischer Programmierung in Polynomialzeit lösen, wenn eine (gute) Baumzerlegung des Eingabegraphen vorliegt. Der Algorithmus nimmt einen Graphen und eine schöne Baumzerlegung des Graphen als Parameter an und berechnet bei einem Post-Order-Traversal für jeden Knoten der Baumzerlegung eine Tabelle mit Einträgen für jede Untermenge des Knoten-Bags. Aus der Tabelle des Wurzelknotens lässt sich letztlich die Lösung ablesen.
 
 Der im Code implementierte Algorithmus (`dp_solve`) ist generisch bezüglich des zu lösenden Problems. Es muss nur spezifiziert werden, ob es sich um ein Maximierungs- oder Minimierungsproblem handelt und wie die Tabelleneinträge für die verschiedenen Knotentypen der schönen Baumzerlegung berechnet werden, der Rest wird von der `dp_solve`-Funktion erledigt.
 
@@ -105,7 +103,7 @@ Der im Code implementierte Algorithmus (`dp_solve`) ist generisch bezüglich des
 
 Der Hauptalgorithmus für das PTAS wird durch die `ptas`-Funktion umgesetzt, die (ähnlich wie `dp_solve`) generisch bezüglich des zu lösenden Problems ist. Neben der Probleminstanz nimmt die Funktion einen `eps`-Wert als Parameter an, über den sich die Approximationsgenauigkeit steuern lässt.
 
-Der Algorithmus erstellt zunächst `k = 1 / eps` Subgraphen, indem bei einer Breitensuche jeweils mit einem Level Versatz  jedes k-te Level gelöscht wird. Die Subgraphen bestehen somit jeweils aus höchstens (k - 1)-außenplanaren Ringen. Die (approximative) Lösung für einen Subgraph wird berechnet, indem für jeden seiner Ringe mit Hilfe von `dp_solve` die optimale Lösung berechnet wird[^1] und anschließend die Vereinigungsmenge gebildet wird (bei Minimierungsproblemem müssen zuätzlich noch die im ersten Schritt rausgelöschten Knoten mit in die Lösung aufgenommen werden). Bei mindestens einem der k Subgraphen wurden höchstens $1/k * n$ Knoten rausgelöscht, die Lösung dieses Graphen ist somit $(1 - eps)$-optimal und wird von der Funktion zurückgegeben.
+Der Algorithmus erstellt zunächst `k = 1 / eps` Subgraphen, indem bei einer Breitensuche jeweils mit einem Level Versatz  jedes k-te Level gelöscht wird. Die Subgraphen bestehen somit jeweils aus höchstens (k - 1)-außenplanaren Ringen. Die (approximative) Lösung für einen Subgraph wird berechnet, indem für jeden seiner Ringe mit Hilfe von `dp_solve` die optimale Lösung berechnet wird[^1] und anschließend die Vereinigungsmenge gebildet wird (bei Minimierungsproblemem müssen zuätzlich noch die im ersten Schritt rausgelöschten Knoten mit in die Lösung aufgenommen werden). Bei mindestens einem der k Subgraphen wurden höchstens $1/k * n$ Knoten rausgelöscht, die Lösung dieses Graphen ist somit $(1 - eps)$-optimal (bei Minimierungsproblemen $(1 + eps)$-optimal) und wird von der Funktion zurückgegeben.
 
 [^1] Bei diesem Schritt sollte eigentlich ein Algorithmus verwendet werden, der die $k$-Außenplanarität des Graphen nutzt, um in Linearzeit eine Baumzerlegung mit Weite höchstens $3k - 1$ zu berechnen. Da wir zwar die einzelnen Schritte dieses Algorithmus weitestgehend implementiert haben, aber nicht zu einem korrekten Gesamtalgorithmus zusammenfügen konnten, nutzen wir für die Erstellung der Baumzerlegung die `arboretum-td`-Bibliothek. Da hierdurch eine exponentielle Laufzeitabhängigkeit bezüglich `n` entsteht, implementiert die `ptas`-Funktion im strikten theoretischen Sinne kein richtiges PTAS.
 
