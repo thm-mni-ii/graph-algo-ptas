@@ -1,4 +1,13 @@
 //! Contains data structures and algorithms for dynamic programming on tree decompositions.
+//!
+//! ```rust
+//! use graph_algo_ptas::generation::erdos_renyi::generate_petgraph;
+//! use graph_algo_ptas::algorithm::dynamic_programming::solve::dp_solve;
+//! use graph_algo_ptas::algorithm::dynamic_programming::solve::DpProblem;
+//!
+//! let graph = generate_petgraph(20, 0.1, None);
+//! let sol = dp_solve(&graph, None, &DpProblem::max_independent_set());
+//! ```
 
 use super::{max_independent_set, min_vertex_cover};
 use crate::{
