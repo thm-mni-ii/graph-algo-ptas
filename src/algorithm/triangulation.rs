@@ -6,7 +6,7 @@ use crate::data_structure::{
 use std::collections::HashSet;
 
 /// Returns the edges of a graph that need to be added to be fully triangulated.
-/// The graph needs to be connected and the outer face closed (circled).
+/// The graph needs to be connected.
 pub fn triangulate(
     graph: &impl GraphDCEL<
         LinkVertex,

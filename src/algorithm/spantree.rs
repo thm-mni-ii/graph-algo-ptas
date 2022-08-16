@@ -7,8 +7,11 @@ use std::collections::{HashMap, HashSet, VecDeque};
 
 /// The structure containing the span tree (downwards from root to leaves and upwards from leaf to root)
 pub struct Span<T> {
+    /// Root of the tree
     pub root: T,
+    /// Maps a node to its children
     pub downwards: HashMap<T, HashSet<T>>,
+    /// Maps a node to its parents
     pub upwards: HashMap<T, T>,
 }
 

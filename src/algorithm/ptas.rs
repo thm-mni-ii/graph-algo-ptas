@@ -1,29 +1,53 @@
-use super::dynamic_programming::dp_max_independent_set;
+//! Contains the main algorithm implementing the PTAS for planar graphs.
+//!
+//! ```rust
+//! use graph_algo_ptas::generation::planar::generate;
+//! use graph_algo_ptas::algorithm::ptas::ptas;
+//! use graph_algo_ptas::algorithm::dynamic_programming::solve::DpProblem;
+//!
+//! let graph = generate(100, None).to_pet_graph();
+//! let sol = ptas(&graph, &DpProblem::max_independent_set(), 0.5);
+//! ```
+
+use super::dynamic_programming::solve::{dp_solve_hashmap_graph, DpObjective, DpProblem};
 use crate::utils::convert::UndirectedGraph;
 use arboretum_td::graph::{HashMapGraph, MutableGraph};
 use petgraph::{algo::kosaraju_scc, stable_graph::NodeIndex, visit::EdgeRef};
 use std::collections::{HashSet, VecDeque};
 
-pub fn ptas_max_independent_set(graph: &UndirectedGraph, eps: f64) -> HashSet<usize> {
+/// Calculates an approximate solution for the given problem on the input graph.
+/// The input graph is expected to be planar.
+///
+/// The solution is guaranteed to be (1 - eps) optimal for maximization problems
+/// and (1 + eps) optimal for minimization problems.
+pub fn ptas(graph: &UndirectedGraph, prob: &DpProblem, eps: f64) -> HashSet<usize> {
     let mut sols: Vec<HashSet<usize>> = vec![];
 
     for ring_decomposition in get_ring_decompositions(&mut graph.clone(), eps) {
         let mut sol: HashSet<usize> = HashSet::new();
 
         for ring in get_component_graphs(&ring_decomposition.rings) {
-            sol = sol
-                .union(&dp_max_independent_set(&ring, None))
-                .copied()
-                .collect();
+            let ring_sol = dp_solve_hashmap_graph(&ring, None, prob);
+            sol.extend(ring_sol.iter());
+        }
+
+        if prob.objective == DpObjective::Minimize {
+            let vertices_deleted = ring_decomposition
+                .vertices_deleted
+                .iter()
+                .map(|v| v.index());
+            sol.extend(vertices_deleted);
         }
 
         sols.push(sol);
     }
 
-    sols.iter()
-        .max_by(|s1, s2| s1.len().cmp(&s2.len()))
-        .unwrap()
-        .clone()
+    let best_sol = match prob.objective {
+        DpObjective::Minimize => sols.iter().min_by(|s1, s2| s1.len().cmp(&s2.len())),
+        DpObjective::Maximize => sols.iter().max_by(|s1, s2| s1.len().cmp(&s2.len())),
+    };
+
+    best_sol.unwrap().clone()
 }
 
 fn get_component_graphs(graph: &UndirectedGraph) -> Vec<HashMapGraph> {
@@ -112,11 +136,12 @@ fn get_ring_decompositions(graph: &mut UndirectedGraph, eps: f64) -> Vec<RingDec
 mod tests {
     use super::get_ring_decompositions;
     use crate::{
-        algorithm::ptas::ptas_max_independent_set,
+        algorithm::{dynamic_programming::solve::DpProblem, ptas::ptas},
         generation::{erdos_renyi::generate_petgraph, planar::generate},
         utils::{
-            convert::{petgraph_to_hash_map_graph, UndirectedGraph},
+            convert::{to_hash_map_graph, UndirectedGraph},
             max_independent_set::{brute_force_max_independent_set, is_independent_set},
+            min_vertex_cover::{brute_force_min_vertex_cover, is_vertex_cover},
         },
     };
     use petgraph::algo::kosaraju_scc;
@@ -147,10 +172,7 @@ mod tests {
             let mut vertices = HashSet::new();
 
             for ring_decomposition in &ring_decompositions {
-                vertices = vertices
-                    .union(&ring_decomposition.vertices_deleted)
-                    .copied()
-                    .collect();
+                vertices.extend(ring_decomposition.vertices_deleted.iter());
             }
 
             assert!(vertices == graph.node_indices().collect());
@@ -161,44 +183,78 @@ mod tests {
     }
 
     #[test]
-    fn ptas_single_vertex() {
+    fn max_independent_set_single_vertex() {
         let mut graph = UndirectedGraph::default();
         let v0 = graph.add_node(());
-        let sol = ptas_max_independent_set(&graph, 0.5);
+        let sol = ptas(&graph, &DpProblem::max_independent_set(), 0.5);
 
         assert!(sol.len() == 1);
         assert!(sol.contains(&v0.index()));
     }
 
     #[test]
-    fn ptas_single_edge() {
+    fn max_independent_set_single_edge() {
         let mut graph = UndirectedGraph::default();
         let v0 = graph.add_node(());
         let v1 = graph.add_node(());
         graph.add_edge(v0, v1, ());
-        let sol = ptas_max_independent_set(&graph, 0.5);
-
+        let sol = ptas(&graph, &DpProblem::max_independent_set(), 0.5);
         assert!(sol.len() == 1);
         assert!(sol.contains(&v0.index()) || sol.contains(&v1.index()));
     }
 
     #[test]
-    fn ptas_random() {
+    fn max_independent_set_random() {
         for n in 2..30 {
             let graph: UndirectedGraph = generate(n, Some(n as u64)).to_pet_graph();
             let eps = 0.5;
-            let sol = ptas_max_independent_set(&graph, eps);
+            let sol = ptas(&graph, &DpProblem::max_independent_set(), eps);
 
-            assert!(is_independent_set(
-                &petgraph_to_hash_map_graph(&graph),
-                &sol
-            ));
+            assert!(is_independent_set(&to_hash_map_graph(&graph), &sol));
 
             // if n > 15 the brute force algorithm takes too long
             if n <= 15 {
-                let sol2 = brute_force_max_independent_set(&petgraph_to_hash_map_graph(&graph));
+                let sol2 = brute_force_max_independent_set(&to_hash_map_graph(&graph));
 
                 assert!(sol.len() as f64 >= (1.0 - eps) * sol2.len() as f64);
+            }
+        }
+    }
+
+    #[test]
+    fn min_vertex_cover_single_vertex() {
+        let mut graph = UndirectedGraph::default();
+        graph.add_node(());
+        let sol = ptas(&graph, &DpProblem::min_vertex_cover(), 0.5);
+
+        assert!(sol.is_empty());
+    }
+
+    #[test]
+    fn min_vertex_cover_single_edge() {
+        let mut graph = UndirectedGraph::default();
+        let v0 = graph.add_node(());
+        let v1 = graph.add_node(());
+        graph.add_edge(v0, v1, ());
+        let sol = ptas(&graph, &DpProblem::min_vertex_cover(), 0.5);
+        assert!(sol.len() == 1);
+        assert!(sol.contains(&v0.index()) || sol.contains(&v1.index()));
+    }
+
+    #[test]
+    fn min_vertex_cover_random() {
+        for n in 2..30 {
+            let graph: UndirectedGraph = generate(n, Some(n as u64)).to_pet_graph();
+            let eps = 0.5;
+            let sol = ptas(&graph, &DpProblem::min_vertex_cover(), eps);
+
+            assert!(is_vertex_cover(&to_hash_map_graph(&graph), &sol));
+
+            // if n > 15 the brute force algorithm takes too long
+            if n <= 15 {
+                let sol2 = brute_force_min_vertex_cover(&to_hash_map_graph(&graph));
+
+                assert!(sol.len() as f64 <= (1.0 + 0.5 * eps) * sol2.len() as f64);
             }
         }
     }
