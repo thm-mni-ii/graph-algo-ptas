@@ -28,3 +28,9 @@ criterion = {version = "0.3", features = ["html_reports"]}
 [[bench]]
 name = "embedding_benchmark"
 harness = false
+
+[[bin]]
+name = "graph-algo-ptas-cli"
+path = "src/main.rs"
+required-features = ["cli"]
+test = false
