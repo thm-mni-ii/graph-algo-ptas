@@ -1,3 +1,4 @@
+//! Contains the dual_graph function
 use crate::algorithm::spantree::Span;
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
@@ -5,6 +6,7 @@ use crate::data_structure::{
 };
 use std::collections::{HashMap, HashSet};
 
+/// Returns the dual graph that doesn't cross the edges of the span (face tree)
 pub fn dual_graph(
     g: &impl GraphDCEL<
         LinkVertex,

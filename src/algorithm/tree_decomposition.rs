@@ -1,9 +1,12 @@
+//! Contains the tree_decomposition function
+
+//! Contains the tree_decomposition function
 use arboretum_td::tree_decomposition::TreeDecomposition;
 use fxhash::FxHashSet;
 
-use crate::algorithm::spantree::Span;
 use std::collections::{HashMap, HashSet};
 
+use crate::algorithm::spantree::Span;
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},

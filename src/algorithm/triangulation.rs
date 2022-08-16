@@ -1,8 +1,11 @@
+//! Contains the triangulate function
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
 
+/// Returns the edges of a graph that need to be added to be fully triangulated.
+/// The graph needs to be connected and the outer face closed (circled).
 pub fn triangulate(
     graph: &impl GraphDCEL<
         LinkVertex,
@@ -22,6 +25,7 @@ pub fn triangulate(
     edges
 }
 
+/// Returns the edges of a face that need to be added to be fully triangulated.
 fn triangulate_face(
     graph: &impl GraphDCEL<
         LinkVertex,

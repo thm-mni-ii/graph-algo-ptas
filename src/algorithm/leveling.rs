@@ -1,13 +1,17 @@
+//! Contains implementation of graph leveling
+//! Contains the implementation of Leveling
 use crate::algorithm::spantree::Span;
 use crate::data_structure::link_graph::LinkVertex;
 use std::collections::HashSet;
 
-struct Leveling<T> {
-    pub levels: Vec<HashSet<T>>,
+/// The structure containing the levels of a graph
+pub struct Leveling<T> {
+    pub levels: Vec<HashSet<T>>
 }
 
 impl Leveling<LinkVertex> {
-    fn compute(span: Span<LinkVertex>) -> Self {
+    /// Returns a new Leveling of a graph along its span tree
+    pub fn compute(span: Span<LinkVertex>) -> Self {
         let mut result = vec![];
         let mut level = HashSet::new();
         level.insert(span.root);
@@ -27,10 +31,13 @@ impl Leveling<LinkVertex> {
         Leveling { levels: result }
     }
 
-    fn size(&self) -> usize {
+    /// Returns the number of levels
+    pub fn size(&self) -> usize {
         self.levels.len()
     }
 
+    /// Returns rings consisting of k levels.
+    /// The last ring can contain less than k levels if the number of levels mod k is not 0.
     pub fn rings(&self, k: usize) -> Vec<HashSet<LinkVertex>> {
         let mut result = vec![];
         for c in self

@@ -1,9 +1,11 @@
+//! Contains implementation of a span tree
 use crate::data_structure::{
     graph_dcel::GraphDCEL,
     link_graph::{LinkDart, LinkFace, LinkGraphIter, LinkVertex},
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 
+/// The structure containing the span tree (downwards from root to leaves and upwards from leaf to root)
 pub struct Span<T> {
     pub root: T,
     pub downwards: HashMap<T, HashSet<T>>,
@@ -11,6 +13,7 @@ pub struct Span<T> {
 }
 
 impl Span<LinkVertex> {
+    /// Returns a span tree beginning with root
     pub fn compute(
         g: &impl GraphDCEL<
             LinkVertex,
@@ -20,15 +23,15 @@ impl Span<LinkVertex> {
             LinkGraphIter<LinkDart>,
             LinkGraphIter<LinkFace>,
         >,
-        v: LinkVertex,
+        root: LinkVertex,
     ) -> Self {
         assert!(g.get_vertexes().count() > 1);
         let mut queue = VecDeque::new();
         let mut upwards = HashMap::new();
         let mut downwards = HashMap::new();
         let mut visited = HashSet::new();
-        downwards.insert(v.clone(), HashSet::new());
-        queue.push_back(v.clone());
+        downwards.insert(root.clone(), HashSet::new());
+        queue.push_back(root.clone());
 
         while !queue.is_empty() {
             let u = queue.pop_front().unwrap();
@@ -45,7 +48,7 @@ impl Span<LinkVertex> {
             }
         }
         Span {
-            root: v,
+            root,
             downwards,
             upwards,
         }
