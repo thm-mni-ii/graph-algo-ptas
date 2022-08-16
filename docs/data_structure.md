@@ -31,7 +31,7 @@ Um die Planare Einbettung für den Input Graphen zu generieren wurde der Algorit
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/embedding/index.html)  
 - [Benchmarks](https://thm-mni-ii.github.io/graph-algo-ptas/benchmark/MaximalPlanar%20embedding/report/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/embedding)
-- [Pseudocode](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+- [Reference](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
 ## Random Generation
 
@@ -41,7 +41,7 @@ Um das Testen der erstellten Algorithmen und Datenstrukturen zu vereinfachen wur
 
 - [API-Docs](https://thm-mni-ii.github.io/graph-algo-ptas/graph_algo_ptas/generation/index.html)
 - [Code](https://github.com/thm-mni-ii/graph-algo-ptas/tree/main/src/generation)
-- [Pseudocode](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
+- [Reference](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.31.9303&rep=rep1&type=pdf)
 
 ## Command Line Interface (CLI)
 
