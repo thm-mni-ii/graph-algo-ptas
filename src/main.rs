@@ -1,7 +1,4 @@
 #[cfg(feature = "cli")]
-use std::path::PathBuf;
-
-#[cfg(feature = "cli")]
 use clap::Parser;
 #[cfg(feature = "cli")]
 use clap::Subcommand;
@@ -25,6 +22,8 @@ use petgraph::stable_graph::DefaultIx;
 use petgraph::stable_graph::StableGraph;
 #[cfg(feature = "cli")]
 use petgraph::Undirected;
+#[cfg(feature = "cli")]
+use std::path::PathBuf;
 
 #[cfg(feature = "cli")]
 #[derive(Parser)]
