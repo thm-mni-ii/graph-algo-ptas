@@ -242,14 +242,14 @@ impl<T: Clone> Iterator for LinkGraphIter<T> {
 }
 
 impl
-    GraphDCEL<
-        LinkVertex,
-        LinkDart,
-        LinkFace,
-        LinkGraphIter<LinkVertex>,
-        LinkGraphIter<LinkDart>,
-        LinkGraphIter<LinkFace>,
-    > for LinkGraph
+GraphDCEL<
+    LinkVertex,
+    LinkDart,
+    LinkFace,
+    LinkGraphIter<LinkVertex>,
+    LinkGraphIter<LinkDart>,
+    LinkGraphIter<LinkFace>,
+> for LinkGraph
 {
     fn get_vertexes(&self) -> LinkGraphIter<LinkVertex> {
         LinkGraphIter::new(self.vertexes.clone())
@@ -380,6 +380,10 @@ impl
 
     fn set_face(&self, dart: &LinkDart, face: LinkFace) {
         dart.0.borrow_mut().face = Some(face);
+    }
+
+    fn vertex_by_id(&self, id: usize) -> Option<LinkVertex> {
+        self.vertexes.iter().find(|v| v.get_id() == id).cloned()
     }
 }
 
