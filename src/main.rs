@@ -10,7 +10,7 @@ use graph_algo_ptas::data_structure::dot_reader::read_graph;
 #[cfg(feature = "cli")]
 use graph_algo_ptas::data_structure::graph_dcel::GraphDCEL;
 #[cfg(feature = "cli")]
-use graph_algo_ptas::embeding::{index::Embeding, maximal_planar::index::MaximalPlanar};
+use graph_algo_ptas::embedding::{index::Embedding, maximal_planar::index::MaximalPlanar};
 #[cfg(feature = "cli")]
 use graph_algo_ptas::generation::planar::generate;
 #[cfg(feature = "cli")]
@@ -91,7 +91,7 @@ fn main() {
 }
 
 #[cfg(feature = "cli")]
-fn print_graph(graph: &StableGraph<u32, (), Undirected, DefaultIx>) {
+fn print_graph(graph: &StableGraph<(), (), Undirected, DefaultIx>) {
     println!("[ptas] graph in dot format:");
     println!(
         "{:?}",
@@ -100,7 +100,7 @@ fn print_graph(graph: &StableGraph<u32, (), Undirected, DefaultIx>) {
 }
 
 #[cfg(feature = "cli")]
-fn embed_graph(graph: &StableGraph<u32, (), Undirected, DefaultIx>, generated: bool) {
+fn embed_graph(graph: &StableGraph<(), (), Undirected, DefaultIx>, generated: bool) {
     let dcel = MaximalPlanar::embed(graph.clone());
 
     if generated {

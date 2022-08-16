@@ -10,23 +10,22 @@
 use graphviz_parser::ast_nodes::Statement::{Edge, Node};
 use graphviz_parser::ast_nodes::{EdgeLHS, EdgeRHS};
 use graphviz_parser::DotGraph;
-use petgraph::stable_graph::DefaultIx;
-use petgraph::stable_graph::StableGraph;
-use petgraph::Undirected;
 use std::{collections::HashMap, str::FromStr};
 
+use crate::utils::convert::UndirectedGraph;
+
 /// Generates an Pedgraph from a Dot Format string
-pub fn read_graph(graph_text: String) -> Option<StableGraph<u32, (), Undirected, DefaultIx>> {
+pub fn read_graph(graph_text: String) -> Option<UndirectedGraph> {
     let graph_ast = DotGraph::from_str(&graph_text);
 
     match graph_ast {
         Ok(DotGraph::Undirected(g)) => {
-            let mut graph: StableGraph<u32, (), Undirected, DefaultIx> = Default::default();
+            let mut graph: UndirectedGraph = Default::default();
             let mut node_mapper = HashMap::new();
 
             g.statements.iter().for_each(|s| {
                 if let Node(n) = s {
-                    let idx = graph.add_node(0);
+                    let idx = graph.add_node(());
                     node_mapper.insert(n.id.clone(), idx);
                 }
 
@@ -52,8 +51,10 @@ pub fn read_graph(graph_text: String) -> Option<StableGraph<u32, (), Undirected,
 
 fn get_or_create_node(
     node: String,
-    graph: &mut StableGraph<u32, (), Undirected, DefaultIx>,
+    graph: &mut UndirectedGraph,
     node_mapper: &mut HashMap<String, petgraph::stable_graph::NodeIndex>,
 ) -> petgraph::stable_graph::NodeIndex {
-    *node_mapper.entry(node).or_insert_with(|| graph.add_node(0))
+    *node_mapper
+        .entry(node)
+        .or_insert_with(|| graph.add_node(()))
 }
