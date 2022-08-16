@@ -1,5 +1,7 @@
 //! Contains the datastructures used by the crate
 
+#[cfg(feature = "cli")]
+pub mod dot_reader;
 pub mod dot_renderer;
 pub mod graph_dcel;
 #[allow(dead_code)]
