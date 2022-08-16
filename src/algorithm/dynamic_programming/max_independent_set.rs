@@ -87,9 +87,15 @@ pub fn handle_introduce_node(
         let (new_val, node_used) = if has_edge {
             (i32::min_value(), None)
         } else {
-            (val + 1, Some(introduced_vertex))
+            (
+                if val == i32::min_value() {
+                    i32::min_value()
+                } else {
+                    val + 1
+                },
+                Some(introduced_vertex),
+            )
         };
-
         let subset_with_v = immutable_bit_vec_update(&subset, introduced_vertex);
         tables[id].insert(
             subset_with_v,
