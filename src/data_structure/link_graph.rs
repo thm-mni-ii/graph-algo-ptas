@@ -446,18 +446,12 @@ impl LinkGraph {
         prev_dart.0.borrow_mut().next = Some(ld.clone());
         ld.0.borrow_mut().prev = Some(prev_dart);
 
-        match twin {
-            Some(twin_dart) => {
-                twin_dart.0.borrow_mut().twin = Some(ld.clone());
-                ld.0.borrow_mut().twin = Some(twin_dart);
-            }
-            None => {}
-        };
-        match face {
-            Some(link_face) => {
-                ld.0.borrow_mut().face = Some(link_face);
-            }
-            None => {}
+        if let Some(twin_dart) = twin {
+            twin_dart.0.borrow_mut().twin = Some(ld.clone());
+            ld.0.borrow_mut().twin = Some(twin_dart);
+        }
+        if let Some(link_face) = face {
+            ld.0.borrow_mut().face = Some(link_face);
         }
         self.darts.push(ld.clone());
         from.0.borrow_mut().dart = Some(ld.clone());
